@@ -41,9 +41,12 @@ public abstract class AbstractNodeContainer extends AbstractNode {
     }
 
     public Node getNode(String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Node id is null");
+        }
         Node node = nodes.get(id);
         if (node == null) {
-            throw new JabatException("Job node " + id + " not found");
+            throw new JabatException("Node " + id + " not found");
         }
         return node;
     }

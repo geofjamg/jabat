@@ -19,7 +19,7 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitNode extends AbstractNodeContainer implements NodeContainer {
+public class SplitNode extends AbstractNodeContainer implements NodeContainer, Chainable {
 
     private final String next;
 
@@ -28,7 +28,8 @@ public class SplitNode extends AbstractNodeContainer implements NodeContainer {
         this.next = next;
     }
 
-    String getNext() {
+    @Override
+    public String getNext() {
         return next;
     }
 

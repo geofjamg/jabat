@@ -33,6 +33,7 @@ import fr.jamgotchian.jabat.artifact.BatchletArtifact;
 import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
+import fr.jamgotchian.jabat.job.Chainable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,9 +86,10 @@ class JobInstanceExecutor implements NodeVisitor {
         });
     }
 
-    private void visitNextNode(String id, NodeContainer container) {
-        if (id != null) {
-            Node next = container.getNode(id);
+    private <N extends Node & Chainable> void visitNextNode(N node) {
+        assert node.getContainer() != null;
+        if (node.getNext() != null) {
+            Node next = node.getContainer().getNode(node.getNext());
             next.accept(this);
         }
     }
@@ -117,7 +119,7 @@ class JobInstanceExecutor implements NodeVisitor {
             } finally {
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
-            visitNextNode(step.getNext(), step.getContainer());
+            visitNextNode(step);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
             LOGGER.error(t.toString(), t);
@@ -173,7 +175,7 @@ class JobInstanceExecutor implements NodeVisitor {
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
-            visitNextNode(step.getNext(), step.getContainer());
+            visitNextNode(step);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
             LOGGER.error(t.toString(), t);
