@@ -28,7 +28,6 @@ import fr.jamgotchian.jabat.job.DecisionNode;
 import fr.jamgotchian.jabat.job.NodeVisitor;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
 import fr.jamgotchian.jabat.job.Node;
-import fr.jamgotchian.jabat.job.NodeContainer;
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
 import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
