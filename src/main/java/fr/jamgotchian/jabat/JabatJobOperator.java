@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public List<Long> getJobInstanceIds(String jobName, int start, int count) throws NoSuchJobException {
-        return manager.getLoader().getJob(jobName).getInstanceIds();
+        return Collections.unmodifiableList(manager.getLoader().getJob(jobName).getInstanceIds());
     }
 
     @Override
@@ -64,12 +65,12 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public List<Long> getExecutions(long instanceId) throws NoSuchJobInstanceException {
-        return manager.getRepository().getJobInstance(instanceId).getExecutionIds();
+        return Collections.unmodifiableList(manager.getRepository().getJobInstance(instanceId).getExecutionIds());
     }
 
     @Override
     public Properties getParameters(long executionId) throws NoSuchJobExecutionException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return manager.getRepository().getJobExecution(executionId).getJobParameters();
     }
 
     @Override
@@ -104,7 +105,7 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public StepExecution getStepExecution(long jobExecutionId, long stepExecutionId) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return manager.getRepository().getStepExecution(stepExecutionId);
     }
 
 }
