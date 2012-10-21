@@ -29,7 +29,7 @@ public class JabatJobExecution implements JobExecution {
 
     private final long id;
 
-    private Status status = Status.STARTING;
+    private volatile Status status = Status.STARTING;
 
     private String exitStatus;
 

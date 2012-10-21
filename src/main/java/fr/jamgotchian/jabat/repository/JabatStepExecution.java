@@ -28,7 +28,7 @@ public class JabatStepExecution implements StepExecution {
 
     private final long id;
 
-    private Status status;
+    private volatile Status status = Status.STARTING;
 
     private final Date startTime;
 
@@ -40,7 +40,7 @@ public class JabatStepExecution implements StepExecution {
 
     private MetricImpl[] metrics;
 
-    private final AtomicReference<BatchletArtifact> batchletArtifact = new AtomicReference<BatchletArtifact>();
+    private volatile BatchletArtifact batchletArtifact;
 
     public JabatStepExecution(long id) {
         this.id = id;
@@ -102,11 +102,11 @@ public class JabatStepExecution implements StepExecution {
     }
 
     public BatchletArtifact getBatchletArtifact() {
-        return batchletArtifact.get();
+        return batchletArtifact;
     }
 
     public void setBatchletArtifact(BatchletArtifact batchletArtifact) {
-        this.batchletArtifact.set(batchletArtifact);
+        this.batchletArtifact = batchletArtifact;
     }
 
 }

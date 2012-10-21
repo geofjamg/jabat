@@ -33,7 +33,6 @@ import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -99,30 +98,31 @@ class JobInstanceExecutor implements NodeVisitor {
 
         JabatStepExecution stepExecution = manager.getRepository().createStepExecution(step, jobExecution);
 
-        JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
         try {
+            JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+            Object obj = null;
             try {
-                Object obj = null;
-                try {
-                    obj = manager.getArtifactFactory().create(step.getRef());
+                obj = manager.getArtifactFactory().create(step.getRef());
 
-                    BatchletArtifact artifact = new BatchletArtifact(obj);
-                    stepExecution.setBatchletArtifact(artifact);
+                BatchletArtifact artifact = new BatchletArtifact(obj);
+                stepExecution.setBatchletArtifact(artifact);
 
-                    String exitStatus = artifact.process();
-                } finally {
-                    if (obj != null) {
-                        manager.getArtifactFactory().destroy(obj);
-                    }
-                }
+                stepExecution.setStatus(Status.STARTED);
+
+                String exitStatus = artifact.process();
             } finally {
+                if (obj != null) {
+                    manager.getArtifactFactory().destroy(obj);
+                }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
+            jobExecution.setStatus(Status.COMPLETED);
+            stepExecution.setStatus(Status.COMPLETED);
+
             visitNextNode(step);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            LOGGER.error(t.toString(), t);
         } catch (Throwable t) {
+            jobExecution.setStatus(Status.FAILED);
+            stepExecution.setStatus(Status.FAILED);
             LOGGER.error(t.toString(), t);
         }
     }
@@ -133,11 +133,11 @@ class JobInstanceExecutor implements NodeVisitor {
 
         JabatStepExecution stepExecution = manager.getRepository().createStepExecution(step, jobExecution);
 
-        JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
         try {
             Object readerObj = null;
             Object processorObj = null;
             Object writerObj = null;
+            JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             try {
                 readerObj = manager.getArtifactFactory().create(step.getReaderRef());
                 processorObj = manager.getArtifactFactory().create(step.getProcessorRef());
@@ -148,6 +148,8 @@ class JobInstanceExecutor implements NodeVisitor {
                 ProcessItemArtifact processor = new ProcessItemArtifact(processorObj, itemType);
                 Class<?> outputItemType = processor.getOutputItemType();
                 WriteItemsArtifact writer = new WriteItemsArtifact(writerObj, outputItemType);
+
+                stepExecution.setStatus(Status.STARTED);
 
                 try {
                     reader.open(null);
@@ -174,11 +176,13 @@ class JobInstanceExecutor implements NodeVisitor {
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
+            jobExecution.setStatus(Status.COMPLETED);
+            stepExecution.setStatus(Status.COMPLETED);
+
             visitNextNode(step);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            LOGGER.error(t.toString(), t);
         } catch(Throwable t) {
+            jobExecution.setStatus(Status.FAILED);
+            stepExecution.setStatus(Status.FAILED);
             LOGGER.error(t.toString(), t);
         }
     }

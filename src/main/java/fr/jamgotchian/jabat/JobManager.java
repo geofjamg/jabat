@@ -104,9 +104,15 @@ public class JobManager {
 
         long executionId = jobInstance.getLastExecutionId();
         JabatJobExecution jobExecution = repository.getJobExecution(executionId);
-        jobExecution.setStatus(Status.STOPPING);
 
         // TODO check the instance is running
+
+        // update job and steps status to STOPPING
+        jobExecution.setStatus(Status.STOPPING);
+        for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
+            JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
+            stepExecution.setStatus(Status.STOPPING);
+        }
 
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
@@ -115,12 +121,12 @@ public class JobManager {
             if (artifact != null) {
                 try {
                     artifact.stop();
+                    stepExecution.setStatus(Status.STOPPED);
                 } catch(Exception e) {
                     LOGGER.error(e.toString(), e);
                 }
             }
         }
-
         jobExecution.setStatus(Status.STOPPED);
     }
 }
