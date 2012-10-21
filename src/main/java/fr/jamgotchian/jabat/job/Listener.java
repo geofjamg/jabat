@@ -15,31 +15,34 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class StepNode extends AbstractNode implements Node, Chainable, Listenable {
+public class Listener implements Parameterizable {
 
-    private final String next;
+    private final String ref;
 
-    private final List<Long> stepExecutionIds = new ArrayList<Long>();
+    private Properties parameters = new Properties();
 
-    StepNode(String id, NodeContainer container, String next) {
-        super(id, container);
-        this.next = next;
+    public Listener(String ref) {
+        this.ref = ref;
+    }
+
+    public String getRef() {
+        return ref;
     }
 
     @Override
-    public String getNext() {
-        return next;
+    public Properties getParameters() {
+        return parameters;
     }
 
-    public List<Long> getStepExecutionIds() {
-        return stepExecutionIds;
+    @Override
+    public void setParameters(Properties parameters) {
+        this.parameters = parameters;
     }
 
 }

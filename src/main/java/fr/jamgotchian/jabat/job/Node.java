@@ -15,19 +15,13 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Node {
+public interface Node extends Parameterizable {
 
     String getId();
-
-    Properties getParameters();
-
-    void setParameters(Properties parameters);
 
     NodeContainer getContainer();
 

@@ -48,6 +48,7 @@ public class MethodUtil {
 
     public static Method findAnnotatedMethod(Class<?> clazz,
                                              Class<? extends Annotation> annotationClass,
+                                             boolean optional,
                                              Predicate<Method> predicate) {
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.isAnnotationPresent(annotationClass)) {
@@ -59,8 +60,12 @@ public class MethodUtil {
                 }
             }
         }
-        throw new JabatException("Cannot find " + annotationClass.getName()
-                + " annotated method");
+        if (optional) {
+            return null;
+        } else {
+            throw new JabatException("Cannot find " + annotationClass.getName()
+                    + " annotated method");
+        }
     }
 
 }

@@ -31,9 +31,9 @@ public class ReadItemArtifact extends IOItemArtifact {
 
     private final Method readItemMethod;
 
-    public ReadItemArtifact(Object artifact) {
-        super(artifact);
-        readItemMethod = findAnnotatedMethod(artifact.getClass(), ReadItem.class, new Predicate<Method>() {
+    public ReadItemArtifact(Object object) {
+        super(object);
+        readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() != Void.TYPE
@@ -50,7 +50,7 @@ public class ReadItemArtifact extends IOItemArtifact {
 
     public Object readItem() throws Exception {
         try {
-            return readItemMethod.invoke(artifact);
+            return readItemMethod.invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

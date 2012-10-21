@@ -29,13 +29,17 @@ import fr.jamgotchian.jabat.job.NodeVisitor;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
+import fr.jamgotchian.jabat.artifact.JobListenerArtifact;
 import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
+import fr.jamgotchian.jabat.job.Listener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,13 +76,34 @@ class JobInstanceExecutor implements NodeVisitor {
             public void run() {
                 Thread.currentThread().setName("Job " + job.getId());
 
-                jobExecution.setStatus(Status.STARTED);
-
-                JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
                 try {
-                    job.getFirstStepNode().accept(JobInstanceExecutor.this);
-                } finally {
-                    JabatThreadContext.getInstance().deactivateJobContext();
+                    JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
+                    List<JobListenerArtifact> artifacts = new ArrayList<JobListenerArtifact>();
+                    try {
+                        // before job listeners
+                        for (Listener l : job.getListeners()) {
+                            Object obj = manager.getArtifactFactory().create(l.getRef());
+                            JobListenerArtifact artifact = new JobListenerArtifact(obj);
+                            artifacts.add(artifact);
+                            artifact.beforeJob();
+                        }
+
+                        // run the job
+                        jobExecution.setStatus(Status.STARTED);
+                        job.getFirstStepNode().accept(JobInstanceExecutor.this);
+
+                        // after job listeners
+                        for (JobListenerArtifact artifact : artifacts) {
+                            artifact.afterJob();
+                        }
+                    } finally {
+                        for (JobListenerArtifact artifact : artifacts) {
+                            manager.getArtifactFactory().destroy(artifact.getObject());
+                        }
+                        JabatThreadContext.getInstance().deactivateJobContext();
+                    }
+                } catch (Throwable t) {
+                    LOGGER.error(t.toString(), t);
                 }
             }
         });

@@ -19,7 +19,7 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class FlowNode extends AbstractNodeContainer implements NodeContainer, Chainable {
+public class FlowNode extends AbstractNodeContainer implements NodeContainer, Chainable, Listenable {
 
     private final String next;
 

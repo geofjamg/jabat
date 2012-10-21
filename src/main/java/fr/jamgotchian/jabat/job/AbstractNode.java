@@ -15,6 +15,9 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -28,6 +31,8 @@ public abstract class AbstractNode {
     private final NodeContainer container;
 
     private Properties parameters = new Properties();
+
+    private final List<Listener> listeners = new ArrayList<Listener>();
 
     public AbstractNode(String id, NodeContainer container) {
         this.id = id;
@@ -48,6 +53,14 @@ public abstract class AbstractNode {
 
     public NodeContainer getContainer() {
         return container;
+    }
+
+    public void addListener(Listener l) {
+        listeners.add(l);
+    }
+
+    public Collection<Listener> getListeners() {
+        return listeners;
     }
 
 }

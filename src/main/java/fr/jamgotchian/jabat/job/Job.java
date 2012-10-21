@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Job extends AbstractNodeContainer implements NodeContainer {
+public class Job extends AbstractNodeContainer implements NodeContainer, Listenable {
 
     private final List<Long> instanceIds = new ArrayList<Long>();
 

@@ -31,15 +31,15 @@ import javax.batch.annotation.Open;
  */
 public class IOItemArtifact {
 
-    protected final Object artifact;
+    protected final Object object;
 
     private final Method openMethod;
 
     private final Method closeMethod;
 
-    public IOItemArtifact(Object artifact) {
-        this.artifact = artifact;
-        openMethod = findAnnotatedMethod(artifact.getClass(), Open.class, new Predicate<Method>() {
+    public IOItemArtifact(Object object) {
+        this.object = object;
+        openMethod = findAnnotatedMethod(object.getClass(), Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -48,7 +48,7 @@ public class IOItemArtifact {
             }
         });
         openMethod.setAccessible(true);
-        closeMethod = findAnnotatedMethod(artifact.getClass(), Close.class, new Predicate<Method>() {
+        closeMethod = findAnnotatedMethod(object.getClass(), Close.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -59,9 +59,13 @@ public class IOItemArtifact {
         closeMethod.setAccessible(true);
     }
 
+    public Object getObject() {
+        return object;
+    }
+
     public void open(Externalizable checkpoint) throws Exception {
         try {
-            openMethod.invoke(artifact, checkpoint);
+            openMethod.invoke(object, checkpoint);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -73,7 +77,7 @@ public class IOItemArtifact {
 
     public void close() throws Exception {
         try {
-            closeMethod.invoke(artifact);
+            closeMethod.invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

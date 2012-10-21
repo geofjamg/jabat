@@ -28,16 +28,16 @@ import javax.batch.annotation.ProcessItem;
  */
 public class ProcessItemArtifact {
 
-    private final Object artifact;
+    private final Object object;
 
     private final Method processItemMethod;
 
     private final Class<?> itemType;
 
-    public ProcessItemArtifact(Object artifact, final Class<?> itemType) {
-        this.artifact = artifact;
+    public ProcessItemArtifact(Object object, final Class<?> itemType) {
+        this.object = object;
         this.itemType = itemType;
-        processItemMethod = findAnnotatedMethod(artifact.getClass(), ProcessItem.class, new Predicate<Method>() {
+        processItemMethod = findAnnotatedMethod(object.getClass(), ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() != Void.TYPE
@@ -48,6 +48,10 @@ public class ProcessItemArtifact {
         processItemMethod.setAccessible(true);
     }
 
+    public Object getObject() {
+        return object;
+    }
+
     public Class<?> getOutputItemType() {
         return processItemMethod.getReturnType();
     }
@@ -55,7 +59,7 @@ public class ProcessItemArtifact {
     public Object processItem(Object item) throws Exception {
         // TODO check item has itemType type
         try {
-            return processItemMethod.invoke(artifact, item);
+            return processItemMethod.invoke(object, item);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

@@ -19,35 +19,26 @@ import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.batch.annotation.bachlet.Process;
-import javax.batch.annotation.bachlet.Stop;
+import javax.batch.annotation.AfterStep;
+import javax.batch.annotation.BeforeStep;
 
 /**
- * @Process String <method-name> () throws Exception
- * @Stop void <method-name> () throws Exception
+ * @BeforeStep void <method-name> () throws Exception
+ * @AfterStep void <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifact {
+public class StepListenerArtifact {
 
     private final Object object;
 
-    private final Method processMethod;
+    private final Method beforeStepMethod;
 
-    private final Method stopMethod;
+    private final Method afterStepMethod;
 
-    public BatchletArtifact(Object object) {
+    public StepListenerArtifact(Object object) {
         this.object = object;
-        processMethod = findAnnotatedMethod(object.getClass(), Process.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, String.class)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        processMethod.setAccessible(true);
-        stopMethod = findAnnotatedMethod(object.getClass(), Stop.class, false, new Predicate<Method>() {
+        beforeStepMethod = findAnnotatedMethod(object.getClass(), BeforeStep.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
@@ -55,17 +46,27 @@ public class BatchletArtifact {
                         && throwsOneException(m, Exception.class);
             }
         });
-        stopMethod.setAccessible(true);
+        if (beforeStepMethod != null) {
+            beforeStepMethod.setAccessible(true);
+        }
+        afterStepMethod = findAnnotatedMethod(object.getClass(), AfterStep.class, true, new Predicate<Method>() {
+            @Override
+            public boolean apply(Method m) {
+                return hasReturnType(m, Void.TYPE)
+                        && hasZeroParameter(m)
+                        && throwsOneException(m, Exception.class);
+            }
+        });
+        if (afterStepMethod != null) {
+            afterStepMethod.setAccessible(true);
+        }
     }
 
-    public Object getObject() {
-        return object;
-    }
-
-    public String process() throws Exception {
-        String exitStatus = null;
+    public void beforeStep() throws Exception {
         try {
-            exitStatus = (String) processMethod.invoke(object);
+            if (beforeStepMethod != null) {
+                beforeStepMethod.invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -73,12 +74,13 @@ public class BatchletArtifact {
                 throw e;
             }
         }
-        return exitStatus;
     }
 
-    public void stop() throws Exception {
+    public void afterStep() throws Exception {
         try {
-            stopMethod.invoke(object);
+            if (afterStepMethod != null) {
+                afterStepMethod.invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

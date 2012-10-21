@@ -18,7 +18,8 @@ package fr.jamgotchian.jabat.job;
 import java.util.Collection;
 
 /**
- *
+ * A node container is also a node itself.
+ * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public interface NodeContainer extends Node {

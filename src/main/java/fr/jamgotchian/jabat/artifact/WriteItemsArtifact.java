@@ -35,10 +35,10 @@ public class WriteItemsArtifact extends IOItemArtifact {
 
     private final Class<?> itemType;
 
-    public WriteItemsArtifact(Object artifact, final Class<?> itemType) {
-        super(artifact);
+    public WriteItemsArtifact(Object object, final Class<?> itemType) {
+        super(object);
         this.itemType = itemType;
-        writeItemsMethod = findAnnotatedMethod(artifact.getClass(), WriteItems.class, new Predicate<Method>() {
+        writeItemsMethod = findAnnotatedMethod(object.getClass(), WriteItems.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -55,7 +55,7 @@ public class WriteItemsArtifact extends IOItemArtifact {
     public void writeItems(List<Object> items) throws Exception {
         // TODO check items have itemType type
         try {
-            writeItemsMethod.invoke(artifact, items);
+            writeItemsMethod.invoke(object, items);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

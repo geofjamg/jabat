@@ -21,8 +21,12 @@ import fr.jamgotchian.jabat.job.SplitNode;
 import fr.jamgotchian.jabat.job.FlowNode;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
+import fr.jamgotchian.jabat.job.Listenable;
+import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.job.NodeContainer;
+import fr.jamgotchian.jabat.job.Parameterizable;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -70,13 +74,36 @@ class JobLoader {
         }
     }
 
+    private NodeContainer getContainer(Deque<Object> element) {
+        if (element.getFirst() instanceof NodeContainer) {
+            return (NodeContainer) element.getFirst();
+        } else {
+            throw new JabatException("Element is not a node container");
+        }
+    }
+
+    private Parameterizable getParameterizable(Deque<Object> element) {
+        if (element.getFirst() instanceof Parameterizable) {
+            return (Parameterizable) element.getFirst();
+        } else {
+            throw new JabatException("Element is not a parameterizable");
+        }
+    }
+
+    private Listenable getListenable(Deque<Object> element) {
+        if (element.getFirst() instanceof Listenable) {
+            return (Listenable) element.getFirst();
+        } else {
+            throw new JabatException("Element is not a listenable");
+        }
+    }
+
     private void readJobXml(File file) {
         LOGGER.debug("Load job xml file " + file);
         try {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(new FileReader(file));
-            Deque<NodeContainer> container = new ArrayDeque<NodeContainer>(1);
-            Deque<Node> node = new ArrayDeque<Node>(1);
+            Deque<Object> element = new ArrayDeque<Object>(1);
             Deque<StepAttributes> stepAttrs = new ArrayDeque<StepAttributes>(1);
             while (xmlsr.hasNext()) {
                 int eventType = xmlsr.next();
@@ -88,8 +115,7 @@ class JobLoader {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 Job job = new Job(id);
                                 jobs.put(job.getId(), job);
-                                node.push(job);
-                                container.push(job);
+                                element.push(job);
                             } else if ("step".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
@@ -97,41 +123,46 @@ class JobLoader {
                             } else if ("split".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                SplitNode split = new SplitNode(id, container.getFirst(), next);
-                                container.getFirst().addNode(split);
-                                node.push(split);
-                                container.push(split);
+                                NodeContainer container = getContainer(element);
+                                SplitNode split = new SplitNode(id, container, next);
+                                container.addNode(split);
+                                element.push(split);
                             } else if ("flow".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                FlowNode flow = new FlowNode(id, container.getFirst(), next);
-                                container.getFirst().addNode(flow);
-                                node.push(flow);
-                                container.push(flow);
+                                NodeContainer container = getContainer(element);
+                                FlowNode flow = new FlowNode(id, container, next);
+                                container.addNode(flow);
+                                element.push(flow);
                             } else if ("batchlet".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
+                                NodeContainer container = getContainer(element);
                                 StepNode step = new BatchletStepNode(stepAttrs.getFirst().id,
-                                                                     container.getFirst(),
+                                                                     container,
                                                                      stepAttrs.getFirst().next,
                                                                      ref);
-                                container.getFirst().addNode(step);
-                                node.push(step);
+                                container.addNode(step);
+                                element.push(step);
                             } else if ("chunk".equals(localName)) {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
                                 String writerRef = xmlsr.getAttributeValue(null, "writer");
+                                NodeContainer container = getContainer(element);
                                 StepNode step = new ChunkStepNode(stepAttrs.getFirst().id,
-                                                                  container.getFirst(),
+                                                                  container,
                                                                   stepAttrs.getFirst().next,
                                                                   readerRef,
                                                                   processorRef,
                                                                   writerRef);
-                                container.getFirst().addNode(step);
-                                node.push(step);
+                                container.addNode(step);
+                                element.push(step);
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                node.getFirst().getParameters().setProperty(name, value);
+                                getParameterizable(element).getParameters().setProperty(name, value);
+                            } else if ("listener".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                getListenable(element).addListener(new Listener(ref));
                             }
                             break;
                         }
@@ -139,21 +170,14 @@ class JobLoader {
                     case XMLEvent.END_ELEMENT:
                         {
                             String localName = xmlsr.getLocalName();
-                            if ("job".equals(localName)) {
-                                container.pop();
-                                node.pop();
+                            if ("job".equals(localName)
+                                    || "split".equals(localName)
+                                    || "flow".equals(localName)
+                                    || "batchlet".equals(localName)
+                                    || "chunk".equals(localName)) {
+                                element.pop();
                             } else if ("step".equals(localName)) {
                                 stepAttrs.pop();
-                            } else if ("split".equals(localName)) {
-                                container.pop();
-                                node.pop();
-                            } else if ("flow".equals(localName)) {
-                                container.pop();
-                                node.pop();
-                            } else if ("batchlet".equals(localName)) {
-                                node.pop();
-                            } else if ("chunk".equals(localName)) {
-                                node.pop();
                             }
                         }
                         break;

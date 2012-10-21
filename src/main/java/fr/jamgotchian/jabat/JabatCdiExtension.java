@@ -30,6 +30,8 @@ import javax.batch.annotation.Batchlet;
 import javax.batch.annotation.ItemProcessor;
 import javax.batch.annotation.ItemReader;
 import javax.batch.annotation.ItemWriter;
+import javax.batch.annotation.JobListener;
+import javax.batch.annotation.StepListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.enterprise.context.spi.CreationalContext;
@@ -54,7 +56,9 @@ class JabatCdiExtension implements Extension {
             = Collections.unmodifiableList(Arrays.asList(Batchlet.class,
                                                          ItemReader.class,
                                                          ItemProcessor.class,
-                                                         ItemWriter.class));
+                                                         ItemWriter.class,
+                                                         JobListener.class,
+                                                         StepListener.class));
 
     private static final Set<Class<?>> CONTEXT_CLASSES
             = Collections.unmodifiableSet(Sets.newHashSet(JobContext.class,
