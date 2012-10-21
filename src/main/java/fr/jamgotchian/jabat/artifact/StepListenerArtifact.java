@@ -28,16 +28,14 @@ import javax.batch.annotation.BeforeStep;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerArtifact {
-
-    private final Object object;
+public class StepListenerArtifact extends Artifact {
 
     private final Method beforeStepMethod;
 
     private final Method afterStepMethod;
 
     public StepListenerArtifact(Object object) {
-        this.object = object;
+        super(object);
         beforeStepMethod = findAnnotatedMethod(object.getClass(), BeforeStep.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

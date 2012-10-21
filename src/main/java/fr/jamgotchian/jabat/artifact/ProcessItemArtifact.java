@@ -26,16 +26,14 @@ import javax.batch.annotation.ProcessItem;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ProcessItemArtifact {
-
-    private final Object object;
+public class ProcessItemArtifact extends Artifact {
 
     private final Method processItemMethod;
 
     private final Class<?> itemType;
 
     public ProcessItemArtifact(Object object, final Class<?> itemType) {
-        this.object = object;
+        super(object);
         this.itemType = itemType;
         processItemMethod = findAnnotatedMethod(object.getClass(), ProcessItem.class, false, new Predicate<Method>() {
             @Override
@@ -46,10 +44,6 @@ public class ProcessItemArtifact {
             }
         });
         processItemMethod.setAccessible(true);
-    }
-
-    public Object getObject() {
-        return object;
     }
 
     public Class<?> getOutputItemType() {

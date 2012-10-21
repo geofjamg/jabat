@@ -28,16 +28,14 @@ import javax.batch.annotation.BeforeJob;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerArtifact {
-
-    private final Object object;
+public class JobListenerArtifact extends Artifact {
 
     private final Method beforeJobMethod;
 
     private final Method afterJobMethod;
 
     public JobListenerArtifact(Object object) {
-        this.object = object;
+        super(object);
         beforeJobMethod = findAnnotatedMethod(object.getClass(), BeforeJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -60,10 +58,6 @@ public class JobListenerArtifact {
         if (afterJobMethod != null) {
             afterJobMethod.setAccessible(true);
         }
-    }
-
-    public Object getObject() {
-        return object;
     }
 
     public void beforeJob() throws Exception {

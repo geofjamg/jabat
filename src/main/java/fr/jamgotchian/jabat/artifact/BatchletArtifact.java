@@ -28,16 +28,14 @@ import javax.batch.annotation.bachlet.Stop;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifact {
-
-    private final Object object;
+public class BatchletArtifact extends Artifact {
 
     private final Method processMethod;
 
     private final Method stopMethod;
 
     public BatchletArtifact(Object object) {
-        this.object = object;
+        super(object);
         processMethod = findAnnotatedMethod(object.getClass(), Process.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -56,10 +54,6 @@ public class BatchletArtifact {
             }
         });
         stopMethod.setAccessible(true);
-    }
-
-    public Object getObject() {
-        return object;
     }
 
     public String process() throws Exception {

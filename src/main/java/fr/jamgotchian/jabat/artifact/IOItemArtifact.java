@@ -29,16 +29,14 @@ import javax.batch.annotation.Open;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IOItemArtifact {
-
-    protected final Object object;
+public class IOItemArtifact extends Artifact {
 
     private final Method openMethod;
 
     private final Method closeMethod;
 
     public IOItemArtifact(Object object) {
-        this.object = object;
+        super(object);
         openMethod = findAnnotatedMethod(object.getClass(), Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -57,10 +55,6 @@ public class IOItemArtifact {
             }
         });
         closeMethod.setAccessible(true);
-    }
-
-    public Object getObject() {
-        return object;
     }
 
     public void open(Externalizable checkpoint) throws Exception {
