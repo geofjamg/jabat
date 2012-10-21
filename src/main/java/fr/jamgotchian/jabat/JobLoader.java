@@ -23,7 +23,6 @@ import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
 import fr.jamgotchian.jabat.job.Listenable;
 import fr.jamgotchian.jabat.job.Listener;
-import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.job.NodeContainer;
 import fr.jamgotchian.jabat.job.Parameterizable;
 import fr.jamgotchian.jabat.util.JabatException;
@@ -147,13 +146,15 @@ class JobLoader {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
                                 String writerRef = xmlsr.getAttributeValue(null, "writer");
+                                int bufferSize = Integer.valueOf(xmlsr.getAttributeValue(null, "buffer-size"));
                                 NodeContainer container = getContainer(element);
                                 StepNode step = new ChunkStepNode(stepAttrs.getFirst().id,
                                                                   container,
                                                                   stepAttrs.getFirst().next,
                                                                   readerRef,
                                                                   processorRef,
-                                                                  writerRef);
+                                                                  writerRef,
+                                                                  bufferSize);
                                 container.addNode(step);
                                 element.push(step);
                             } else if ("property".equals(localName)) {

@@ -38,6 +38,7 @@ import fr.jamgotchian.jabat.job.Listener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
@@ -181,9 +182,21 @@ class JobInstanceExecutor implements NodeVisitor {
                     writer.open(null);
 
                     Object item;
+                    List<Object> buffer = new ArrayList<Object>(step.getBufferSize());
                     while ((item = reader.readItem()) != null) {
                         Object outputItem = processor.processItem(item);
-                        writer.writeItems(Arrays.asList(outputItem));
+                        buffer.add(outputItem);
+                        // write items if buffer size is zero or the buffer reaches
+                        // the maximum size
+                        if (step.getBufferSize() == 0
+                                || buffer.size() == step.getBufferSize()) {
+                            writer.writeItems(Collections.unmodifiableList(buffer));
+                            buffer.clear();
+                        }
+                    }
+                    // write remaining items
+                    if (buffer.size() > 0) {
+                        writer.writeItems(Collections.unmodifiableList(buffer));
                     }
                 } finally {
                     reader.close();
