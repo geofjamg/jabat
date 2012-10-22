@@ -180,23 +180,32 @@ class JobInstanceExecutor implements NodeVisitor {
                     reader.open(null);
                     writer.open(null);
 
+                    CheckpointAlgorithm algorithm = new ItemCheckpointAlgorithm(step);
+
+                    // TODO start a transaction
+                    algorithm.beginCheckpoint();
+
                     Object item;
                     List<Object> buffer = new ArrayList<Object>(step.getBufferSize());
                     while ((item = reader.readItem()) != null) {
-                        Object outputItem = processor.processItem(item);
-                        buffer.add(outputItem);
-                        // write items if buffer size is zero or the buffer reaches
-                        // the maximum size
-                        if (step.getBufferSize() == 0
-                                || buffer.size() == step.getBufferSize()) {
+                        buffer.add(processor.processItem(item));
+
+                        if (algorithm.isReadyToCheckpoint()) {
                             writer.writeItems(Collections.unmodifiableList(buffer));
                             buffer.clear();
+
+                            algorithm.endCheckpoint();
+                            // TODO commit the transaction
+                            // TODO start a new transaction
+                            algorithm.beginCheckpoint();
                         }
                     }
                     // write remaining items
                     if (buffer.size() > 0) {
                         writer.writeItems(Collections.unmodifiableList(buffer));
                     }
+                    algorithm.endCheckpoint();
+                    // TODO commit the transaction
                 } finally {
                     reader.close();
                     writer.close();
