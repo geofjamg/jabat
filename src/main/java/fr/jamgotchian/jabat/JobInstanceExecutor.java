@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.batch.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,8 +182,9 @@ class JobInstanceExecutor implements NodeVisitor {
                     writer.open(null);
 
                     CheckpointAlgorithm algorithm = new ItemCheckpointAlgorithm(step);
+                    TransactionManagerSPI transaction = new NoTransactionManager();
 
-                    // TODO start a transaction
+                    transaction.begin();
                     algorithm.beginCheckpoint();
 
                     Object item;
@@ -195,8 +197,9 @@ class JobInstanceExecutor implements NodeVisitor {
                             buffer.clear();
 
                             algorithm.endCheckpoint();
-                            // TODO commit the transaction
-                            // TODO start a new transaction
+                            transaction.commit();
+
+                            transaction.begin();
                             algorithm.beginCheckpoint();
                         }
                     }
@@ -205,7 +208,7 @@ class JobInstanceExecutor implements NodeVisitor {
                         writer.writeItems(Collections.unmodifiableList(buffer));
                     }
                     algorithm.endCheckpoint();
-                    // TODO commit the transaction
+                    transaction.commit();
                 } finally {
                     reader.close();
                     writer.close();
