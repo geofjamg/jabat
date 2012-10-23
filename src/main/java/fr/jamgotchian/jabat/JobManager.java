@@ -82,7 +82,7 @@ public class JobManager {
         Job job = loader.getJob(id);
 
         if (job.getFirstChainableNode() == null) {
-            throw new JobStartException("The job " + id + " does not contain any steps");
+            throw new JobStartException("The job " + id + " does not contain any step, flow or split");
         }
 
         // TODO check that the job is not already running
