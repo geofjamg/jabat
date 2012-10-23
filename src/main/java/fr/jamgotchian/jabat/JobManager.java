@@ -81,7 +81,7 @@ public class JobManager {
     public long start(String id, Properties jobParameters) throws NoSuchJobException, JobStartException {
         Job job = loader.getJob(id);
 
-        if (job.getFirstStepNode() == null) {
+        if (job.getFirstChainableNode() == null) {
             throw new JobStartException("The job " + id + " does not contain any steps");
         }
 

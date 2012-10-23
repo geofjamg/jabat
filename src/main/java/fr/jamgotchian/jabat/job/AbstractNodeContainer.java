@@ -51,10 +51,10 @@ public abstract class AbstractNodeContainer extends AbstractNode {
         return node;
     }
 
-    public StepNode getFirstStepNode() {
+    public Node getFirstChainableNode() {
         for (Node node : nodes.values()) {
-            if (node instanceof StepNode) {
-                return (StepNode) node;
+            if (node instanceof Chainable) {
+                return node;
             }
         }
         return null;

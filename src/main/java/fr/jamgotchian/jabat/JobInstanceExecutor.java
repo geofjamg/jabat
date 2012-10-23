@@ -91,7 +91,7 @@ class JobInstanceExecutor implements NodeVisitor {
 
                         // run the job
                         jobExecution.setStatus(Status.STARTED);
-                        job.getFirstStepNode().accept(JobInstanceExecutor.this);
+                        job.getFirstChainableNode().accept(JobInstanceExecutor.this);
 
                         // after job listeners
                         for (JobListenerArtifact artifact : artifacts) {
@@ -239,7 +239,7 @@ class JobInstanceExecutor implements NodeVisitor {
     @Override
     public void visit(FlowNode flow) {
         Thread.currentThread().setName("Flow " + flow.getId());
-        flow.getFirstStepNode().accept(this);
+        flow.getFirstChainableNode().accept(this);
     }
 
     @Override
