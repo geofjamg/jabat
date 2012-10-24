@@ -28,7 +28,7 @@ import javax.batch.annotation.BeforeStep;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerArtifact extends Artifact {
+public class StepListenerArtifact extends BatchArtifact {
 
     private final Method beforeStepMethod;
 

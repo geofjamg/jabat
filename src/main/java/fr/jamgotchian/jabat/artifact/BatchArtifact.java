@@ -16,14 +16,15 @@
 package fr.jamgotchian.jabat.artifact;
 
 /**
+ * Base class for all batch artifacts.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Artifact {
+public class BatchArtifact {
 
     protected final Object object;
 
-    public Artifact(Object object) {
+    protected BatchArtifact(Object object) {
         this.object = object;
     }
 

@@ -28,7 +28,7 @@ import javax.batch.annotation.bachlet.Stop;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifact extends Artifact {
+public class BatchletArtifact extends BatchArtifact {
 
     private final Method processMethod;
 

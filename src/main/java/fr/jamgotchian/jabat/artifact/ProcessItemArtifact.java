@@ -26,7 +26,7 @@ import javax.batch.annotation.ProcessItem;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ProcessItemArtifact extends Artifact {
+public class ProcessItemArtifact extends BatchArtifact {
 
     private final Method processItemMethod;
 

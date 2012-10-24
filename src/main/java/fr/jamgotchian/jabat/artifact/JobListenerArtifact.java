@@ -28,7 +28,7 @@ import javax.batch.annotation.BeforeJob;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerArtifact extends Artifact {
+public class JobListenerArtifact extends BatchArtifact {
 
     private final Method beforeJobMethod;
 
