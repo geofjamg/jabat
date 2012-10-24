@@ -13,18 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.scheduler;
+package fr.jamgotchian.jabat.task;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobScheduler {
+public class ExecutorServiceTaskManager implements TaskManager {
 
-    void submit(Runnable task);
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    void initialize() throws Exception;
+    public ExecutorServiceTaskManager() {
+    }
 
-    void shutdownAndWaitForTermination() throws Exception;
+    @Override
+    public void submit(Runnable task) {
+        executor.submit(task);
+    }
+
+    @Override
+    public void initialize() throws Exception {
+    }
+
+    @Override
+    public void shutdownAndWaitForTermination() throws Exception {
+        executor.shutdown();
+        executor.awaitTermination(30, TimeUnit.SECONDS);
+        executor.shutdownNow();
+    }
 
 }

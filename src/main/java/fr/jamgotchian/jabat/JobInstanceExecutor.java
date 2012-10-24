@@ -52,7 +52,7 @@ class JobInstanceExecutor implements NodeVisitor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobInstanceExecutor.class);
 
-    private final JobManager manager;
+    private final JobManager jobManager;
 
     private Job job;
 
@@ -60,8 +60,8 @@ class JobInstanceExecutor implements NodeVisitor {
 
     private JabatJobExecution jobExecution;
 
-    JobInstanceExecutor(JobManager manager, JabatJobInstance jobInstance) {
-        this.manager = manager;
+    JobInstanceExecutor(JobManager jobManager, JabatJobInstance jobInstance) {
+        this.jobManager = jobManager;
         this.jobInstance = jobInstance;
     }
 
@@ -70,9 +70,9 @@ class JobInstanceExecutor implements NodeVisitor {
         this.job = job;
 
         // create a job execution
-        jobExecution = manager.getRepository().createJobExecution(jobInstance);
+        jobExecution = jobManager.getRepository().createJobExecution(jobInstance);
 
-        manager.getScheduler().submit(new Runnable() {
+        jobManager.getTaskManager().submit(new Runnable() {
             @Override
             public void run() {
                 Thread.currentThread().setName("Job " + job.getId());
@@ -83,7 +83,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            Object obj = manager.getArtifactFactory().create(l.getRef());
+                            Object obj = jobManager.getArtifactFactory().create(l.getRef());
                             JobListenerArtifact artifact = new JobListenerArtifact(obj);
                             artifacts.add(artifact);
                             artifact.beforeJob();
@@ -99,7 +99,7 @@ class JobInstanceExecutor implements NodeVisitor {
                         }
                     } finally {
                         for (JobListenerArtifact artifact : artifacts) {
-                            manager.getArtifactFactory().destroy(artifact.getObject());
+                            jobManager.getArtifactFactory().destroy(artifact.getObject());
                         }
                         JabatThreadContext.getInstance().deactivateJobContext();
                     }
@@ -122,13 +122,13 @@ class JobInstanceExecutor implements NodeVisitor {
     public void visit(BatchletStepNode step) {
         Thread.currentThread().setName("Batchlet " + step.getId());
 
-        JabatStepExecution stepExecution = manager.getRepository().createStepExecution(step, jobExecution);
+        JabatStepExecution stepExecution = jobManager.getRepository().createStepExecution(step, jobExecution);
 
         try {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             Object obj = null;
             try {
-                obj = manager.getArtifactFactory().create(step.getRef());
+                obj = jobManager.getArtifactFactory().create(step.getRef());
 
                 BatchletArtifact artifact = new BatchletArtifact(obj);
                 stepExecution.setBatchletArtifact(artifact);
@@ -138,7 +138,7 @@ class JobInstanceExecutor implements NodeVisitor {
                 String exitStatus = artifact.process();
             } finally {
                 if (obj != null) {
-                    manager.getArtifactFactory().destroy(obj);
+                    jobManager.getArtifactFactory().destroy(obj);
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
@@ -157,7 +157,7 @@ class JobInstanceExecutor implements NodeVisitor {
     public void visit(ChunkStepNode step) {
         Thread.currentThread().setName("Chunk " + step.getId());
 
-        JabatStepExecution stepExecution = manager.getRepository().createStepExecution(step, jobExecution);
+        JabatStepExecution stepExecution = jobManager.getRepository().createStepExecution(step, jobExecution);
 
         try {
             Object readerObj = null;
@@ -165,9 +165,9 @@ class JobInstanceExecutor implements NodeVisitor {
             Object writerObj = null;
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             try {
-                readerObj = manager.getArtifactFactory().create(step.getReaderRef());
-                processorObj = manager.getArtifactFactory().create(step.getProcessorRef());
-                writerObj = manager.getArtifactFactory().create(step.getWriterRef());
+                readerObj = jobManager.getArtifactFactory().create(step.getReaderRef());
+                processorObj = jobManager.getArtifactFactory().create(step.getProcessorRef());
+                writerObj = jobManager.getArtifactFactory().create(step.getWriterRef());
 
                 ReadItemArtifact reader = new ReadItemArtifact(readerObj);
                 Class<?> itemType = reader.getItemType();
@@ -215,13 +215,13 @@ class JobInstanceExecutor implements NodeVisitor {
                 }
             } finally {
                 if (readerObj != null) {
-                    manager.getArtifactFactory().destroy(readerObj);
+                    jobManager.getArtifactFactory().destroy(readerObj);
                 }
                 if (processorObj != null) {
-                    manager.getArtifactFactory().destroy(processorObj);
+                    jobManager.getArtifactFactory().destroy(processorObj);
                 }
                 if (writerObj != null) {
-                    manager.getArtifactFactory().destroy(writerObj);
+                    jobManager.getArtifactFactory().destroy(writerObj);
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
@@ -250,7 +250,7 @@ class JobInstanceExecutor implements NodeVisitor {
             final Iterator<Node> it = nodes.iterator();
             Node firstNode = it.next();
             while (it.hasNext()) {
-                manager.getScheduler().submit(new Runnable() {
+                jobManager.getTaskManager().submit(new Runnable() {
                     @Override
                     public void run() {
                         JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);

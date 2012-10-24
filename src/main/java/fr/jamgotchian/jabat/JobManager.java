@@ -22,7 +22,7 @@ import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
-import fr.jamgotchian.jabat.scheduler.JobScheduler;
+import fr.jamgotchian.jabat.task.TaskManager;
 import java.util.Properties;
 import javax.batch.runtime.JobExecutionNotRunningException;
 import javax.batch.runtime.JobStartException;
@@ -44,22 +44,22 @@ public class JobManager {
 
     private final JobRepository repository = new JobRepository();
 
-    private final JobScheduler scheduler;
+    private final TaskManager taskManager;
 
     private final ArtifactFactory artifactFactory;
 
-    public JobManager(JobScheduler scheduler, ArtifactFactory artifactFactory) {
-        this.scheduler = scheduler;
+    public JobManager(TaskManager taskManager, ArtifactFactory artifactFactory) {
+        this.taskManager = taskManager;
         this.artifactFactory = artifactFactory;
     }
 
     public void initialize() throws Exception {
-        scheduler.initialize();
+        taskManager.initialize();
         artifactFactory.initialize();
     }
 
     public void shutdown() throws Exception {
-        scheduler.shutdownAndWaitForTermination();
+        taskManager.shutdownAndWaitForTermination();
     }
 
     JobLoader getLoader() {
@@ -70,8 +70,8 @@ public class JobManager {
         return repository;
     }
 
-    JobScheduler getScheduler() {
-        return scheduler;
+    TaskManager getTaskManager() {
+        return taskManager;
     }
 
     ArtifactFactory getArtifactFactory() {
