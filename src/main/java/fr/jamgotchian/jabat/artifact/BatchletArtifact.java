@@ -19,8 +19,8 @@ import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.batch.annotation.bachlet.Process;
-import javax.batch.annotation.bachlet.Stop;
+import javax.batch.annotation.Process;
+import javax.batch.annotation.Stop;
 
 /**
  * @Process String <method-name> () throws Exception
