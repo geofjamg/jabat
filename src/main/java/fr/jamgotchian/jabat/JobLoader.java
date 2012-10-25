@@ -21,6 +21,7 @@ import fr.jamgotchian.jabat.job.SplitNode;
 import fr.jamgotchian.jabat.job.FlowNode;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
+import fr.jamgotchian.jabat.job.CheckpointPolicy;
 import fr.jamgotchian.jabat.job.Listenable;
 import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.job.NodeContainer;
@@ -146,8 +147,34 @@ class JobLoader {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
                                 String writerRef = xmlsr.getAttributeValue(null, "writer");
-                                int bufferSize = Integer.valueOf(xmlsr.getAttributeValue(null, "buffer-size"));
-                                String value = xmlsr.getAttributeValue(null, "retry-limit");
+                                CheckpointPolicy checkpointPolicy = CheckpointPolicy.ITEM;
+                                String value = xmlsr.getAttributeValue(null, "checkpoint-policy");
+                                if (value != null) {
+                                    checkpointPolicy = CheckpointPolicy.valueOf(value);
+                                }
+                                value = xmlsr.getAttributeValue(null, "commit-interval");
+                                int commitInterval = 10;
+                                if (value != null) {
+                                    commitInterval = Integer.valueOf(value);
+                                }
+                                int bufferSize;
+                                value = xmlsr.getAttributeValue(null, "buffer-size");
+                                if (value != null) {
+                                    bufferSize = Integer.valueOf(value);
+                                } else {
+                                    switch (checkpointPolicy) {
+                                        case ITEM:
+                                            bufferSize = commitInterval;
+                                            break;
+                                        case TIME:
+                                        case CUSTOM:
+                                            bufferSize = 10;
+                                            break;
+                                        default:
+                                            throw new InternalError();
+                                    }
+                                }
+                                value = xmlsr.getAttributeValue(null, "retry-limit");
                                 int retryLimit = -1;
                                 if (value != null) {
                                     retryLimit = Integer.valueOf(value);
@@ -159,6 +186,8 @@ class JobLoader {
                                                                   readerRef,
                                                                   processorRef,
                                                                   writerRef,
+                                                                  checkpointPolicy,
+                                                                  commitInterval,
                                                                   bufferSize,
                                                                   retryLimit);
                                 container.addNode(step);

@@ -15,38 +15,19 @@
  */
 package fr.jamgotchian.jabat;
 
-import java.util.Date;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TimeCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
+public abstract class BuiltInCheckpointAlgorithm implements CheckpointAlgorithm {
 
-    private Date startTime;
+    protected final int commitInterval;
 
-    public TimeCheckpointAlgorithm(int commitInterval) {
-        super(commitInterval);
-    }
-
-    @Override
-    public int checkpointTimeout(int timeout) throws Exception {
-        // TODO
-        return timeout;
-    }
-
-    @Override
-    public void beginCheckpoint() throws Exception {
-        startTime = new Date();
-    }
-
-    @Override
-    public boolean isReadyToCheckpoint() throws Exception {
-        return (new Date().getTime() - startTime.getTime()) > commitInterval * 1000;
-    }
-
-    @Override
-    public void endCheckpoint() throws Exception {
+    protected BuiltInCheckpointAlgorithm(int commitInterval) {
+        if (commitInterval <= 1) {
+            throw new IllegalArgumentException("Commit interval should be greater or equal than one");
+        }
+        this.commitInterval = commitInterval;
     }
 
 }

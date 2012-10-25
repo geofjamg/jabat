@@ -15,20 +15,16 @@
  */
 package fr.jamgotchian.jabat;
 
-import fr.jamgotchian.jabat.job.ChunkStepNode;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
-
-    private final ChunkStepNode step;
+public class ItemCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
 
     private int itemCount;
 
-    public ItemCheckpointAlgorithm(ChunkStepNode step) {
-        this.step = step;
+    public ItemCheckpointAlgorithm(int commitInterval) {
+        super(commitInterval);
     }
 
     @Override
@@ -44,9 +40,7 @@ public class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 
     @Override
     public boolean isReadyToCheckpoint() throws Exception {
-        // checkpoint if buffer size is zero or the buffer reaches
-        // the maximum size
-        return step.getBufferSize() == 0 || ++itemCount == step.getBufferSize();
+        return ++itemCount == commitInterval;
     }
 
     @Override

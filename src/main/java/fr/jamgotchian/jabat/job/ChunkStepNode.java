@@ -27,16 +27,23 @@ public class ChunkStepNode extends StepNode {
 
     private final String writerRef;
 
+    private final CheckpointPolicy checkpointPolicy;
+
+    private final int commitInterval;
+
     private final int bufferSize;
 
     private final int retryLimit;
 
     public ChunkStepNode(String id, NodeContainer container, String next, String readerRef,
-                         String processorRef, String writerRef, int bufferSize, int retryLimit) {
+                         String processorRef, String writerRef, CheckpointPolicy checkpointPolicy,
+                         int commitInterval, int bufferSize, int retryLimit) {
         super(id, container, next);
         this.readerRef = readerRef;
         this.processorRef = processorRef;
         this.writerRef = writerRef;
+        this.checkpointPolicy = checkpointPolicy;
+        this.commitInterval = commitInterval;
         this.bufferSize = bufferSize;
         this.retryLimit = retryLimit;
     }
@@ -51,6 +58,14 @@ public class ChunkStepNode extends StepNode {
 
     public String getWriterRef() {
         return writerRef;
+    }
+
+    public CheckpointPolicy getCheckpointPolicy() {
+        return checkpointPolicy;
+    }
+
+    public int getCommitInterval() {
+        return commitInterval;
     }
 
     public int getBufferSize() {

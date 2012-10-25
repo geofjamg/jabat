@@ -34,13 +34,17 @@ import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
+import fr.jamgotchian.jabat.job.CheckpointPolicy;
 import fr.jamgotchian.jabat.job.Listener;
+import fr.jamgotchian.jabat.repository.JobRepository;
+import fr.jamgotchian.jabat.task.TaskManager;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.batch.spi.ArtifactFactory;
 import javax.batch.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,14 +70,26 @@ class JobInstanceExecutor implements NodeVisitor {
         this.jobInstance = jobInstance;
     }
 
+    private JobRepository getRepository() {
+        return jobManager.getRepository();
+    }
+
+    private ArtifactFactory getArtifactFactory() {
+        return jobManager.getArtifactFactory();
+    }
+
+    private TaskManager getTaskManager() {
+        return jobManager.getTaskManager();
+    }
+
     @Override
     public void visit(final Job job) {
         this.job = job;
 
         // create a job execution
-        jobExecution = jobManager.getRepository().createJobExecution(jobInstance);
+        jobExecution = getRepository().createJobExecution(jobInstance);
 
-        jobManager.getTaskManager().submit(new Runnable() {
+        getTaskManager().submit(new Runnable() {
             @Override
             public void run() {
                 Thread.currentThread().setName("Job " + job.getId());
@@ -84,7 +100,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            Object obj = jobManager.getArtifactFactory().create(l.getRef());
+                            Object obj = getArtifactFactory().create(l.getRef());
                             JobListenerArtifact artifact = new JobListenerArtifact(obj);
                             artifacts.add(artifact);
                             artifact.beforeJob();
@@ -100,7 +116,7 @@ class JobInstanceExecutor implements NodeVisitor {
                         }
                     } finally {
                         for (JobListenerArtifact artifact : artifacts) {
-                            jobManager.getArtifactFactory().destroy(artifact.getObject());
+                            getArtifactFactory().destroy(artifact.getObject());
                         }
                         JabatThreadContext.getInstance().deactivateJobContext();
                     }
@@ -123,13 +139,13 @@ class JobInstanceExecutor implements NodeVisitor {
     public void visit(BatchletStepNode step) {
         Thread.currentThread().setName("Batchlet " + step.getId());
 
-        JabatStepExecution stepExecution = jobManager.getRepository().createStepExecution(step, jobExecution);
+        JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             Object obj = null;
             try {
-                obj = jobManager.getArtifactFactory().create(step.getRef());
+                obj = getArtifactFactory().create(step.getRef());
 
                 BatchletArtifact artifact = new BatchletArtifact(obj);
                 stepExecution.setBatchletArtifact(artifact);
@@ -139,7 +155,7 @@ class JobInstanceExecutor implements NodeVisitor {
                 String exitStatus = artifact.process();
             } finally {
                 if (obj != null) {
-                    jobManager.getArtifactFactory().destroy(obj);
+                    getArtifactFactory().destroy(obj);
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
@@ -158,7 +174,7 @@ class JobInstanceExecutor implements NodeVisitor {
     public void visit(ChunkStepNode step) {
         Thread.currentThread().setName("Chunk " + step.getId());
 
-        JabatStepExecution stepExecution = jobManager.getRepository().createStepExecution(step, jobExecution);
+        JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
             Object readerObj = null;
@@ -166,9 +182,9 @@ class JobInstanceExecutor implements NodeVisitor {
             Object writerObj = null;
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             try {
-                readerObj = jobManager.getArtifactFactory().create(step.getReaderRef());
-                processorObj = jobManager.getArtifactFactory().create(step.getProcessorRef());
-                writerObj = jobManager.getArtifactFactory().create(step.getWriterRef());
+                readerObj = getArtifactFactory().create(step.getReaderRef());
+                processorObj = getArtifactFactory().create(step.getProcessorRef());
+                writerObj = getArtifactFactory().create(step.getWriterRef());
 
                 ReadItemArtifact reader = new ReadItemArtifact(readerObj);
                 Class<?> itemType = reader.getItemType();
@@ -178,20 +194,36 @@ class JobInstanceExecutor implements NodeVisitor {
 
                 stepExecution.setStatus(Status.STARTED);
 
-                CheckpointAlgorithm algorithm = new ItemCheckpointAlgorithm(step);
+                // select the checkpoint algorithm
+                CheckpointAlgorithm algorithm = null;
+                switch (step.getCheckpointPolicy()) {
+                    case ITEM:
+                        algorithm = new ItemCheckpointAlgorithm(step.getCommitInterval());
+                        break;
+                    case TIME:
+                        algorithm = new TimeCheckpointAlgorithm(step.getCommitInterval());
+                        break;
+                    case CUSTOM:
+                        algorithm = new CustomCheckpointAlgorithm(null); // TODO
+                        break;
+                    default:
+                        throw new InternalError();
+                }
+
                 TransactionManagerSPI transaction = new NoTransactionManager();
 
                 Externalizable readerChkptInfo = null;
                 Externalizable writerChkptInfo = null;
+
+                // start the retry loop
                 boolean completed = false;
                 int retryCount = 0;
                 while (!(completed || (step.getRetryLimit() != -1 && retryCount >= step.getRetryLimit()))) {
+                    reader.open(readerChkptInfo);
                     try {
+                        writer.open(writerChkptInfo);
                         try {
                             try {
-                                reader.open(readerChkptInfo);
-                                writer.open(writerChkptInfo);
-
                                 transaction.begin();
                                 algorithm.beginCheckpoint();
                                 try {
@@ -201,16 +233,21 @@ class JobInstanceExecutor implements NodeVisitor {
                                         buffer.add(processor.processItem(item));
 
                                         if (algorithm.isReadyToCheckpoint()) {
-                                            writer.writeItems(Collections.unmodifiableList(buffer));
-                                            buffer.clear();
-
                                             readerChkptInfo = reader.getCheckpointInfo();
                                             writerChkptInfo = writer.getCheckpointInfo();
+
                                             algorithm.endCheckpoint();
                                             transaction.commit();
 
                                             transaction.begin();
                                             algorithm.beginCheckpoint();
+                                        }
+
+                                        // write items if buffer size is zero or the buffer reaches
+                                        // the maximum size
+                                        if (step.getBufferSize() == 0 || buffer.size() > step.getBufferSize()) {
+                                            writer.writeItems(Collections.unmodifiableList(buffer));
+                                            buffer.clear();
                                         }
                                     }
                                     // write remaining items
@@ -228,21 +265,21 @@ class JobInstanceExecutor implements NodeVisitor {
                                 // retry...
                             }
                         } finally {
-                            reader.close();
+                            writer.close();
                         }
                     } finally {
-                        writer.close();
+                        reader.close();
                     }
                 } // end of retry loop
             } finally {
                 if (readerObj != null) {
-                    jobManager.getArtifactFactory().destroy(readerObj);
+                    getArtifactFactory().destroy(readerObj);
                 }
                 if (processorObj != null) {
-                    jobManager.getArtifactFactory().destroy(processorObj);
+                    getArtifactFactory().destroy(processorObj);
                 }
                 if (writerObj != null) {
-                    jobManager.getArtifactFactory().destroy(writerObj);
+                    getArtifactFactory().destroy(writerObj);
                 }
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
@@ -271,7 +308,7 @@ class JobInstanceExecutor implements NodeVisitor {
             final Iterator<Node> it = nodes.iterator();
             Node firstNode = it.next();
             while (it.hasNext()) {
-                jobManager.getTaskManager().submit(new Runnable() {
+                getTaskManager().submit(new Runnable() {
                     @Override
                     public void run() {
                         JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
