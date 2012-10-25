@@ -15,21 +15,18 @@
  */
 package fr.jamgotchian.jabat;
 
-import fr.jamgotchian.jabat.job.ChunkStepNode;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
+public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
 
-    private final ChunkStepNode step;
+    private final int commitInterval = 10; // 10 seconds
 
-    private int itemCount;
-
-    public ItemCheckpointAlgorithm(ChunkStepNode step) {
-        this.step = step;
-    }
+    private Date startTime;
 
     @Override
     public int checkpointTimeout(int timeout) throws Exception {
@@ -39,14 +36,12 @@ public class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 
     @Override
     public void beginCheckpoint() throws Exception {
-        itemCount = 0;
+        startTime = new Date();
     }
 
     @Override
     public boolean isReadyToCheckpoint() throws Exception {
-        // checkpoint if buffer size is zero or the buffer reaches
-        // the maximum size
-        return step.getBufferSize() == 0 || ++itemCount == step.getBufferSize();
+        return (new Date().getTime() - startTime.getTime()) > commitInterval * 1000;
     }
 
     @Override
