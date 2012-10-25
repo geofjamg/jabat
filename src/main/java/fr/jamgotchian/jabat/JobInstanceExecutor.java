@@ -35,6 +35,7 @@ import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.job.Listener;
+import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -177,42 +178,62 @@ class JobInstanceExecutor implements NodeVisitor {
 
                 stepExecution.setStatus(Status.STARTED);
 
-                try {
-                    reader.open(null);
-                    writer.open(null);
+                CheckpointAlgorithm algorithm = new ItemCheckpointAlgorithm(step);
+                TransactionManagerSPI transaction = new NoTransactionManager();
 
-                    CheckpointAlgorithm algorithm = new ItemCheckpointAlgorithm(step);
-                    TransactionManagerSPI transaction = new NoTransactionManager();
+                Externalizable readerChkptInfo = null;
+                Externalizable writerChkptInfo = null;
+                boolean completed = false;
+                int retryCount = 0;
+                while (!(completed || (step.getRetryLimit() != -1 && retryCount >= step.getRetryLimit()))) {
+                    try {
+                        try {
+                            try {
+                                reader.open(readerChkptInfo);
+                                writer.open(writerChkptInfo);
 
-                    transaction.begin();
-                    algorithm.beginCheckpoint();
+                                transaction.begin();
+                                algorithm.beginCheckpoint();
+                                try {
+                                    Object item;
+                                    List<Object> buffer = new ArrayList<Object>(step.getBufferSize());
+                                    while ((item = reader.readItem()) != null) {
+                                        buffer.add(processor.processItem(item));
 
-                    Object item;
-                    List<Object> buffer = new ArrayList<Object>(step.getBufferSize());
-                    while ((item = reader.readItem()) != null) {
-                        buffer.add(processor.processItem(item));
+                                        if (algorithm.isReadyToCheckpoint()) {
+                                            writer.writeItems(Collections.unmodifiableList(buffer));
+                                            buffer.clear();
 
-                        if (algorithm.isReadyToCheckpoint()) {
-                            writer.writeItems(Collections.unmodifiableList(buffer));
-                            buffer.clear();
+                                            readerChkptInfo = reader.getCheckpointInfo();
+                                            writerChkptInfo = writer.getCheckpointInfo();
+                                            algorithm.endCheckpoint();
+                                            transaction.commit();
 
-                            algorithm.endCheckpoint();
-                            transaction.commit();
-
-                            transaction.begin();
-                            algorithm.beginCheckpoint();
+                                            transaction.begin();
+                                            algorithm.beginCheckpoint();
+                                        }
+                                    }
+                                    // write remaining items
+                                    if (buffer.size() > 0) {
+                                        writer.writeItems(Collections.unmodifiableList(buffer));
+                                    }
+                                } finally {
+                                    algorithm.endCheckpoint();
+                                }
+                                transaction.commit();
+                                completed = true;
+                            } catch (Throwable t) {
+                                transaction.rollback();
+                                retryCount++;
+                                // retry...
+                            }
+                        } finally {
+                            reader.close();
                         }
+                    } finally {
+                        writer.close();
                     }
-                    // write remaining items
-                    if (buffer.size() > 0) {
-                        writer.writeItems(Collections.unmodifiableList(buffer));
-                    }
-                    algorithm.endCheckpoint();
-                    transaction.commit();
-                } finally {
-                    reader.close();
-                    writer.close();
-                }
+                } // end of retry loop
             } finally {
                 if (readerObj != null) {
                     jobManager.getArtifactFactory().destroy(readerObj);

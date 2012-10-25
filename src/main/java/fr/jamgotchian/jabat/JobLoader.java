@@ -147,6 +147,11 @@ class JobLoader {
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
                                 String writerRef = xmlsr.getAttributeValue(null, "writer");
                                 int bufferSize = Integer.valueOf(xmlsr.getAttributeValue(null, "buffer-size"));
+                                String value = xmlsr.getAttributeValue(null, "retry-limit");
+                                int retryLimit = -1;
+                                if (value != null) {
+                                    retryLimit = Integer.valueOf(value);
+                                }
                                 NodeContainer container = getContainer(element);
                                 StepNode step = new ChunkStepNode(stepAttrs.getFirst().id,
                                                                   container,
@@ -154,7 +159,8 @@ class JobLoader {
                                                                   readerRef,
                                                                   processorRef,
                                                                   writerRef,
-                                                                  bufferSize);
+                                                                  bufferSize,
+                                                                  retryLimit);
                                 container.addNode(step);
                                 element.push(step);
                             } else if ("property".equals(localName)) {

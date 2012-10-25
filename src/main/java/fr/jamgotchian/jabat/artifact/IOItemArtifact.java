@@ -20,12 +20,14 @@ import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.batch.annotation.CheckpointInfo;
 import javax.batch.annotation.Close;
 import javax.batch.annotation.Open;
 
 /**
  * @Open void <method-name>(Externalizable checkpoint) throws Exception
  * @Close void <method-name>() throws Exception
+ * @CheckpointInfo Externalizable <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
@@ -34,6 +36,8 @@ class IOItemArtifact extends BatchArtifact {
     private final Method openMethod;
 
     private final Method closeMethod;
+
+    private final Method checkpointInfoMethod;
 
     protected IOItemArtifact(Object object) {
         super(object);
@@ -55,6 +59,15 @@ class IOItemArtifact extends BatchArtifact {
             }
         });
         closeMethod.setAccessible(true);
+        checkpointInfoMethod = findAnnotatedMethod(object.getClass(), CheckpointInfo.class, false, new Predicate<Method>() {
+            @Override
+            public boolean apply(Method m) {
+                return Externalizable.class.isAssignableFrom(m.getReturnType())
+                        && hasZeroParameter(m)
+                        && throwsOneException(m, Exception.class);
+            }
+        });
+        checkpointInfoMethod.setAccessible(true);
     }
 
     public void open(Externalizable checkpoint) throws Exception {
@@ -72,6 +85,18 @@ class IOItemArtifact extends BatchArtifact {
     public void close() throws Exception {
         try {
             closeMethod.invoke(object);
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public Externalizable getCheckpointInfo() throws Exception {
+        try {
+            return (Externalizable) checkpointInfoMethod.invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

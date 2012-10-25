@@ -29,13 +29,16 @@ public class ChunkStepNode extends StepNode {
 
     private final int bufferSize;
 
+    private final int retryLimit;
+
     public ChunkStepNode(String id, NodeContainer container, String next, String readerRef,
-                         String processorRef, String writerRef, int bufferSize) {
+                         String processorRef, String writerRef, int bufferSize, int retryLimit) {
         super(id, container, next);
         this.readerRef = readerRef;
         this.processorRef = processorRef;
         this.writerRef = writerRef;
         this.bufferSize = bufferSize;
+        this.retryLimit = retryLimit;
     }
 
     public String getReaderRef() {
@@ -52,6 +55,10 @@ public class ChunkStepNode extends StepNode {
 
     public int getBufferSize() {
         return bufferSize;
+    }
+
+    public int getRetryLimit() {
+        return retryLimit;
     }
 
     @Override
