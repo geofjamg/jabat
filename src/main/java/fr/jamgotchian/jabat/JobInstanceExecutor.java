@@ -170,6 +170,19 @@ class JobInstanceExecutor implements NodeVisitor {
         }
     }
 
+    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStepNode step) {
+        switch (step.getCheckpointPolicy()) {
+            case ITEM:
+                return new ItemCheckpointAlgorithm(step.getCommitInterval());
+            case TIME:
+                return new TimeCheckpointAlgorithm(step.getCommitInterval());
+            case CUSTOM:
+                return new CustomCheckpointAlgorithm(null); // TODO
+            default:
+                throw new InternalError();
+        }
+    }
+
     @Override
     public void visit(ChunkStepNode step) {
         Thread.currentThread().setName("Chunk " + step.getId());
@@ -195,20 +208,7 @@ class JobInstanceExecutor implements NodeVisitor {
                 stepExecution.setStatus(Status.STARTED);
 
                 // select the checkpoint algorithm
-                CheckpointAlgorithm algorithm = null;
-                switch (step.getCheckpointPolicy()) {
-                    case ITEM:
-                        algorithm = new ItemCheckpointAlgorithm(step.getCommitInterval());
-                        break;
-                    case TIME:
-                        algorithm = new TimeCheckpointAlgorithm(step.getCommitInterval());
-                        break;
-                    case CUSTOM:
-                        algorithm = new CustomCheckpointAlgorithm(null); // TODO
-                        break;
-                    default:
-                        throw new InternalError();
-                }
+                CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step);
 
                 TransactionManagerSPI transaction = new NoTransactionManager();
 
