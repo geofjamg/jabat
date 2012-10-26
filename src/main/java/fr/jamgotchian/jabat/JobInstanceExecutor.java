@@ -34,11 +34,15 @@ import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
-import fr.jamgotchian.jabat.job.CheckpointPolicy;
 import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.task.TaskManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -183,6 +187,35 @@ class JobInstanceExecutor implements NodeVisitor {
         }
     }
 
+    private static Externalizable deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        if (data == null) {
+            return null;
+        }
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(bis);
+        Externalizable externalizable;
+        try {
+            externalizable = (Externalizable) is.readObject();
+        } finally {
+            is.close();
+        }
+        return externalizable;
+    }
+
+    private static byte[] serialize(Externalizable externalizable) throws IOException {
+        if (externalizable == null) {
+            return null;
+        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream os = new ObjectOutputStream(bos);
+        try {
+            os.writeObject(externalizable);
+        } finally {
+            os.close();
+        }
+        return bos.toByteArray();
+    }
+
     @Override
     public void visit(ChunkStepNode step) {
         Thread.currentThread().setName("Chunk " + step.getId());
@@ -212,16 +245,16 @@ class JobInstanceExecutor implements NodeVisitor {
 
                 TransactionManagerSPI transaction = new NoTransactionManager();
 
-                Externalizable readerChkptInfo = null;
-                Externalizable writerChkptInfo = null;
+                byte[] readerChkptData = null;
+                byte[] writerChkptData = null;
 
                 // start the retry loop
                 boolean completed = false;
                 int retryCount = 0;
                 while (!(completed || (step.getRetryLimit() != -1 && retryCount >= step.getRetryLimit()))) {
-                    reader.open(readerChkptInfo);
+                    reader.open(deserialize(readerChkptData));
                     try {
-                        writer.open(writerChkptInfo);
+                        writer.open(deserialize(writerChkptData));
                         try {
                             try {
                                 transaction.begin();
@@ -233,8 +266,8 @@ class JobInstanceExecutor implements NodeVisitor {
                                         buffer.add(processor.processItem(item));
 
                                         if (algorithm.isReadyToCheckpoint()) {
-                                            readerChkptInfo = reader.getCheckpointInfo();
-                                            writerChkptInfo = writer.getCheckpointInfo();
+                                            readerChkptData = serialize(reader.getCheckpointInfo());
+                                            writerChkptData = serialize(writer.getCheckpointInfo());
 
                                             algorithm.endCheckpoint();
                                             transaction.commit();

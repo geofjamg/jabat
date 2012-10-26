@@ -39,7 +39,7 @@ public class MethodUtil {
 
     public static boolean hasOneParameter(Method m, Class<?> type) {
         return m.getParameterTypes().length == 1
-                && type.isAssignableFrom(m.getParameterTypes()[0]);
+                && type == m.getParameterTypes()[0];
     }
 
     public static boolean hasReturnType(Method m, Class<?> type) {

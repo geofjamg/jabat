@@ -24,7 +24,7 @@ public abstract class BuiltInCheckpointAlgorithm implements CheckpointAlgorithm 
     protected final int commitInterval;
 
     protected BuiltInCheckpointAlgorithm(int commitInterval) {
-        if (commitInterval <= 1) {
+        if (commitInterval < 1) {
             throw new IllegalArgumentException("Commit interval should be greater or equal than one");
         }
         this.commitInterval = commitInterval;
