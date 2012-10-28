@@ -19,7 +19,7 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Node extends Parameterizable {
+public interface Node extends Propertiable {
 
     String getId();
 

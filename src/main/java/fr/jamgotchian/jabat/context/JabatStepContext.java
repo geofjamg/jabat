@@ -51,7 +51,7 @@ public class JabatStepContext<T, P extends Externalizable> implements StepContex
 
     @Override
     public Properties getProperties() {
-        return step.getParameters();
+        return step.getProperties();
     }
 
     @Override

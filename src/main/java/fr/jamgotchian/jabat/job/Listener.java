@@ -21,14 +21,17 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Listener implements Parameterizable {
+public class Listener implements Propertiable {
 
     private final String ref;
 
-    private Properties parameters = new Properties();
+    private final Propertiable parent;
 
-    public Listener(String ref) {
+    private Properties properties = new Properties();
+
+    public Listener(String ref, Propertiable parent) {
         this.ref = ref;
+        this.parent = parent;
     }
 
     public String getRef() {
@@ -36,13 +39,27 @@ public class Listener implements Parameterizable {
     }
 
     @Override
-    public Properties getParameters() {
-        return parameters;
+    public Properties getProperties() {
+        return properties;
     }
 
     @Override
-    public void setParameters(Properties parameters) {
-        this.parameters = parameters;
+    public String getProperty(String name) {
+        String value = properties.getProperty(name);
+        if (value == null) {
+            value = parent.getProperty(name);
+        }
+        return value;
+    }
+
+    @Override
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    @Override
+    public void addProperty(String name, String value) {
+        properties.put(name, value);
     }
 
 }

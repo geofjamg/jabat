@@ -60,7 +60,7 @@ public class JabatJobContext<T> implements JobContext<T> {
 
     @Override
     public Properties getProperties() {
-        return job.getParameters();
+        return job.getProperties();
     }
 
     @Override

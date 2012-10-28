@@ -21,14 +21,14 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Parameterizable {
+public interface Propertiable {
 
-    Properties getParameters();
+    Properties getProperties();
 
-    String getParameter(String name);
+    String getProperty(String name);
 
-    void setParameters(Properties parameters);
+    void setProperties(Properties properties);
 
-    void addParameter(String name, String value);
-    
+    void addProperty(String name, String value);
+
 }

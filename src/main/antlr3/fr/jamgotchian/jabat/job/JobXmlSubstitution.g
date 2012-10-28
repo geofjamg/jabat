@@ -16,20 +16,46 @@
 
 grammar JobXmlSubstitution;
 
-attributeValue : valueExpression (QUESTION_MARK_COLON valueExpression)? ;
+@header {
+package fr.jamgotchian.jabat.job;
+}
 
-valueExpression : (SHARP_OPEN_CURLY_BRACKET operatorExpression CLOSE_CURLY_BRACKET)
-                | (STRING_LITERAL OPEN_SQUARE_BRACKET valueExpression CLOSE_SQUARE_BRACKET) ;
+@lexer::header {
+package fr.jamgotchian.jabat.job;
+}
 
-operatorExpression : operator1 | operator2 | operator3 ;
+@members {
+fr.jamgotchian.jabat.job.Parameterizable parameterizable;
+fr.jamgotchian.jabat.job.Propertiable propertiable;
+}
 
-operator1 : JOB_PARAMETERS OPEN_SQUARE_BRACKET singleQuotedStringLiteral CLOSE_SQUARE_BRACKET ;
+attributeValue returns [String value]
+    : n = valueExpression { $value = $n.value; } (QUESTION_MARK_COLON n = valueExpression { $value = ($value == null ? $n.value :$value); })? ;
 
-operator2 : JOB_PROPERTIES OPEN_SQUARE_BRACKET singleQuotedStringLiteral CLOSE_SQUARE_BRACKET ;
+valueExpression returns [String value]
+    : (
+        (SHARP_OPEN_CURLY_BRACKET n = operatorExpression { $value = $n.value; } CLOSE_CURLY_BRACKET)
+        | STRING_LITERAL { $value = $STRING_LITERAL.text; }
+      )
+      (n = valueExpression { $value += $n.value; })? ;
 
-operator3 : SYSTEM_PROPERTIES OPEN_SQUARE_BRACKET singleQuotedStringLiteral CLOSE_SQUARE_BRACKET ;
+operatorExpression returns [String value]
+    : n = operator1 { $value = $n.value; }
+    | n = operator2 { $value = $n.value; }
+    | n = operator3 { $value = $n.value; }
+    ;
 
-singleQuotedStringLiteral : QUOTE STRING_LITERAL QUOTE ;
+operator1 returns [String value] :
+    JOB_PARAMETERS OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = parameterizable.getParameter($n.value); } CLOSE_SQUARE_BRACKET ;
+
+operator2 returns [String value] :
+    JOB_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = propertiable.getProperty($n.value); } CLOSE_SQUARE_BRACKET ;
+
+operator3 returns [String value] :
+    SYSTEM_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = System.getProperty($n.value); } CLOSE_SQUARE_BRACKET ;
+
+singleQuotedStringLiteral returns [String value] :
+    QUOTE STRING_LITERAL { $value = $STRING_LITERAL.text; } QUOTE ;
 
 JOB_PARAMETERS : 'jobParameters' ;
 

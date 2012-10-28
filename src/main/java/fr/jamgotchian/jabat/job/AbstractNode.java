@@ -30,7 +30,7 @@ public abstract class AbstractNode {
 
     private final NodeContainer container;
 
-    private Properties parameters = new Properties();
+    private Properties properties = new Properties();
 
     private final List<Listener> listeners = new ArrayList<Listener>();
 
@@ -43,12 +43,26 @@ public abstract class AbstractNode {
         return id;
     }
 
-    public Properties getParameters() {
-        return parameters;
+    public Properties getProperties() {
+        return properties;
     }
 
-    public void setParameters(Properties parameters) {
-        this.parameters = parameters;
+    public String getProperty(String name) {
+        String value = properties.getProperty(name);
+        if (value == null) {
+            if (container != null) {
+                value = container.getProperty(name);
+            }
+        }
+        return value;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    public void addProperty(String name, String value) {
+        properties.put(name, value);
     }
 
     public NodeContainer getContainer() {

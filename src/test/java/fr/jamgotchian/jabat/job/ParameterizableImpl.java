@@ -21,14 +21,28 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Parameterizable {
+public class ParameterizableImpl implements Parameterizable {
 
-    Properties getParameters();
+    private Properties parameters = new Properties();
 
-    String getParameter(String name);
+    @Override
+    public Properties getParameters() {
+        return parameters;
+    }
 
-    void setParameters(Properties parameters);
+    @Override
+    public String getParameter(String name) {
+        return parameters.getProperty(name);
+    }
 
-    void addParameter(String name, String value);
-    
+    @Override
+    public void setParameters(Properties parameters) {
+        this.parameters = parameters;
+    }
+
+    @Override
+    public void addParameter(String name, String value) {
+        parameters.put(name, value);
+    }
+
 }

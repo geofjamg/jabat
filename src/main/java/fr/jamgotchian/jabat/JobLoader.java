@@ -25,7 +25,7 @@ import fr.jamgotchian.jabat.job.CheckpointPolicy;
 import fr.jamgotchian.jabat.job.Listenable;
 import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.job.NodeContainer;
-import fr.jamgotchian.jabat.job.Parameterizable;
+import fr.jamgotchian.jabat.job.Propertiable;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -82,9 +82,9 @@ class JobLoader {
         }
     }
 
-    private Parameterizable getParameterizable(Deque<Object> element) {
-        if (element.getFirst() instanceof Parameterizable) {
-            return (Parameterizable) element.getFirst();
+    private Propertiable getPropertiable(Deque<Object> element) {
+        if (element.getFirst() instanceof Propertiable) {
+            return (Propertiable) element.getFirst();
         } else {
             throw new JabatException("Element is not a parameterizable");
         }
@@ -195,10 +195,10 @@ class JobLoader {
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                getParameterizable(element).getParameters().setProperty(name, value);
+                                getPropertiable(element).addProperty(name, value);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListener(new Listener(ref));
+                                getListenable(element).addListener(new Listener(ref, getPropertiable(element)));
                             }
                             break;
                         }
