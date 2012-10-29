@@ -1,4 +1,4 @@
-package fr.jamgotchian.jabat;
+package fr.jamgotchian.jabat.cdi;
 
 import java.util.Set;
 import javax.batch.spi.ArtifactFactory;
