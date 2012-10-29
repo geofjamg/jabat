@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat;
-
-import java.util.Date;
+package fr.jamgotchian.jabat.checkpoint;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TimeCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
+public class ItemCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
 
-    private Date startTime;
+    private int itemCount;
 
-    public TimeCheckpointAlgorithm(int commitInterval) {
+    public ItemCheckpointAlgorithm(int commitInterval) {
         super(commitInterval);
     }
 
@@ -37,12 +35,12 @@ public class TimeCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
 
     @Override
     public void beginCheckpoint() throws Exception {
-        startTime = new Date();
+        itemCount = 0;
     }
 
     @Override
     public boolean isReadyToCheckpoint() throws Exception {
-        return (new Date().getTime() - startTime.getTime()) > commitInterval * 1000;
+        return ++itemCount == commitInterval;
     }
 
     @Override

@@ -13,38 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat;
+package fr.jamgotchian.jabat.checkpoint;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemCheckpointAlgorithm extends BuiltInCheckpointAlgorithm {
+public interface CheckpointAlgorithm {
 
-    private int itemCount;
+    int checkpointTimeout(int timeout) throws Exception;
 
-    public ItemCheckpointAlgorithm(int commitInterval) {
-        super(commitInterval);
-    }
+    void beginCheckpoint() throws Exception;
 
-    @Override
-    public int checkpointTimeout(int timeout) throws Exception {
-        // TODO
-        return timeout;
-    }
+    boolean isReadyToCheckpoint() throws Exception;
 
-    @Override
-    public void beginCheckpoint() throws Exception {
-        itemCount = 0;
-    }
-
-    @Override
-    public boolean isReadyToCheckpoint() throws Exception {
-        return ++itemCount == commitInterval;
-    }
-
-    @Override
-    public void endCheckpoint() throws Exception {
-    }
+    void endCheckpoint() throws Exception;
 
 }

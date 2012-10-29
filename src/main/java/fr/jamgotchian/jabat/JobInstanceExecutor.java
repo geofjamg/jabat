@@ -15,6 +15,10 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
+import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
+import fr.jamgotchian.jabat.checkpoint.CustomCheckpointAlgorithm;
+import fr.jamgotchian.jabat.checkpoint.CheckpointAlgorithm;
 import fr.jamgotchian.jabat.artifact.JobArtifactContext;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
