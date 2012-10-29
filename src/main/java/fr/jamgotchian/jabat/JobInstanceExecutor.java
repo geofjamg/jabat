@@ -15,6 +15,9 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.artifact.JobArtifactContext;
+import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
@@ -100,13 +103,11 @@ class JobInstanceExecutor implements NodeVisitor {
 
                 try {
                     JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
-                    List<JobListenerArtifact> artifacts = new ArrayList<JobListenerArtifact>();
+                    JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            Object obj = getArtifactFactory().create(l.getRef());
-                            JobListenerArtifact artifact = new JobListenerArtifact(obj);
-                            artifacts.add(artifact);
+                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef());
                             artifact.beforeJob();
                         }
 
@@ -115,13 +116,11 @@ class JobInstanceExecutor implements NodeVisitor {
                         job.getFirstChainableNode().accept(JobInstanceExecutor.this);
 
                         // after job listeners
-                        for (JobListenerArtifact artifact : artifacts) {
+                        for (JobListenerArtifact artifact : artifactContext.getJobListeners()) {
                             artifact.afterJob();
                         }
                     } finally {
-                        for (JobListenerArtifact artifact : artifacts) {
-                            getArtifactFactory().destroy(artifact.getObject());
-                        }
+                        artifactContext.release();
                         JabatThreadContext.getInstance().deactivateJobContext();
                     }
                 } catch (Throwable t) {
@@ -147,20 +146,16 @@ class JobInstanceExecutor implements NodeVisitor {
 
         try {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
-            Object obj = null;
+            BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                obj = getArtifactFactory().create(step.getRef());
-
-                BatchletArtifact artifact = new BatchletArtifact(obj);
+                BatchletArtifact artifact = artifactContext.create(step.getRef());
                 stepExecution.setBatchletArtifact(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
 
                 String exitStatus = artifact.process();
             } finally {
-                if (obj != null) {
-                    getArtifactFactory().destroy(obj);
-                }
+                artifactContext.release();
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
             jobExecution.setStatus(Status.COMPLETED);
@@ -223,20 +218,14 @@ class JobInstanceExecutor implements NodeVisitor {
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
-            Object readerObj = null;
-            Object processorObj = null;
-            Object writerObj = null;
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+            ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
-                readerObj = getArtifactFactory().create(step.getReaderRef());
-                processorObj = getArtifactFactory().create(step.getProcessorRef());
-                writerObj = getArtifactFactory().create(step.getWriterRef());
-
-                ReadItemArtifact reader = new ReadItemArtifact(readerObj);
-                Class<?> itemType = reader.getItemType();
-                ProcessItemArtifact processor = new ProcessItemArtifact(processorObj, itemType);
-                Class<?> outputItemType = processor.getOutputItemType();
-                WriteItemsArtifact writer = new WriteItemsArtifact(writerObj, outputItemType);
+                artifactContext.create(step.getReaderRef(), step.getProcessorRef(),
+                                       step.getWriterRef());
+                ReadItemArtifact reader = artifactContext.getReader();
+                ProcessItemArtifact processor = artifactContext.getProcessor();
+                WriteItemsArtifact writer = artifactContext.getWriter();
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -305,15 +294,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     }
                 } // end of retry loop
             } finally {
-                if (readerObj != null) {
-                    getArtifactFactory().destroy(readerObj);
-                }
-                if (processorObj != null) {
-                    getArtifactFactory().destroy(processorObj);
-                }
-                if (writerObj != null) {
-                    getArtifactFactory().destroy(writerObj);
-                }
+                artifactContext.release();
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
             jobExecution.setStatus(Status.COMPLETED);
