@@ -15,46 +15,14 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Job extends AbstractNodeContainer implements NodeContainer, Listenable, Parameterizable {
-
-    private final List<Long> instanceIds = new ArrayList<Long>();
-
-    private Properties parameters = new Properties();
+public class Job extends AbstractNodeContainer implements NodeContainer, Listenable {
 
     public Job(String id) {
         super(id, null);
-    }
-
-    public List<Long> getInstanceIds() {
-        return instanceIds;
-    }
-
-    @Override
-    public Properties getParameters() {
-        return parameters;
-    }
-
-    @Override
-    public String getParameter(String name) {
-        return parameters.getProperty(name);
-    }
-
-    @Override
-    public void setParameters(Properties parameters) {
-        this.parameters = parameters;
-    }
-
-    @Override
-    public void addParameter(String name, String value) {
-        parameters.put(name, value);
     }
 
     @Override

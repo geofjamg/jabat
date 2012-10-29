@@ -25,7 +25,7 @@ package fr.jamgotchian.jabat.job;
 }
 
 @members {
-fr.jamgotchian.jabat.job.Parameterizable parameterizable;
+java.util.Properties parameters;
 fr.jamgotchian.jabat.job.Propertiable propertiable;
 }
 
@@ -46,7 +46,7 @@ operatorExpression returns [String value]
     ;
 
 operator1 returns [String value] :
-    JOB_PARAMETERS OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = parameterizable.getParameter($n.value); } CLOSE_SQUARE_BRACKET ;
+    JOB_PARAMETERS OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = (parameters == null ? null : parameters.getProperty($n.value)); } CLOSE_SQUARE_BRACKET ;
 
 operator2 returns [String value] :
     JOB_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = propertiable.getProperty($n.value); } CLOSE_SQUARE_BRACKET ;
@@ -75,6 +75,6 @@ CLOSE_SQUARE_BRACKET : ']' ;
 
 QUOTE : '\'' ;
 
-STRING_LITERAL : ('a'..'z'|'A'..'Z'|'0'..'9'|'.')+ ;
+STRING_LITERAL : ('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'/')+ ;
 
 WS : (' '|'\t'|'\n'|'\r')+ {skip();} ;

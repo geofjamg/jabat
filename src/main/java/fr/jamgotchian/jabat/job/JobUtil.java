@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat.job;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -31,11 +32,8 @@ public class JobUtil {
     private JobUtil() {
     }
 
-    public static String substitute(String value, Parameterizable parameterizable,
+    public static String substitute(String value, Properties parameters,
                                     Propertiable propertiable) throws IOException, RecognitionException {
-        if (parameterizable == null) {
-            throw new IllegalArgumentException("parameterizable is null");
-        }
         if (propertiable == null) {
             throw new IllegalArgumentException("propertiable is null");
         }
@@ -45,7 +43,7 @@ public class JobUtil {
             JobXmlSubstitutionLexer lexer = new JobXmlSubstitutionLexer(new ANTLRInputStream(is, "UTF-8"));
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             JobXmlSubstitutionParser parser = new JobXmlSubstitutionParser(tokens);
-            parser.parameterizable = parameterizable;
+            parser.parameters = parameters;
             parser.propertiable = propertiable;
             result = parser.attributeValue();
         } finally {

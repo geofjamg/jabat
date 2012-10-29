@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
  */
 public class JobUtilTest {
 
-    private Parameterizable parameterizable;
+    private Properties parameters;
 
     private Propertiable propertiable;
 
@@ -35,22 +36,22 @@ public class JobUtilTest {
 
     @Before
     public void setUp() {
-        parameterizable = new ParameterizableImpl();
-        parameterizable.addParameter("infile.name", "in.txt");
+        parameters = new Properties();
+        parameters.setProperty("infile.name", "in.txt");
         propertiable = new PropertiableImpl();
     }
 
     @After
     public void tearDown() {
-        parameterizable = null;
+        parameters = null;
         propertiable = null;
     }
 
     @Test
     public void testSubstitute() throws Exception {
-        assertEquals("in.txt", JobUtil.substitute("in.txt", parameterizable, propertiable));
-        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['infile.name']}", parameterizable, propertiable));
-        assertEquals(null, JobUtil.substitute("#{jobParameters['foo']}", parameterizable, propertiable));
-        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['foo']}?:in.txt", parameterizable, propertiable));
+        assertEquals("in.txt", JobUtil.substitute("in.txt", parameters, propertiable));
+        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['infile.name']}", parameters, propertiable));
+        assertEquals(null, JobUtil.substitute("#{jobParameters['foo']}", parameters, propertiable));
+        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['foo']}?:in.txt", parameters, propertiable));
     }
 }

@@ -13,34 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat;
+package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.job.StepNode;
-import fr.jamgotchian.jabat.job.ChunkStepNode;
-import fr.jamgotchian.jabat.job.SplitNode;
-import fr.jamgotchian.jabat.job.FlowNode;
-import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.BatchletStepNode;
-import fr.jamgotchian.jabat.job.CheckpointPolicy;
-import fr.jamgotchian.jabat.job.Listenable;
-import fr.jamgotchian.jabat.job.Listener;
-import fr.jamgotchian.jabat.job.NodeContainer;
-import fr.jamgotchian.jabat.job.Propertiable;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.Properties;
 import javax.batch.runtime.NoSuchJobException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+import org.antlr.runtime.RecognitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +36,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class JobLoader {
+public class JobXmlLoader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
     private static class StepAttributes {
 
@@ -66,15 +54,10 @@ class JobLoader {
 
     private final JobPath path = new JobPath();
 
-    private final Map<String, Job> jobs = new HashMap<String, Job>();
-
-    JobLoader() {
-        for (File file : path.findJobXml()) {
-            readJobXml(file);
-        }
+    public JobXmlLoader() {
     }
 
-    private NodeContainer getContainer(Deque<Object> element) {
+    private static NodeContainer getContainer(Deque<Object> element) {
         if (element.getFirst() instanceof NodeContainer) {
             return (NodeContainer) element.getFirst();
         } else {
@@ -82,7 +65,7 @@ class JobLoader {
         }
     }
 
-    private Propertiable getPropertiable(Deque<Object> element) {
+    private static Propertiable getPropertiable(Deque<Object> element) {
         if (element.getFirst() instanceof Propertiable) {
             return (Propertiable) element.getFirst();
         } else {
@@ -90,7 +73,7 @@ class JobLoader {
         }
     }
 
-    private Listenable getListenable(Deque<Object> element) {
+    private static Listenable getListenable(Deque<Object> element) {
         if (element.getFirst() instanceof Listenable) {
             return (Listenable) element.getFirst();
         } else {
@@ -98,8 +81,8 @@ class JobLoader {
         }
     }
 
-    private void readJobXml(File file) {
-        LOGGER.debug("Load job xml file " + file);
+    private Job loadFile(File file, String jobId, Properties parameters) {
+        Job job = null;
         try {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(new FileReader(file));
@@ -113,8 +96,10 @@ class JobLoader {
                             String localName = xmlsr.getLocalName();
                             if ("job".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
-                                Job job = new Job(id);
-                                jobs.put(job.getId(), job);
+                                if (!id.equals(jobId)) {
+                                    return null;
+                                }
+                                job = new Job(id);
                                 element.push(job);
                             } else if ("step".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
@@ -195,7 +180,8 @@ class JobLoader {
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                getPropertiable(element).addProperty(name, value);
+                                String substitutedValue = JobUtil.substitute(value, parameters, getPropertiable(element));
+                                getPropertiable(element).addProperty(name, substitutedValue);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 getListenable(element).addListener(new Listener(ref, getPropertiable(element)));
@@ -221,23 +207,25 @@ class JobLoader {
             }
         } catch (FactoryConfigurationError e) {
             LOGGER.error(e.toString(), e);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         } catch (XMLStreamException e) {
             LOGGER.error(e.toString(), e);
+        } catch (RecognitionException e) {
+            LOGGER.error(e.toString(), e);
         }
-    }
-
-    Job getJob(String id) throws NoSuchJobException {
-        Job job = jobs.get(id);
-        if (job == null) {
-            throw new NoSuchJobException("Job " + id + " not found");
-        }
+        LOGGER.debug("Load job xml {} file {}", jobId, file);
         return job;
     }
 
-    Set<String> getJobIds() {
-        return jobs.keySet();
+    public Job load(String id, Properties parameters) throws NoSuchJobException {
+        for (File file : path.findJobXml()) {
+            Job job = loadFile(file, id, parameters);
+            if (job != null) {
+                return job;
+            }
+        }
+        throw new NoSuchJobException("Job " + id + " not found");
     }
 
 }

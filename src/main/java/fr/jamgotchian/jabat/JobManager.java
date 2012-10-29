@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.job.JobXmlLoader;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
@@ -23,7 +24,10 @@ import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
 import fr.jamgotchian.jabat.task.TaskManager;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.batch.runtime.JobExecutionNotRunningException;
 import javax.batch.runtime.JobStartException;
 import javax.batch.runtime.NoSuchJobException;
@@ -40,7 +44,7 @@ public class JobManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
 
-    private final JobLoader loader = new JobLoader();
+    private final JobXmlLoader loader = new JobXmlLoader();
 
     private final JobRepository repository = new JobRepository();
 
@@ -62,10 +66,6 @@ public class JobManager {
         taskManager.shutdownAndWaitForTermination();
     }
 
-    JobLoader getLoader() {
-        return loader;
-    }
-
     JobRepository getRepository() {
         return repository;
     }
@@ -78,8 +78,20 @@ public class JobManager {
         return artifactFactory;
     }
 
-    public long start(String id, Properties jobParameters) throws NoSuchJobException, JobStartException {
-        Job job = loader.getJob(id);
+    public Set<String> getJobIds() {
+        return Collections.unmodifiableSet(repository.getJobIds());
+    }
+
+    public List<Long> getJobInstanceIds(String jobId) throws NoSuchJobException {
+        List<Long> jobInstanceIds = repository.getJobInstanceIds(jobId);
+        if (jobInstanceIds == null) {
+            throw new NoSuchJobException("Job " + jobId + " not found");
+        }
+        return Collections.unmodifiableList(jobInstanceIds);
+    }
+
+    public long start(String id, Properties parameters) throws NoSuchJobException, JobStartException {
+        Job job = loader.load(id, parameters);
 
         if (job.getFirstChainableNode() == null) {
             throw new JobStartException("The job " + id + " does not contain any step, flow or split");

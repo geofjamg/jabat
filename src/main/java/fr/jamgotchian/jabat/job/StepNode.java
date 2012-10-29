@@ -15,9 +15,6 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -25,8 +22,6 @@ import java.util.List;
 public abstract class StepNode extends AbstractNode implements Node, Chainable, Listenable {
 
     private final String next;
-
-    private final List<Long> stepExecutionIds = new ArrayList<Long>();
 
     StepNode(String id, NodeContainer container, String next) {
         super(id, container);
@@ -36,10 +31,6 @@ public abstract class StepNode extends AbstractNode implements Node, Chainable, 
     @Override
     public String getNext() {
         return next;
-    }
-
-    public List<Long> getStepExecutionIds() {
-        return stepExecutionIds;
     }
 
 }

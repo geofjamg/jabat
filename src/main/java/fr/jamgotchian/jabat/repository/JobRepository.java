@@ -17,8 +17,11 @@ package fr.jamgotchian.jabat.repository;
 
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.StepNode;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A job repository contains meta data about currently running processes.
@@ -27,9 +30,13 @@ import java.util.Map;
  */
 public class JobRepository {
 
+    private final Map<String, List<Long>> jobs = new HashMap<String, List<Long>>();
+
     private final Map<Long, JabatJobInstance> jobInstances = new HashMap<Long, JabatJobInstance>();
 
     private final Map<Long, JabatJobExecution> jobExecutions = new HashMap<Long, JabatJobExecution>();
+
+    private final Map<String, List<Long>> steps = new HashMap<String, List<Long>>();
 
     private final Map<Long, JabatStepExecution> stepExecutions = new HashMap<Long, JabatStepExecution>();
 
@@ -43,7 +50,12 @@ public class JobRepository {
         long jobInstanceId = nextJobInstanceId++;
         JabatJobInstance jobInstance = new JabatJobInstance(job.getId(), jobInstanceId);
         jobInstances.put(jobInstanceId, jobInstance);
-        job.getInstanceIds().add(jobInstanceId);
+        List<Long> instanceIds = jobs.get(job.getId());
+        if (instanceIds == null) {
+            instanceIds = new ArrayList<Long>(1);
+            jobs.put(job.getId(), instanceIds);
+        }
+        instanceIds.add(jobInstanceId);
         return jobInstance;
     }
 
@@ -59,9 +71,22 @@ public class JobRepository {
         long stepExecutionId = nextStepExecutionId++;
         JabatStepExecution stepExecution = new JabatStepExecution(stepExecutionId);
         stepExecutions.put(stepExecutionId, stepExecution);
-        step.getStepExecutionIds().add(stepExecutionId);
+        List<Long> stepExecutionIds = steps.get(step.getId());
+        if (stepExecutionIds == null) {
+            stepExecutionIds = new ArrayList<Long>(1);
+            steps.put(step.getId(), stepExecutionIds);
+        }
+        stepExecutionIds.add(stepExecutionId);
         jobExecution.getStepExecutionIds().add(stepExecutionId);
         return stepExecution;
+    }
+
+    public Set<String> getJobIds() {
+        return jobs.keySet();
+    }
+
+    public List<Long> getJobInstanceIds(String id) {
+        return jobs.get(id);
     }
 
     public JabatJobInstance getJobInstance(long id) {

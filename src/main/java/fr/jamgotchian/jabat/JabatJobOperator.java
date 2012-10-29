@@ -45,17 +45,17 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public Set<String> getJobNames() {
-        return manager.getLoader().getJobIds();
+        return manager.getJobIds();
     }
 
     @Override
     public long getJobInstanceCount(String jobName) throws NoSuchJobException {
-        return manager.getLoader().getJob(jobName).getInstanceIds().size();
+        return manager.getJobInstanceIds(jobName).size();
     }
 
     @Override
     public List<Long> getJobInstanceIds(String jobName, int start, int count) throws NoSuchJobException {
-        return Collections.unmodifiableList(manager.getLoader().getJob(jobName).getInstanceIds());
+        return manager.getJobInstanceIds(jobName);
     }
 
     @Override
