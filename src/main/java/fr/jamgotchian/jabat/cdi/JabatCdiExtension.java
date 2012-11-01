@@ -129,6 +129,7 @@ class JabatCdiExtension implements Extension {
                                 String name = at.getAnnotation(Named.class).value();
                                 ArtifactRef ref = JabatThreadContext.getInstance().getActiveStepContext().getStep().getRef(name);
                                 Properties properties = ref.getProperties();
+                                // TODO support the name parameter of @BatchProperty
                                 String value = properties.getProperty(field.getName());
                                 if (value != null) {
                                     field.setAccessible(true);
