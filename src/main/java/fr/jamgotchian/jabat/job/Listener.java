@@ -25,13 +25,10 @@ public class Listener implements Propertiable {
 
     private final String ref;
 
-    private final Propertiable parent;
-
     private Properties properties = new Properties();
 
-    public Listener(String ref, Propertiable parent) {
+    public Listener(String ref) {
         this.ref = ref;
-        this.parent = parent;
     }
 
     public String getRef() {
@@ -45,11 +42,7 @@ public class Listener implements Propertiable {
 
     @Override
     public String getProperty(String name) {
-        String value = properties.getProperty(name);
-        if (value == null) {
-            value = parent.getProperty(name);
-        }
-        return value;
+        return properties.getProperty(name);
     }
 
     @Override

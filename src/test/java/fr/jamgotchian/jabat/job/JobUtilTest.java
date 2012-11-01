@@ -29,7 +29,7 @@ public class JobUtilTest {
 
     private Properties parameters;
 
-    private Propertiable propertiable;
+    private Properties properties;
 
     public JobUtilTest() {
     }
@@ -38,20 +38,20 @@ public class JobUtilTest {
     public void setUp() {
         parameters = new Properties();
         parameters.setProperty("infile.name", "in.txt");
-        propertiable = new PropertiableImpl();
+        properties = new Properties();
     }
 
     @After
     public void tearDown() {
         parameters = null;
-        propertiable = null;
+        properties = null;
     }
 
     @Test
     public void testSubstitute() throws Exception {
-        assertEquals("in.txt", JobUtil.substitute("in.txt", parameters, propertiable));
-        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['infile.name']}", parameters, propertiable));
-        assertEquals(null, JobUtil.substitute("#{jobParameters['foo']}", parameters, propertiable));
-        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['foo']}?:in.txt", parameters, propertiable));
+        assertEquals("in.txt", JobUtil.substitute("in.txt", parameters, properties));
+        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['infile.name']}", parameters, properties));
+        assertEquals(null, JobUtil.substitute("#{jobParameters['foo']}", parameters, properties));
+        assertEquals("in.txt", JobUtil.substitute("#{jobParameters['foo']}?:in.txt", parameters, properties));
     }
 }

@@ -32,11 +32,8 @@ public class JobUtil {
     private JobUtil() {
     }
 
-    public static String substitute(String value, Properties parameters,
-                                    Propertiable propertiable) throws IOException, RecognitionException {
-        if (propertiable == null) {
-            throw new IllegalArgumentException("propertiable is null");
-        }
+    public static String substitute(String value, Properties parameters, Properties properties)
+            throws IOException, RecognitionException {
         String result = null;
         InputStream is = new ByteArrayInputStream(value.getBytes("UTF-8"));
         try {
@@ -44,7 +41,7 @@ public class JobUtil {
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             JobXmlSubstitutionParser parser = new JobXmlSubstitutionParser(tokens);
             parser.parameters = parameters;
-            parser.propertiable = propertiable;
+            parser.properties = properties;
             result = parser.attributeValue();
         } finally {
             is.close();

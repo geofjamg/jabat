@@ -73,6 +73,18 @@ public class JobXmlLoader {
         }
     }
 
+    private static Properties getScopeProperties(Deque<Object> element) {
+        Properties result = new Properties();
+        // accumulate properties in the current scope starting by deeper
+        // nesting level
+        for (Object o : element) {
+            if (o instanceof Propertiable) {
+                result.putAll(((Propertiable) o).getProperties());
+            }
+        }
+        return result;
+    }
+
     private static Listenable getListenable(Deque<Object> element) {
         if (element.getFirst() instanceof Listenable) {
             return (Listenable) element.getFirst();
@@ -180,11 +192,11 @@ public class JobXmlLoader {
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                String substitutedValue = JobUtil.substitute(value, parameters, getPropertiable(element));
+                                String substitutedValue = JobUtil.substitute(value, parameters, getScopeProperties(element));
                                 getPropertiable(element).addProperty(name, substitutedValue);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListener(new Listener(ref, getPropertiable(element)));
+                                getListenable(element).addListener(new Listener(ref));
                             }
                             break;
                         }

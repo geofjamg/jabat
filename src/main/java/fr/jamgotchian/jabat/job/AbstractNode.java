@@ -48,13 +48,7 @@ public abstract class AbstractNode {
     }
 
     public String getProperty(String name) {
-        String value = properties.getProperty(name);
-        if (value == null) {
-            if (container != null) {
-                value = container.getProperty(name);
-            }
-        }
-        return value;
+        return properties.getProperty(name);
     }
 
     public void setProperties(Properties properties) {
