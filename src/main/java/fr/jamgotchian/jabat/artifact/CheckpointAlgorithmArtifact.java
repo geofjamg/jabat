@@ -32,18 +32,22 @@ import javax.batch.annotation.IsReadyToCheckpoint;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmArtifact extends BatchArtifact {
+public class CheckpointAlgorithmArtifact extends Artifact {
 
-    private final Method checkpointTimeoutMethod;
+    private Method checkpointTimeoutMethod;
 
-    private final Method beginCheckpointMethod;
+    private Method beginCheckpointMethod;
 
-    private final Method isReadyToCheckpointMethod;
+    private Method isReadyToCheckpointMethod;
 
-    private final Method endCheckpointMethod;
+    private Method endCheckpointMethod;
 
-    public CheckpointAlgorithmArtifact(Object object) {
-        super(object);
+    public CheckpointAlgorithmArtifact(Object object, String name) {
+        super(object, name);
+    }
+
+    @Override
+    public void initialize() {
         checkpointTimeoutMethod = findAnnotatedMethod(object.getClass(), CheckpointTimeout.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

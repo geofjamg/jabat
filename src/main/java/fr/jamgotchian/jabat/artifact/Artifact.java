@@ -15,32 +15,30 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.batch.spi.ArtifactFactory;
-
 /**
+ * Base class for all batch artifacts.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobArtifactContext extends ArtifactContext {
+public abstract class Artifact {
 
-    private final List<JobListenerArtifact> jobListeners = new ArrayList<JobListenerArtifact>();
+    protected final Object object;
 
-    public JobArtifactContext(ArtifactFactory factory) {
-        super(factory);
+    protected final String name;
+
+    protected Artifact(Object object, String name) {
+        this.object = object;
+        this.name = name;
     }
 
-    public JobListenerArtifact createJobListener(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        JobListenerArtifact artifact = new JobListenerArtifact(obj, ref);
-        addArtifact(artifact);
-        jobListeners.add(artifact);
-        return artifact;
+    public abstract void initialize();
+
+    public Object getObject() {
+        return object;
     }
 
-    public List<JobListenerArtifact> getJobListeners() {
-        return jobListeners;
+    public String getName() {
+        return name;
     }
 
 }

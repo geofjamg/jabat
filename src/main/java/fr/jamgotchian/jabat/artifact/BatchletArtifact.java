@@ -28,14 +28,18 @@ import javax.batch.annotation.Stop;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifact extends BatchArtifact {
+public class BatchletArtifact extends Artifact {
 
-    private final Method processMethod;
+    private Method processMethod;
 
-    private final Method stopMethod;
+    private Method stopMethod;
 
-    public BatchletArtifact(Object object) {
-        super(object);
+    public BatchletArtifact(Object object, String name) {
+        super(object, name);
+    }
+
+    @Override
+    public void initialize() {
         processMethod = findAnnotatedMethod(object.getClass(), Process.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

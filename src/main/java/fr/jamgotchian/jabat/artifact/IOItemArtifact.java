@@ -31,16 +31,20 @@ import javax.batch.annotation.Open;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class IOItemArtifact extends BatchArtifact {
+class IOItemArtifact extends Artifact {
 
-    private final Method openMethod;
+    private Method openMethod;
 
-    private final Method closeMethod;
+    private Method closeMethod;
 
-    private final Method checkpointInfoMethod;
+    private Method checkpointInfoMethod;
 
-    protected IOItemArtifact(Object object) {
-        super(object);
+    protected IOItemArtifact(Object object, String name) {
+        super(object, name);
+    }
+
+    @Override
+    public void initialize() {
         openMethod = findAnnotatedMethod(object.getClass(), Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

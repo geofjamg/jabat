@@ -21,25 +21,17 @@ import javax.batch.spi.ArtifactFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactContext {
-
-    private final ArtifactFactory factory;
-
-    private BatchletArtifact artifact;
+public class BatchletArtifactContext extends ArtifactContext {
 
     public BatchletArtifactContext(ArtifactFactory factory) {
-        this.factory = factory;
+        super(factory);
     }
 
-    public BatchletArtifact create(String ref) throws Exception {
+    public BatchletArtifact createBatchlet(String ref) throws Exception {
         Object obj = factory.create(ref);
-        artifact = new BatchletArtifact(obj);
+        BatchletArtifact artifact = new BatchletArtifact(obj, ref);
+        addArtifact(artifact);
         return artifact;
     }
 
-    public void release() throws Exception {
-        if (artifact != null) {
-            factory.destroy(artifact.getObject());
-        }
-    }
 }

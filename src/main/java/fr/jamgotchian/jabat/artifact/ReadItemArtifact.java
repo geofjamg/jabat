@@ -31,8 +31,8 @@ public class ReadItemArtifact extends IOItemArtifact {
 
     private final Method readItemMethod;
 
-    public ReadItemArtifact(Object object) {
-        super(object);
+    public ReadItemArtifact(Object object, String name) {
+        super(object, name);
         readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

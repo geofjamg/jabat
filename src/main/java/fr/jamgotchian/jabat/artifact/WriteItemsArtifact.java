@@ -35,8 +35,8 @@ public class WriteItemsArtifact extends IOItemArtifact {
 
     private final Class<?> itemType;
 
-    public WriteItemsArtifact(Object object, final Class<?> itemType) {
-        super(object);
+    public WriteItemsArtifact(Object object, String name, final Class<?> itemType) {
+        super(object, name);
         this.itemType = itemType;
         writeItemsMethod = findAnnotatedMethod(object.getClass(), WriteItems.class, false, new Predicate<Method>() {
             @Override

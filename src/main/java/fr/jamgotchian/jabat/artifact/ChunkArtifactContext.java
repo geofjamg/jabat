@@ -21,52 +21,31 @@ import javax.batch.spi.ArtifactFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ChunkArtifactContext {
-
-    private final ArtifactFactory factory;
-
-    private ReadItemArtifact reader;
-
-    private ProcessItemArtifact processor;
-
-    private WriteItemsArtifact writer;
+public class ChunkArtifactContext extends ArtifactContext {
 
     public ChunkArtifactContext(ArtifactFactory factory) {
-        this.factory = factory;
+        super(factory);
     }
 
-    public void create(String readerRef, String processorRef, String writerRef) throws Exception {
-        Object readerObj = factory.create(readerRef);
-        reader = new ReadItemArtifact(readerObj);
-        Class<?> itemType = reader.getItemType();
-        Object processorObj = factory.create(processorRef);
-        processor = new ProcessItemArtifact(processorObj, itemType);
-        Class<?> outputItemType = processor.getOutputItemType();
-        Object writerObj = factory.create(writerRef);
-        writer = new WriteItemsArtifact(writerObj, outputItemType);
-    }
-
-    public ReadItemArtifact getReader() {
+    public ReadItemArtifact createItemReader(String ref) throws Exception {
+        Object obj = factory.create(ref);
+        ReadItemArtifact reader = new ReadItemArtifact(obj, ref);
+        addArtifact(reader);
         return reader;
     }
 
-    public ProcessItemArtifact getProcessor() {
+    public ProcessItemArtifact createItemProcessor(String ref, Class<?> itemType) throws Exception {
+        Object obj = factory.create(ref);
+        ProcessItemArtifact processor = new ProcessItemArtifact(obj, ref, itemType);
+        addArtifact(processor);
         return processor;
     }
 
-    public WriteItemsArtifact getWriter() {
+    public WriteItemsArtifact createItemWriter(String ref, Class<?> outputItemType) throws Exception {
+        Object obj = factory.create(ref);
+        WriteItemsArtifact writer = new WriteItemsArtifact(obj, ref, outputItemType);
+        addArtifact(writer);
         return writer;
     }
 
-    public void release() throws Exception {
-        if (reader != null) {
-            factory.destroy(reader.getObject());
-        }
-        if (processor != null) {
-            factory.destroy(processor.getObject());
-        }
-        if (writer != null) {
-            factory.destroy(writer.getObject());
-        }
-    }
 }

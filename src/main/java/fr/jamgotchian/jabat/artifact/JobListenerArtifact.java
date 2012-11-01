@@ -28,14 +28,18 @@ import javax.batch.annotation.BeforeJob;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerArtifact extends BatchArtifact {
+public class JobListenerArtifact extends Artifact {
 
-    private final Method beforeJobMethod;
+    private Method beforeJobMethod;
 
-    private final Method afterJobMethod;
+    private Method afterJobMethod;
 
-    public JobListenerArtifact(Object object) {
-        super(object);
+    public JobListenerArtifact(Object object, String name) {
+        super(object, name);
+    }
+
+    @Override
+    public void initialize() {
         beforeJobMethod = findAnnotatedMethod(object.getClass(), BeforeJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

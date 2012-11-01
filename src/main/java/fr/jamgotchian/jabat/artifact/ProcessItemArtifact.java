@@ -26,15 +26,19 @@ import javax.batch.annotation.ProcessItem;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ProcessItemArtifact extends BatchArtifact {
+public class ProcessItemArtifact extends Artifact {
 
-    private final Method processItemMethod;
+    private Method processItemMethod;
 
-    private final Class<?> itemType;
+    private Class<?> itemType;
 
-    public ProcessItemArtifact(Object object, final Class<?> itemType) {
-        super(object);
+    public ProcessItemArtifact(Object object, String name, final Class<?> itemType) {
+        super(object, name);
         this.itemType = itemType;
+    }
+
+    @Override
+    public void initialize() {
         processItemMethod = findAnnotatedMethod(object.getClass(), ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

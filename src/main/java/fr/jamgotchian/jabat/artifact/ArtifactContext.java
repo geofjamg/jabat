@@ -15,21 +15,32 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.batch.spi.ArtifactFactory;
+
 /**
- * Base class for all batch artifacts.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchArtifact {
+public abstract class ArtifactContext {
 
-    protected final Object object;
+    protected final ArtifactFactory factory;
 
-    protected BatchArtifact(Object object) {
-        this.object = object;
+    private final List<Artifact> artifacts = new ArrayList<Artifact>();
+
+    public ArtifactContext(ArtifactFactory factory) {
+        this.factory = factory;
     }
 
-    public Object getObject() {
-        return object;
+    protected void addArtifact(Artifact artifact) {
+        artifacts.add(artifact);
+        artifact.initialize();
     }
 
+    public void release() throws Exception {
+        for (Artifact artifact : artifacts) {
+            factory.destroy(artifact.getObject());
+        }
+    }
 }

@@ -20,8 +20,6 @@ import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.CustomCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.CheckpointAlgorithm;
 import fr.jamgotchian.jabat.artifact.JobArtifactContext;
-import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
@@ -36,9 +34,11 @@ import fr.jamgotchian.jabat.job.NodeVisitor;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.artifact.JobListenerArtifact;
 import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
 import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
+import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.job.Listener;
@@ -152,7 +152,7 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifact artifact = artifactContext.create(step.getRef().getName());
+                BatchletArtifact artifact = artifactContext.createBatchlet(step.getRef().getName());
                 stepExecution.setBatchletArtifact(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
@@ -225,12 +225,14 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
-                artifactContext.create(step.getReaderRef().getName(),
-                                       step.getProcessorRef().getName(),
-                                       step.getWriterRef().getName());
-                ReadItemArtifact reader = artifactContext.getReader();
-                ProcessItemArtifact processor = artifactContext.getProcessor();
-                WriteItemsArtifact writer = artifactContext.getWriter();
+                ReadItemArtifact reader
+                        = artifactContext.createItemReader(step.getReaderRef().getName());
+                ProcessItemArtifact processor
+                        = artifactContext.createItemProcessor(step.getProcessorRef().getName(),
+                                                              reader.getItemType());
+                WriteItemsArtifact writer
+                        = artifactContext.createItemWriter(step.getWriterRef().getName(),
+                                                           processor.getOutputItemType());
 
                 stepExecution.setStatus(Status.STARTED);
 
