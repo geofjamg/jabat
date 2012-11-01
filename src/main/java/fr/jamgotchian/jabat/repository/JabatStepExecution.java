@@ -17,7 +17,6 @@ package fr.jamgotchian.jabat.repository;
 
 import fr.jamgotchian.jabat.artifact.BatchletArtifact;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.batch.runtime.StepExecution;
 
 /**
