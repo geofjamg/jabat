@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.job.ArtifactRef;
 import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +35,7 @@ public class WriteItemsArtifact extends IOItemArtifact {
 
     private final Class<?> itemType;
 
-    public WriteItemsArtifact(Object object, ArtifactRef ref, final Class<?> itemType) {
+    public WriteItemsArtifact(Object object, String ref, final Class<?> itemType) {
         super(object, ref);
         this.itemType = itemType;
         writeItemsMethod = findAnnotatedMethod(object.getClass(), WriteItems.class, false, new Predicate<Method>() {

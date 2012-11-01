@@ -15,7 +15,6 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.job.ArtifactRef;
 import java.util.ArrayList;
 import java.util.List;
 import javax.batch.spi.ArtifactFactory;
@@ -32,8 +31,8 @@ public class JobArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public JobListenerArtifact createJobListener(ArtifactRef ref) throws Exception {
-        Object obj = factory.create(ref.getName());
+    public JobListenerArtifact createJobListener(String ref) throws Exception {
+        Object obj = factory.create(ref);
         JobListenerArtifact artifact = new JobListenerArtifact(obj, ref);
         addArtifact(artifact);
         jobListeners.add(artifact);

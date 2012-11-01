@@ -111,7 +111,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef());
+                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef().getName());
                             artifact.beforeJob();
                         }
 
@@ -152,7 +152,7 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifact artifact = artifactContext.createBatchlet(step.getRef());
+                BatchletArtifact artifact = artifactContext.createBatchlet(step.getBatchletRef().getName());
                 stepExecution.setBatchletArtifact(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
@@ -226,12 +226,12 @@ class JobInstanceExecutor implements NodeVisitor {
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
                 ReadItemArtifact reader
-                        = artifactContext.createItemReader(step.getReaderRef());
+                        = artifactContext.createItemReader(step.getReaderRef().getName());
                 ProcessItemArtifact processor
-                        = artifactContext.createItemProcessor(step.getProcessorRef(),
+                        = artifactContext.createItemProcessor(step.getProcessorRef().getName(),
                                                               reader.getItemType());
                 WriteItemsArtifact writer
-                        = artifactContext.createItemWriter(step.getWriterRef(),
+                        = artifactContext.createItemWriter(step.getWriterRef().getName(),
                                                            processor.getOutputItemType());
 
                 stepExecution.setStatus(Status.STARTED);

@@ -77,7 +77,7 @@ public class JobXmlLoader {
         } else if (first instanceof Job) {
             properties = ((Job) first).getProperties();
         } else if (first instanceof BatchletStepNode) {
-            properties = ((BatchletStepNode) first).getRef().getProperties();
+            properties = ((BatchletStepNode) first).getBatchletRef().getProperties();
         } else if (first instanceof ChunkStepNode) {
             ChunkStepNode chunk = (ChunkStepNode) first;
             if (applyTo != null) {

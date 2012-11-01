@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Properties;
 
 /**
@@ -77,6 +78,19 @@ public class ChunkStepNode extends StepNode {
 
     public int getRetryLimit() {
         return retryLimit;
+    }
+
+    @Override
+    public ArtifactRef getRef(String ref) {
+        if (readerRef.getName().equals(ref)) {
+            return readerRef;
+        } else if (processorRef.getName().equals(ref)) {
+            return processorRef;
+        } else if (writerRef.getName().equals(ref)) {
+            return writerRef;
+        } else {
+            throw new JabatException("Artifact " + ref + " not found");
+        }
     }
 
     @Override

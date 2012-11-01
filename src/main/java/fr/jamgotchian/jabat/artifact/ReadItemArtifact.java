@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.job.ArtifactRef;
 import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +31,7 @@ public class ReadItemArtifact extends IOItemArtifact {
 
     private final Method readItemMethod;
 
-    public ReadItemArtifact(Object object, ArtifactRef ref) {
+    public ReadItemArtifact(Object object, String ref) {
         super(object, ref);
         readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
             @Override

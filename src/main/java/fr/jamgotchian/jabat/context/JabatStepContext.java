@@ -39,6 +39,10 @@ public class JabatStepContext<T, P extends Externalizable> implements StepContex
         this.stepExecution = stepExecution;
     }
 
+    public StepNode getStep() {
+        return step;
+    }
+
     @Override
     public String getId() {
         return step.getId();

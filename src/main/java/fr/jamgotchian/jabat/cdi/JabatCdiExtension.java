@@ -17,12 +17,14 @@ package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import com.google.common.collect.Sets;
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.batch.annotation.BatchContext;
 import javax.batch.annotation.BatchProperty;
@@ -95,6 +97,7 @@ class JabatCdiExtension implements Extension {
                     BatchProperty batchProperty = annotatedField.getAnnotation(BatchProperty.class);
                     if (batchProperty != null) {
                         Field field = annotatedField.getJavaMember();
+                        // TODO the field should not be final?
                         if (field.getType() == String.class) {
                             propertyFields.add(field);
                         } else {
@@ -124,6 +127,13 @@ class JabatCdiExtension implements Extension {
                             for (Field field : propertyFields) {
                                 // get the bean name
                                 String name = at.getAnnotation(Named.class).value();
+                                ArtifactRef ref = JabatThreadContext.getInstance().getActiveStepContext().getStep().getRef(name);
+                                Properties properties = ref.getProperties();
+                                String value = properties.getProperty(field.getName());
+                                if (value != null) {
+                                    field.setAccessible(true);
+                                    field.set(instance, value);
+                                }
                             }
                         } catch (IllegalAccessException e) {
                             throw new InjectionException(e);

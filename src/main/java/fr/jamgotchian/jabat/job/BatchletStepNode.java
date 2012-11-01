@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Properties;
 
 /**
@@ -23,16 +24,25 @@ import java.util.Properties;
  */
 public class BatchletStepNode extends StepNode {
 
-    private final ArtifactRef ref;
+    private final ArtifactRef batchletRef;
 
     public BatchletStepNode(String id, NodeContainer container, String next,
-                            Properties properties, ArtifactRef ref) {
+                            Properties properties, ArtifactRef batchletRef) {
         super(id, container, next, properties);
-        this.ref = ref;
+        this.batchletRef = batchletRef;
     }
 
-    public ArtifactRef getRef() {
-        return ref;
+    public ArtifactRef getBatchletRef() {
+        return batchletRef;
+    }
+
+    @Override
+    public ArtifactRef getRef(String ref) {
+        if (this.batchletRef.getName().equals(ref)) {
+            return this.batchletRef;
+        } else {
+            throw new JabatException("Artifact " + ref + " not found");
+        }
     }
 
     @Override

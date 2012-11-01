@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.job.ArtifactRef;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,7 +34,7 @@ public class BatchletArtifact extends Artifact {
 
     private Method stopMethod;
 
-    public BatchletArtifact(Object object, ArtifactRef ref) {
+    public BatchletArtifact(Object object, String ref) {
         super(object, ref);
     }
 

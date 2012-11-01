@@ -15,8 +15,6 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.job.ArtifactRef;
-
 /**
  * Base class for all batch artifacts.
  *
@@ -26,9 +24,9 @@ public abstract class Artifact {
 
     protected final Object object;
 
-    protected final ArtifactRef ref;
+    protected final String ref;
 
-    protected Artifact(Object object, ArtifactRef ref) {
+    protected Artifact(Object object, String ref) {
         this.object = object;
         this.ref = ref;
     }
@@ -39,7 +37,7 @@ public abstract class Artifact {
         return object;
     }
 
-    public ArtifactRef getRef() {
+    public String getRef() {
         return ref;
     }
 
