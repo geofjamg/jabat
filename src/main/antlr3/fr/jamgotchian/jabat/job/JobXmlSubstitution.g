@@ -75,6 +75,6 @@ CLOSE_SQUARE_BRACKET : ']' ;
 
 QUOTE : '\'' ;
 
-STRING_LITERAL : ('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'/')+ ;
+STRING_LITERAL : ('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'/'|'_'|'-')+ ;
 
 WS : (' '|'\t'|'\n'|'\r')+ {skip();} ;
