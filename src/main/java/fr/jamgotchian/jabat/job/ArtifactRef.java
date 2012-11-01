@@ -21,17 +21,18 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Job extends AbstractNodeContainer implements NodeContainer, Propertiable, Listenable {
+public class ArtifactRef implements Propertiable {
+
+    private final String name;
 
     private Properties properties = new Properties();
 
-    public Job(String id) {
-        super(id, null);
+    public ArtifactRef(String name) {
+        this.name = name;
     }
 
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public String getName() {
+        return name;
     }
 
     @Override

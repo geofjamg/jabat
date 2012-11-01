@@ -25,10 +25,6 @@ public interface Propertiable {
 
     Properties getProperties();
 
-    String getProperty(String name);
-
     void setProperties(Properties properties);
-
-    void addProperty(String name, String value);
 
 }

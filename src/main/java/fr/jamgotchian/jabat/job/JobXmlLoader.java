@@ -40,13 +40,15 @@ public class JobXmlLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private static class StepAttributes {
+    private static class StepElement {
 
         public String id;
 
         public String next;
 
-        private StepAttributes(String id, String next) {
+        private final Properties properties = new Properties();
+
+        private StepElement(String id, String next) {
             this.id = id;
             this.next = next;
         }
@@ -65,11 +67,36 @@ public class JobXmlLoader {
         }
     }
 
-    private static Propertiable getPropertiable(Deque<Object> element) {
-        if (element.getFirst() instanceof Propertiable) {
-            return (Propertiable) element.getFirst();
+    private static void setProperty(Deque<Object> element, StepElement stepElt, Properties parameters,
+                                    String name, String value, String applyTo)
+            throws IOException, JabatException, RecognitionException {
+        Properties properties = null;
+        Object first = element.getFirst();
+        if (stepElt != null) {
+            properties = stepElt.properties;
+        } else if (first instanceof Job) {
+            properties = ((Job) first).getProperties();
+        } else if (first instanceof BatchletStepNode) {
+            properties = ((BatchletStepNode) first).getRef().getProperties();
+        } else if (first instanceof ChunkStepNode) {
+            ChunkStepNode chunk = (ChunkStepNode) first;
+            if (applyTo != null) {
+                if (applyTo.equals(chunk.getReaderRef().getName())) {
+                    properties = chunk.getReaderRef().getProperties();
+                } else if (applyTo.equals(chunk.getProcessorRef().getName())) {
+                    properties = chunk.getProcessorRef().getProperties();
+                } else if (applyTo.equals(chunk.getWriterRef().getName())) {
+                    properties = chunk.getWriterRef().getProperties();
+                }
+            }
+        } else if (first instanceof Listener) {
+            ((Listener) first).getRef().getProperties();
         } else {
-            throw new JabatException("Element is not a parameterizable");
+            throw new JabatException("Cannot set the property");
+        }
+        if (properties != null) {
+            String substitutedValue = JobUtil.substitute(value, parameters, getScopeProperties(element));
+            properties.setProperty(name, substitutedValue);
         }
     }
 
@@ -99,7 +126,7 @@ public class JobXmlLoader {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(new FileReader(file));
             Deque<Object> element = new ArrayDeque<Object>(1);
-            Deque<StepAttributes> stepAttrs = new ArrayDeque<StepAttributes>(1);
+            StepElement stepElt = null;
             while (xmlsr.hasNext()) {
                 int eventType = xmlsr.next();
                 switch (eventType) {
@@ -116,7 +143,7 @@ public class JobXmlLoader {
                             } else if ("step".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                stepAttrs.push(new StepAttributes(id, next));
+                                stepElt = new StepElement(id, next);
                             } else if ("split".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
@@ -134,12 +161,14 @@ public class JobXmlLoader {
                             } else if ("batchlet".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 NodeContainer container = getContainer(element);
-                                StepNode step = new BatchletStepNode(stepAttrs.getFirst().id,
+                                StepNode step = new BatchletStepNode(stepElt.id,
                                                                      container,
-                                                                     stepAttrs.getFirst().next,
-                                                                     ref);
+                                                                     stepElt.next,
+                                                                     stepElt.properties,
+                                                                     new ArtifactRef(ref));
                                 container.addNode(step);
                                 element.push(step);
+                                stepElt = null;
                             } else if ("chunk".equals(localName)) {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
@@ -177,26 +206,28 @@ public class JobXmlLoader {
                                     retryLimit = Integer.valueOf(value);
                                 }
                                 NodeContainer container = getContainer(element);
-                                StepNode step = new ChunkStepNode(stepAttrs.getFirst().id,
+                                StepNode step = new ChunkStepNode(stepElt.id,
                                                                   container,
-                                                                  stepAttrs.getFirst().next,
-                                                                  readerRef,
-                                                                  processorRef,
-                                                                  writerRef,
+                                                                  stepElt.next,
+                                                                  stepElt.properties,
+                                                                  new ArtifactRef(readerRef),
+                                                                  new ArtifactRef(processorRef),
+                                                                  new ArtifactRef(writerRef),
                                                                   checkpointPolicy,
                                                                   commitInterval,
                                                                   bufferSize,
                                                                   retryLimit);
                                 container.addNode(step);
                                 element.push(step);
+                                stepElt = null;
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                String substitutedValue = JobUtil.substitute(value, parameters, getScopeProperties(element));
-                                getPropertiable(element).addProperty(name, substitutedValue);
+                                String applyTo = xmlsr.getAttributeValue(null, "applyTo");
+                                setProperty(element, stepElt, parameters, name, value, applyTo);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListener(new Listener(ref));
+                                getListenable(element).addListener(new Listener(new ArtifactRef(ref)));
                             }
                             break;
                         }
@@ -210,8 +241,6 @@ public class JobXmlLoader {
                                     || "batchlet".equals(localName)
                                     || "chunk".equals(localName)) {
                                 element.pop();
-                            } else if ("step".equals(localName)) {
-                                stepAttrs.pop();
                             }
                         }
                         break;

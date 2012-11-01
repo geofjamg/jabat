@@ -15,17 +15,19 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class ChunkStepNode extends StepNode {
 
-    private final String readerRef;
+    private final ArtifactRef readerRef;
 
-    private final String processorRef;
+    private final ArtifactRef processorRef;
 
-    private final String writerRef;
+    private final ArtifactRef writerRef;
 
     private final CheckpointPolicy checkpointPolicy;
 
@@ -35,10 +37,11 @@ public class ChunkStepNode extends StepNode {
 
     private final int retryLimit;
 
-    public ChunkStepNode(String id, NodeContainer container, String next, String readerRef,
-                         String processorRef, String writerRef, CheckpointPolicy checkpointPolicy,
-                         int commitInterval, int bufferSize, int retryLimit) {
-        super(id, container, next);
+    public ChunkStepNode(String id, NodeContainer container, String next, Properties properties,
+                         ArtifactRef readerRef, ArtifactRef processorRef, ArtifactRef writerRef,
+                         CheckpointPolicy checkpointPolicy, int commitInterval,
+                         int bufferSize, int retryLimit) {
+        super(id, container, next, properties);
         this.readerRef = readerRef;
         this.processorRef = processorRef;
         this.writerRef = writerRef;
@@ -48,15 +51,15 @@ public class ChunkStepNode extends StepNode {
         this.retryLimit = retryLimit;
     }
 
-    public String getReaderRef() {
+    public ArtifactRef getReaderRef() {
         return readerRef;
     }
 
-    public String getProcessorRef() {
+    public ArtifactRef getProcessorRef() {
         return processorRef;
     }
 
-    public String getWriterRef() {
+    public ArtifactRef getWriterRef() {
         return writerRef;
     }
 

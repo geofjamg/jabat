@@ -111,7 +111,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef());
+                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef().getName());
                             artifact.beforeJob();
                         }
 
@@ -152,7 +152,7 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifact artifact = artifactContext.create(step.getRef());
+                BatchletArtifact artifact = artifactContext.create(step.getRef().getName());
                 stepExecution.setBatchletArtifact(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
@@ -225,8 +225,9 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
-                artifactContext.create(step.getReaderRef(), step.getProcessorRef(),
-                                       step.getWriterRef());
+                artifactContext.create(step.getReaderRef().getName(),
+                                       step.getProcessorRef().getName(),
+                                       step.getWriterRef().getName());
                 ReadItemArtifact reader = artifactContext.getReader();
                 ProcessItemArtifact processor = artifactContext.getProcessor();
                 WriteItemsArtifact writer = artifactContext.getWriter();

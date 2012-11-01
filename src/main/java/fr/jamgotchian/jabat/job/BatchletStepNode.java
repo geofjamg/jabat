@@ -15,20 +15,23 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BatchletStepNode extends StepNode {
 
-    private final String ref;
+    private final ArtifactRef ref;
 
-    public BatchletStepNode(String id, NodeContainer container, String next, String ref) {
-        super(id, container, next);
+    public BatchletStepNode(String id, NodeContainer container, String next,
+                            Properties properties, ArtifactRef ref) {
+        super(id, container, next, properties);
         this.ref = ref;
     }
 
-    public String getRef() {
+    public ArtifactRef getRef() {
         return ref;
     }
 

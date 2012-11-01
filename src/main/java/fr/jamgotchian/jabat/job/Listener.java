@@ -15,44 +15,20 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Listener implements Propertiable {
+public class Listener {
 
-    private final String ref;
+    private final ArtifactRef ref;
 
-    private Properties properties = new Properties();
-
-    public Listener(String ref) {
+    public Listener(ArtifactRef ref) {
         this.ref = ref;
     }
 
-    public String getRef() {
+    public ArtifactRef getRef() {
         return ref;
-    }
-
-    @Override
-    public Properties getProperties() {
-        return properties;
-    }
-
-    @Override
-    public String getProperty(String name) {
-        return properties.getProperty(name);
-    }
-
-    @Override
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }
-
-    @Override
-    public void addProperty(String name, String value) {
-        properties.put(name, value);
     }
 
 }
