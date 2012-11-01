@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,8 +33,8 @@ public class ProcessItemArtifact extends Artifact {
 
     private Class<?> itemType;
 
-    public ProcessItemArtifact(Object object, String name, final Class<?> itemType) {
-        super(object, name);
+    public ProcessItemArtifact(Object object, ArtifactRef ref, final Class<?> itemType) {
+        super(object, ref);
         this.itemType = itemType;
     }
 

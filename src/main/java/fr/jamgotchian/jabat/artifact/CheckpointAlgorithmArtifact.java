@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,8 +43,8 @@ public class CheckpointAlgorithmArtifact extends Artifact {
 
     private Method endCheckpointMethod;
 
-    public CheckpointAlgorithmArtifact(Object object, String name) {
-        super(object, name);
+    public CheckpointAlgorithmArtifact(Object object, ArtifactRef ref) {
+        super(object, ref);
     }
 
     @Override

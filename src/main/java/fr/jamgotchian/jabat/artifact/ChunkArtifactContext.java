@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -27,22 +28,22 @@ public class ChunkArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public ReadItemArtifact createItemReader(String ref) throws Exception {
-        Object obj = factory.create(ref);
+    public ReadItemArtifact createItemReader(ArtifactRef ref) throws Exception {
+        Object obj = factory.create(ref.getName());
         ReadItemArtifact reader = new ReadItemArtifact(obj, ref);
         addArtifact(reader);
         return reader;
     }
 
-    public ProcessItemArtifact createItemProcessor(String ref, Class<?> itemType) throws Exception {
-        Object obj = factory.create(ref);
+    public ProcessItemArtifact createItemProcessor(ArtifactRef ref, Class<?> itemType) throws Exception {
+        Object obj = factory.create(ref.getName());
         ProcessItemArtifact processor = new ProcessItemArtifact(obj, ref, itemType);
         addArtifact(processor);
         return processor;
     }
 
-    public WriteItemsArtifact createItemWriter(String ref, Class<?> outputItemType) throws Exception {
-        Object obj = factory.create(ref);
+    public WriteItemsArtifact createItemWriter(ArtifactRef ref, Class<?> outputItemType) throws Exception {
+        Object obj = factory.create(ref.getName());
         WriteItemsArtifact writer = new WriteItemsArtifact(obj, ref, outputItemType);
         addArtifact(writer);
         return writer;

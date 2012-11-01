@@ -19,13 +19,13 @@ import fr.jamgotchian.jabat.context.JabatThreadContext;
 import com.google.common.collect.Sets;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.batch.annotation.BatchContext;
+import javax.batch.annotation.BatchProperty;
 import javax.batch.annotation.Batchlet;
 import javax.batch.annotation.ItemProcessor;
 import javax.batch.annotation.ItemReader;
@@ -45,6 +45,7 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.inject.Named;
 
 /**
  *
@@ -75,20 +76,30 @@ class JabatCdiExtension implements Extension {
 
     public <X> void injectContext(@Observes ProcessInjectionTarget<X> pit) {
         final InjectionTarget<X> it = pit.getInjectionTarget();
-        AnnotatedType<X> at = pit.getAnnotatedType();
-
+        final AnnotatedType<X> at = pit.getAnnotatedType();
         for (Class<? extends Annotation> artifactAnnotation : ARTIFACT_ANNOTATIONS) {
             if (at.isAnnotationPresent(artifactAnnotation)) {
-                final Map<Class<?>, Field> fieldsToInject = new HashMap<Class<?>, Field>();
+                final List<Field> contextFields = new ArrayList<Field>();
+                final List<Field> propertyFields = new ArrayList<Field>();
                 for (AnnotatedField<? super X> annotatedField : at.getFields()) {
                     BatchContext batchContext = annotatedField.getAnnotation(BatchContext.class);
                     if  (batchContext != null) {
                         Field field = annotatedField.getJavaMember();
                         if (CONTEXT_CLASSES.contains(field.getType())) {
-                            fieldsToInject.put(field.getType(), field);
+                            contextFields.add(field);
                         } else {
                             pit.addDefinitionError( new InjectionException("Field annotated with "
                                     + BatchContext.class + " should be of type " + CONTEXT_CLASSES));
+                        }
+                    }
+                    BatchProperty batchProperty = annotatedField.getAnnotation(BatchProperty.class);
+                    if (batchProperty != null) {
+                        Field field = annotatedField.getJavaMember();
+                        if (field.getType() == String.class) {
+                            propertyFields.add(field);
+                        } else {
+                            pit.addDefinitionError( new InjectionException("Field annotated with "
+                                    + BatchProperty.class + " should be of type " + String.class));
                         }
                     }
                 }
@@ -99,9 +110,8 @@ class JabatCdiExtension implements Extension {
                     public void inject(X instance, CreationalContext<X> ctx) {
                         it.inject(instance, ctx);
                         try {
-                            for (Map.Entry<Class<?>, Field> entry : fieldsToInject.entrySet()) {
-                                Class<?> contextClass = entry.getKey();
-                                Field field = entry.getValue();
+                            for (Field field : contextFields) {
+                                Class<?> contextClass = field.getType();
                                 field.setAccessible(true);
                                 if (contextClass == JobContext.class) {
                                     field.set(instance, JabatThreadContext.getInstance().getActiveJobContext());
@@ -110,6 +120,10 @@ class JabatCdiExtension implements Extension {
                                 } else {
                                     throw new InternalError();
                                 }
+                            }
+                            for (Field field : propertyFields) {
+                                // get the bean name
+                                String name = at.getAnnotation(Named.class).value();
                             }
                         } catch (IllegalAccessException e) {
                             throw new InjectionException(e);

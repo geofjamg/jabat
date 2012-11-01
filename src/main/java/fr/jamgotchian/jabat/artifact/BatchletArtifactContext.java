@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -27,8 +28,8 @@ public class BatchletArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public BatchletArtifact createBatchlet(String ref) throws Exception {
-        Object obj = factory.create(ref);
+    public BatchletArtifact createBatchlet(ArtifactRef ref) throws Exception {
+        Object obj = factory.create(ref.getName());
         BatchletArtifact artifact = new BatchletArtifact(obj, ref);
         addArtifact(artifact);
         return artifact;

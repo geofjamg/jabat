@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.jabat.job.ArtifactRef;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
@@ -39,8 +40,8 @@ class IOItemArtifact extends Artifact {
 
     private Method checkpointInfoMethod;
 
-    protected IOItemArtifact(Object object, String name) {
-        super(object, name);
+    protected IOItemArtifact(Object object, ArtifactRef ref) {
+        super(object, ref);
     }
 
     @Override
