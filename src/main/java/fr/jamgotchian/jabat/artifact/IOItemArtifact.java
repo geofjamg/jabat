@@ -50,7 +50,7 @@ class IOItemArtifact extends BatchArtifact {
             }
         });
         openMethod.setAccessible(true);
-        closeMethod = findAnnotatedMethod(object.getClass(), Close.class, false, new Predicate<Method>() {
+        closeMethod = findAnnotatedMethod(object.getClass(), Close.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -58,7 +58,9 @@ class IOItemArtifact extends BatchArtifact {
                         && throwsOneException(m, Exception.class);
             }
         });
-        closeMethod.setAccessible(true);
+        if (closeMethod != null) {
+            closeMethod.setAccessible(true);
+        }
         checkpointInfoMethod = findAnnotatedMethod(object.getClass(), CheckpointInfo.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -84,7 +86,9 @@ class IOItemArtifact extends BatchArtifact {
 
     public void close() throws Exception {
         try {
-            closeMethod.invoke(object);
+            if (closeMethod != null) {
+                closeMethod.invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
