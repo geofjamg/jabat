@@ -15,19 +15,21 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class Decision extends AbstractNode implements Node {
 
-    public Decision(String id, NodeContainer container) {
-        super(id, container);
+    public Decision(String id, Properties properties, NodeContainer container) {
+        super(id, properties, container);
     }
 
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public <A> void accept(NodeVisitor<A> visitor, A arg) {
+        visitor.visit(this, arg);
     }
 
 }

@@ -15,22 +15,24 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class Step extends AbstractNode implements Node, Chainable, Propertiable, Listenable {
+public abstract class Step extends AbstractNode implements Node, Chainable, Listenable {
 
     private final String next;
 
-    private Properties properties;
+    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
 
     Step(String id, NodeContainer container, String next, Properties properties) {
-        super(id, container);
+        super(id, properties, container);
         this.next = next;
-        this.properties = properties;
     }
 
     @Override
@@ -39,15 +41,15 @@ public abstract class Step extends AbstractNode implements Node, Chainable, Prop
     }
 
     @Override
-    public Properties getProperties() {
-        return properties;
+    public void addListenerArtifact(Artifact artifact) {
+        listenerArtifacts.add(artifact);
     }
 
     @Override
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public Collection<Artifact> getListenerArtifacts() {
+        return listenerArtifacts;
     }
-
+    
     public abstract Artifact getArtifact(String ref);
 
 }

@@ -19,16 +19,7 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Listener {
-
-    private final Artifact artifact;
-
-    public Listener(Artifact artifact) {
-        this.artifact = artifact;
-    }
-
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
+public interface Setter<T> {
+    
+    void set(T value);
 }

@@ -22,32 +22,36 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletStep extends Step {
+public class ArtifactBuilder<P> {
 
-    private final Artifact artifact;
+    private final P parent;
 
-    BatchletStep(String id, NodeContainer container, String next,
-                 Properties properties, Artifact artifact) {
-        super(id, container, next, properties);
-        this.artifact = artifact;
+    private final Setter<Artifact> setter;
+    
+    private String ref;
+        
+    private final Properties properties = new Properties();
+
+    public ArtifactBuilder(P parent, Setter<Artifact> setter) {
+        this.parent = parent;
+        this.setter = setter;
     }
 
-    public Artifact getArtifact() {
-        return artifact;
+    public ArtifactBuilder<P> setRef(String ref) {
+        this.ref = ref;
+        return this;
     }
 
-    @Override
-    public Artifact getArtifact(String ref) {
-        if (this.artifact.getRef().equals(ref)) {
-            return this.artifact;
-        } else {
-            throw new JabatException("Artifact " + ref + " not found");
+    public ArtifactBuilder<P> setProperty(String name, String value) {
+        properties.setProperty(name, value);
+        return this;
+    }
+
+    public P build() {
+        if (ref == null) {
+            throw new JabatException("Artifact ref is not set");
         }
+        setter.set(new Artifact(ref, properties));
+        return parent;
     }
-
-    @Override
-    public <A> void accept(NodeVisitor<A> visitor, A arg) {
-        visitor.visit(this, arg);
-    }
-
 }

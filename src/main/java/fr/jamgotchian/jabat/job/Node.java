@@ -19,11 +19,11 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Node {
+public interface Node extends Propertiable {
 
     String getId();
 
     NodeContainer getContainer();
 
-    void accept(NodeVisitor visitor);
+    <A> void accept(NodeVisitor<A> visitor, A arg);
 }

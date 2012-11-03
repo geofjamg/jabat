@@ -27,8 +27,13 @@ public class Artifact implements Propertiable {
 
     private Properties properties = new Properties();
 
-    public Artifact(String ref) {
+    public Artifact(String ref, Properties properties) {
         this.ref = ref;
+        this.properties = properties;
+    }
+
+    public Artifact(String ref) {
+        this(ref, new Properties());
     }
 
     public String getRef() {

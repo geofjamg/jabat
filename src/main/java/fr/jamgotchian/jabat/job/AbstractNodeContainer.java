@@ -19,6 +19,7 @@ import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -28,8 +29,8 @@ public abstract class AbstractNodeContainer extends AbstractNode {
 
     protected final Map<String, Node> nodes = new LinkedHashMap<String, Node>();
 
-    public AbstractNodeContainer(String id, NodeContainer container) {
-        super(id, container);
+    public AbstractNodeContainer(String id, Properties properties, NodeContainer container) {
+        super(id, properties, container);
     }
 
     public void addNode(Node node) {

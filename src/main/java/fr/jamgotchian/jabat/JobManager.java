@@ -103,7 +103,7 @@ public class JobManager {
         JabatJobInstance jobInstance = repository.createJobInstance(job);
 
         // start the execution
-        job.accept(new JobInstanceExecutor(this, jobInstance));
+        job.accept(new JobInstanceExecutor(this, jobInstance), null);
 
         return jobInstance.getInstanceId();
     }

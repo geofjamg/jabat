@@ -21,7 +21,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Propertiable {
+interface Propertiable {
 
     Properties getProperties();
 

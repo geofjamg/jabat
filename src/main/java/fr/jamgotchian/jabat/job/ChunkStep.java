@@ -38,10 +38,10 @@ public class ChunkStep extends Step {
 
     private final int retryLimit;
 
-    public ChunkStep(String id, NodeContainer container, String next, Properties properties,
-                     Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
-                     CheckpointPolicy checkpointPolicy, int commitInterval,
-                     int bufferSize, int retryLimit) {
+    ChunkStep(String id, NodeContainer container, String next, Properties properties,
+              Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
+              CheckpointPolicy checkpointPolicy, int commitInterval,
+              int bufferSize, int retryLimit) {
         super(id, container, next, properties);
         this.readerArtifact = readerArtifact;
         this.processorArtifact = processorArtifact;
@@ -94,8 +94,8 @@ public class ChunkStep extends Step {
     }
 
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public <A> void accept(NodeVisitor<A> visitor, A arg) {
+        visitor.visit(this, arg);
     }
 
 }

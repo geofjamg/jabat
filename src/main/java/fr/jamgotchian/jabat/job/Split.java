@@ -15,16 +15,18 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Split extends AbstractNodeContainer implements NodeContainer, Chainable, Listenable {
+public class Split extends AbstractNodeContainer implements NodeContainer, Chainable {
 
     private final String next;
-
+    
     public Split(String id, NodeContainer container, String next) {
-        super(id, container);
+        super(id, new Properties(), container);
         this.next = next;
     }
 
@@ -32,10 +34,10 @@ public class Split extends AbstractNodeContainer implements NodeContainer, Chain
     public String getNext() {
         return next;
     }
-
+    
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public <A> void accept(NodeVisitor<A> visitor, A arg) {
+        visitor.visit(this, arg);
     }
 
 }

@@ -19,18 +19,18 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface NodeVisitor {
+public interface NodeVisitor<A> {
 
-    void visit(Job job);
+    void visit(Job job, A arg);
 
-    void visit(BatchletStep step);
+    void visit(BatchletStep step, A arg);
 
-    void visit(ChunkStep step);
+    void visit(ChunkStep step, A arg);
 
-    void visit(Flow flow);
+    void visit(Flow flow, A arg);
 
-    void visit(Split split);
+    void visit(Split split, A arg);
 
-    void visit(Decision decision);
+    void visit(Decision decision, A arg);
 
 }

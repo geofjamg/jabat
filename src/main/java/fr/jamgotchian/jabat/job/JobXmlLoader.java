@@ -67,7 +67,7 @@ public class JobXmlLoader {
         }
     }
 
-    private static void setProperty(Deque<Object> element, StepElement stepElt, Properties parameters,
+    private static void setProperty(Deque<Object> element, StepElement stepElt,
                                     String name, String value, String applyTo)
             throws IOException, JabatException, RecognitionException {
         Properties properties = null;
@@ -89,27 +89,12 @@ public class JobXmlLoader {
                     properties = chunk.getWriterArtifact().getProperties();
                 }
             }
-        } else if (first instanceof Listener) {
-            ((Listener) first).getArtifact().getProperties();
         } else {
             throw new JabatException("Cannot set the property");
         }
         if (properties != null) {
-            String substitutedValue = JobUtil.substitute(value, parameters, getScopeProperties(element));
-            properties.setProperty(name, substitutedValue);
+            properties.setProperty(name, value);
         }
-    }
-
-    private static Properties getScopeProperties(Deque<Object> element) {
-        Properties result = new Properties();
-        // accumulate properties in the current scope starting by deeper
-        // nesting level
-        for (Object o : element) {
-            if (o instanceof Propertiable) {
-                result.putAll(((Propertiable) o).getProperties());
-            }
-        }
-        return result;
     }
 
     private static Listenable getListenable(Deque<Object> element) {
@@ -176,7 +161,7 @@ public class JobXmlLoader {
                                 CheckpointPolicy checkpointPolicy = CheckpointPolicy.ITEM;
                                 String value = xmlsr.getAttributeValue(null, "checkpoint-policy");
                                 if (value != null) {
-                                    checkpointPolicy = CheckpointPolicy.valueOf(value);
+                                    checkpointPolicy = CheckpointPolicy.valueOf(value.toUpperCase());
                                 }
                                 value = xmlsr.getAttributeValue(null, "commit-interval");
                                 int commitInterval = 10;
@@ -224,10 +209,10 @@ public class JobXmlLoader {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
                                 String applyTo = xmlsr.getAttributeValue(null, "applyTo");
-                                setProperty(element, stepElt, parameters, name, value, applyTo);
+                                setProperty(element, stepElt, name, value, applyTo);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListener(new Listener(new Artifact(ref)));
+                                getListenable(element).addListenerArtifact(new Artifact(ref));
                             }
                             break;
                         }
@@ -247,23 +232,32 @@ public class JobXmlLoader {
                 }
             }
         } catch (FactoryConfigurationError e) {
-            LOGGER.error(e.toString(), e);
+            throw new JabatException(e);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
+            throw new JabatException(e);
         } catch (XMLStreamException e) {
-            LOGGER.error(e.toString(), e);
+            throw new JabatException(e);
         } catch (RecognitionException e) {
-            LOGGER.error(e.toString(), e);
+            throw new JabatException(e);
         }
+       
+        // substitute property values
+        new PropertyValueSubstitutor(job, parameters).substitute();
+        
         LOGGER.debug("Load job xml {} file {}", jobId, file);
+        
         return job;
     }
 
     public Job load(String id, Properties parameters) throws NoSuchJobException {
         for (File file : path.findJobXml()) {
-            Job job = loadFile(file, id, parameters);
-            if (job != null) {
-                return job;
+            try {
+                Job job = loadFile(file, id, parameters);
+                if (job != null) {
+                    return job;
+                }
+            } catch (JabatException e) {
+                LOGGER.error(e.toString(), e);
             }
         }
         throw new NoSuchJobException("Job " + id + " not found");

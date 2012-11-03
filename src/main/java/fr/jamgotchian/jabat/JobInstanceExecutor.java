@@ -40,8 +40,8 @@ import fr.jamgotchian.jabat.artifact.ItemProcessorArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ItemReaderArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.ItemWriterArtifactInstance;
+import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Chainable;
-import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.task.TaskManager;
 import java.io.ByteArrayInputStream;
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class JobInstanceExecutor implements NodeVisitor {
+class JobInstanceExecutor implements NodeVisitor<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobInstanceExecutor.class);
 
@@ -94,7 +94,7 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(final Job job) {
+    public void visit(final Job job, Void arg) {
         this.job = job;
 
         // create a job execution
@@ -110,18 +110,18 @@ class JobInstanceExecutor implements NodeVisitor {
                     JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
                     try {
                         // before job listeners
-                        for (Listener l : job.getListeners()) {
-                            JobListenerArtifactInstance artifact = artifactContext.createJobListener(l.getArtifact().getRef());
-                            artifact.beforeJob();
+                        for (Artifact a : job.getListenerArtifacts()) {
+                            JobListenerArtifactInstance l = artifactContext.createJobListener(a.getRef());
+                            l.beforeJob();
                         }
 
                         // run the job
                         jobExecution.setStatus(Status.STARTED);
-                        job.getFirstChainableNode().accept(JobInstanceExecutor.this);
+                        job.getFirstChainableNode().accept(JobInstanceExecutor.this, null);
 
                         // after job listeners
-                        for (JobListenerArtifactInstance artifact : artifactContext.getJobListeners()) {
-                            artifact.afterJob();
+                        for (JobListenerArtifactInstance l : artifactContext.getJobListeners()) {
+                            l.afterJob();
                         }
                     } finally {
                         artifactContext.release();
@@ -138,12 +138,12 @@ class JobInstanceExecutor implements NodeVisitor {
         assert node.getContainer() != null;
         if (node.getNext() != null) {
             Node next = node.getContainer().getNode(node.getNext());
-            next.accept(this);
+            next.accept(this, null);
         }
     }
 
     @Override
-    public void visit(BatchletStep step) {
+    public void visit(BatchletStep step, Void arg) {
         Thread.currentThread().setName("Batchlet " + step.getId());
 
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
@@ -216,7 +216,7 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ChunkStep step) {
+    public void visit(ChunkStep step, Void arg) {
         Thread.currentThread().setName("Chunk " + step.getId());
 
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
@@ -316,13 +316,13 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(Flow flow) {
+    public void visit(Flow flow, Void arg) {
         Thread.currentThread().setName("Flow " + flow.getId());
-        flow.getFirstChainableNode().accept(this);
+        flow.getFirstChainableNode().accept(this, null);
     }
 
     @Override
-    public void visit(Split split) {
+    public void visit(Split split, Void arg) {
         Thread.currentThread().setName("Split " + split.getId());
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
@@ -334,19 +334,19 @@ class JobInstanceExecutor implements NodeVisitor {
                     public void run() {
                         JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
                         try {
-                            it.next().accept(JobInstanceExecutor.this);
+                            it.next().accept(JobInstanceExecutor.this, null);
                         } finally {
                             JabatThreadContext.getInstance().deactivateJobContext();
                         }
                     }
                 });
             }
-            firstNode.accept(this);
+            firstNode.accept(this, null);
         }
     }
 
     @Override
-    public void visit(Decision decision) {
+    public void visit(Decision decision, Void arg) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

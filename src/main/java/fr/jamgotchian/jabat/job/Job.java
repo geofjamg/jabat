@@ -15,33 +15,41 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Job extends AbstractNodeContainer implements NodeContainer, Propertiable, Listenable {
+public class Job extends AbstractNodeContainer implements NodeContainer, Listenable {
 
-    private Properties properties = new Properties();
+    private final List<Artifact> listenerArtifacts;
+
+    public Job(String id, Properties properties, List<Artifact> listenerArtifacts) {
+        super(id, properties, null);
+        this.listenerArtifacts = listenerArtifacts;
+    }
 
     public Job(String id) {
-        super(id, null);
+        this(id, new Properties(), new ArrayList<Artifact>());
     }
 
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public void addListenerArtifact(Artifact artifact) {
+        listenerArtifacts.add(artifact);
     }
 
     @Override
-    public Properties getProperties() {
-        return properties;
+    public Collection<Artifact> getListenerArtifacts() {
+        return listenerArtifacts;
     }
-
+    
     @Override
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public <A> void accept(NodeVisitor<A> visitor, A arg) {
+        visitor.visit(this, arg);
     }
 
 }

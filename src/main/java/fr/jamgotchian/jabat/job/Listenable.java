@@ -21,10 +21,10 @@ import java.util.Collection;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Listenable {
+interface Listenable {
 
-    void addListener(Listener l);
+    void addListenerArtifact(Artifact artifact);
 
-    Collection<Listener> getListeners();
+    Collection<Artifact> getListenerArtifacts();
     
 }
