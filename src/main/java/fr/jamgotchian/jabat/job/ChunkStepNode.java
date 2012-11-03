@@ -24,11 +24,11 @@ import java.util.Properties;
  */
 public class ChunkStepNode extends StepNode {
 
-    private final ArtifactRef readerRef;
+    private final Artifact readerArtifact;
 
-    private final ArtifactRef processorRef;
+    private final Artifact processorArtifact;
 
-    private final ArtifactRef writerRef;
+    private final Artifact writerArtifact;
 
     private final CheckpointPolicy checkpointPolicy;
 
@@ -39,29 +39,29 @@ public class ChunkStepNode extends StepNode {
     private final int retryLimit;
 
     public ChunkStepNode(String id, NodeContainer container, String next, Properties properties,
-                         ArtifactRef readerRef, ArtifactRef processorRef, ArtifactRef writerRef,
+                         Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
                          CheckpointPolicy checkpointPolicy, int commitInterval,
                          int bufferSize, int retryLimit) {
         super(id, container, next, properties);
-        this.readerRef = readerRef;
-        this.processorRef = processorRef;
-        this.writerRef = writerRef;
+        this.readerArtifact = readerArtifact;
+        this.processorArtifact = processorArtifact;
+        this.writerArtifact = writerArtifact;
         this.checkpointPolicy = checkpointPolicy;
         this.commitInterval = commitInterval;
         this.bufferSize = bufferSize;
         this.retryLimit = retryLimit;
     }
 
-    public ArtifactRef getReaderRef() {
-        return readerRef;
+    public Artifact getReaderArtifact() {
+        return readerArtifact;
     }
 
-    public ArtifactRef getProcessorRef() {
-        return processorRef;
+    public Artifact getProcessorArtifact() {
+        return processorArtifact;
     }
 
-    public ArtifactRef getWriterRef() {
-        return writerRef;
+    public Artifact getWriterArtifact() {
+        return writerArtifact;
     }
 
     public CheckpointPolicy getCheckpointPolicy() {
@@ -81,13 +81,13 @@ public class ChunkStepNode extends StepNode {
     }
 
     @Override
-    public ArtifactRef getRef(String ref) {
-        if (readerRef.getName().equals(ref)) {
-            return readerRef;
-        } else if (processorRef.getName().equals(ref)) {
-            return processorRef;
-        } else if (writerRef.getName().equals(ref)) {
-            return writerRef;
+    public Artifact getArtifact(String ref) {
+        if (readerArtifact.getRef().equals(ref)) {
+            return readerArtifact;
+        } else if (processorArtifact.getRef().equals(ref)) {
+            return processorArtifact;
+        } else if (writerArtifact.getRef().equals(ref)) {
+            return writerArtifact;
         } else {
             throw new JabatException("Artifact " + ref + " not found");
         }

@@ -77,20 +77,20 @@ public class JobXmlLoader {
         } else if (first instanceof Job) {
             properties = ((Job) first).getProperties();
         } else if (first instanceof BatchletStepNode) {
-            properties = ((BatchletStepNode) first).getBatchletRef().getProperties();
+            properties = ((BatchletStepNode) first).artifact().getProperties();
         } else if (first instanceof ChunkStepNode) {
             ChunkStepNode chunk = (ChunkStepNode) first;
             if (applyTo != null) {
-                if (applyTo.equals(chunk.getReaderRef().getName())) {
-                    properties = chunk.getReaderRef().getProperties();
-                } else if (applyTo.equals(chunk.getProcessorRef().getName())) {
-                    properties = chunk.getProcessorRef().getProperties();
-                } else if (applyTo.equals(chunk.getWriterRef().getName())) {
-                    properties = chunk.getWriterRef().getProperties();
+                if (applyTo.equals(chunk.getReaderArtifact().getRef())) {
+                    properties = chunk.getReaderArtifact().getProperties();
+                } else if (applyTo.equals(chunk.getProcessorArtifact().getRef())) {
+                    properties = chunk.getProcessorArtifact().getProperties();
+                } else if (applyTo.equals(chunk.getWriterArtifact().getRef())) {
+                    properties = chunk.getWriterArtifact().getProperties();
                 }
             }
         } else if (first instanceof Listener) {
-            ((Listener) first).getRef().getProperties();
+            ((Listener) first).getArtifact().getProperties();
         } else {
             throw new JabatException("Cannot set the property");
         }
@@ -165,7 +165,7 @@ public class JobXmlLoader {
                                                                      container,
                                                                      stepElt.next,
                                                                      stepElt.properties,
-                                                                     new ArtifactRef(ref));
+                                                                     new Artifact(ref));
                                 container.addNode(step);
                                 element.push(step);
                                 stepElt = null;
@@ -210,9 +210,9 @@ public class JobXmlLoader {
                                                                   container,
                                                                   stepElt.next,
                                                                   stepElt.properties,
-                                                                  new ArtifactRef(readerRef),
-                                                                  new ArtifactRef(processorRef),
-                                                                  new ArtifactRef(writerRef),
+                                                                  new Artifact(readerRef),
+                                                                  new Artifact(processorRef),
+                                                                  new Artifact(writerRef),
                                                                   checkpointPolicy,
                                                                   commitInterval,
                                                                   bufferSize,
@@ -227,7 +227,7 @@ public class JobXmlLoader {
                                 setProperty(element, stepElt, parameters, name, value, applyTo);
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListener(new Listener(new ArtifactRef(ref)));
+                                getListenable(element).addListener(new Listener(new Artifact(ref)));
                             }
                             break;
                         }

@@ -17,7 +17,7 @@ package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import com.google.common.collect.Sets;
-import fr.jamgotchian.jabat.job.ArtifactRef;
+import fr.jamgotchian.jabat.job.Artifact;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -127,8 +127,8 @@ class JabatCdiExtension implements Extension {
                             for (Field field : propertyFields) {
                                 // get the bean name
                                 String name = at.getAnnotation(Named.class).value();
-                                ArtifactRef ref = JabatThreadContext.getInstance().getActiveStepContext().getStep().getRef(name);
-                                Properties properties = ref.getProperties();
+                                Artifact artifact = JabatThreadContext.getInstance().getActiveStepContext().getStep().getArtifact(name);
+                                Properties properties = artifact.getProperties();
                                 // TODO support the name parameter of @BatchProperty
                                 String value = properties.getProperty(field.getName());
                                 if (value != null) {

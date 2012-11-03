@@ -111,7 +111,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            JobListenerArtifactInstance artifact = artifactContext.createJobListener(l.getRef().getName());
+                            JobListenerArtifactInstance artifact = artifactContext.createJobListener(l.getArtifact().getRef());
                             artifact.beforeJob();
                         }
 
@@ -152,7 +152,7 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.getBatchletRef().getName());
+                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.artifact().getRef());
                 stepExecution.setBatchletArtifactInstance(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
@@ -226,12 +226,12 @@ class JobInstanceExecutor implements NodeVisitor {
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
                 ReadItemArtifactInstance reader
-                        = artifactContext.createItemReader(step.getReaderRef().getName());
+                        = artifactContext.createItemReader(step.getReaderArtifact().getRef());
                 ProcessItemArtifactInstance processor
-                        = artifactContext.createItemProcessor(step.getProcessorRef().getName(),
+                        = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef(),
                                                               reader.getItemType());
                 WriteItemsArtifactInstance writer
-                        = artifactContext.createItemWriter(step.getWriterRef().getName(),
+                        = artifactContext.createItemWriter(step.getWriterArtifact().getRef(),
                                                            processor.getOutputItemType());
 
                 stepExecution.setStatus(Status.STARTED);

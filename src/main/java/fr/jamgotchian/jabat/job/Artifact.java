@@ -21,18 +21,18 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ArtifactRef implements Propertiable {
+public class Artifact implements Propertiable {
 
-    private final String name;
+    private final String ref;
 
     private Properties properties = new Properties();
 
-    public ArtifactRef(String name) {
-        this.name = name;
+    public Artifact(String ref) {
+        this.ref = ref;
     }
 
-    public String getName() {
-        return name;
+    public String getRef() {
+        return ref;
     }
 
     @Override

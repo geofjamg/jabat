@@ -21,14 +21,14 @@ package fr.jamgotchian.jabat.job;
  */
 public class Listener {
 
-    private final ArtifactRef ref;
+    private final Artifact artifact;
 
-    public Listener(ArtifactRef ref) {
-        this.ref = ref;
+    public Listener(Artifact artifact) {
+        this.artifact = artifact;
     }
 
-    public ArtifactRef getRef() {
-        return ref;
+    public Artifact getArtifact() {
+        return artifact;
     }
 
 }

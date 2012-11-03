@@ -24,22 +24,22 @@ import java.util.Properties;
  */
 public class BatchletStepNode extends StepNode {
 
-    private final ArtifactRef batchletRef;
+    private final Artifact artifact;
 
     public BatchletStepNode(String id, NodeContainer container, String next,
-                            Properties properties, ArtifactRef batchletRef) {
+                            Properties properties, Artifact artifact) {
         super(id, container, next, properties);
-        this.batchletRef = batchletRef;
+        this.artifact = artifact;
     }
 
-    public ArtifactRef getBatchletRef() {
-        return batchletRef;
+    public Artifact artifact() {
+        return artifact;
     }
 
     @Override
-    public ArtifactRef getRef(String ref) {
-        if (this.batchletRef.getName().equals(ref)) {
-            return this.batchletRef;
+    public Artifact getArtifact(String ref) {
+        if (this.artifact.getRef().equals(ref)) {
+            return this.artifact;
         } else {
             throw new JabatException("Artifact " + ref + " not found");
         }

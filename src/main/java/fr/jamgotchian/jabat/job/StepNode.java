@@ -48,6 +48,6 @@ public abstract class StepNode extends AbstractNode implements Node, Chainable, 
         this.properties = properties;
     }
 
-    public abstract ArtifactRef getRef(String ref);
+    public abstract Artifact getArtifact(String ref);
 
 }
