@@ -36,10 +36,10 @@ import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.artifact.JobListenerArtifactInstance;
-import fr.jamgotchian.jabat.artifact.ProcessItemArtifactInstance;
-import fr.jamgotchian.jabat.artifact.ReadItemArtifactInstance;
+import fr.jamgotchian.jabat.artifact.ItemProcessorArtifactInstance;
+import fr.jamgotchian.jabat.artifact.ItemReaderArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.WriteItemsArtifactInstance;
+import fr.jamgotchian.jabat.artifact.ItemWriterArtifactInstance;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.repository.JobRepository;
@@ -225,12 +225,12 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
-                ReadItemArtifactInstance reader
+                ItemReaderArtifactInstance reader
                         = artifactContext.createItemReader(step.getReaderArtifact().getRef());
-                ProcessItemArtifactInstance processor
+                ItemProcessorArtifactInstance processor
                         = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef(),
                                                               reader.getItemType());
-                WriteItemsArtifactInstance writer
+                ItemWriterArtifactInstance writer
                         = artifactContext.createItemWriter(step.getWriterArtifact().getRef(),
                                                            processor.getOutputItemType());
 

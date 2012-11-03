@@ -27,23 +27,23 @@ public class ChunkArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public ReadItemArtifactInstance createItemReader(String ref) throws Exception {
+    public ItemReaderArtifactInstance createItemReader(String ref) throws Exception {
         Object obj = factory.create(ref);
-        ReadItemArtifactInstance instance = new ReadItemArtifactInstance(obj, ref);
+        ItemReaderArtifactInstance instance = new ItemReaderArtifactInstance(obj, ref);
         addInstance(instance);
         return instance;
     }
 
-    public ProcessItemArtifactInstance createItemProcessor(String ref, Class<?> itemType) throws Exception {
+    public ItemProcessorArtifactInstance createItemProcessor(String ref, Class<?> itemType) throws Exception {
         Object obj = factory.create(ref);
-        ProcessItemArtifactInstance instance = new ProcessItemArtifactInstance(obj, ref, itemType);
+        ItemProcessorArtifactInstance instance = new ItemProcessorArtifactInstance(obj, ref, itemType);
         addInstance(instance);
         return instance;
     }
 
-    public WriteItemsArtifactInstance createItemWriter(String ref, Class<?> outputItemType) throws Exception {
+    public ItemWriterArtifactInstance createItemWriter(String ref, Class<?> outputItemType) throws Exception {
         Object obj = factory.create(ref);
-        WriteItemsArtifactInstance instance = new WriteItemsArtifactInstance(obj, ref, outputItemType);
+        ItemWriterArtifactInstance instance = new ItemWriterArtifactInstance(obj, ref, outputItemType);
         addInstance(instance);
         return instance;
     }

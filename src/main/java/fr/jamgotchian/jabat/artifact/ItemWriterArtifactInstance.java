@@ -20,37 +20,42 @@ import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ReadItem;
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import javax.batch.annotation.WriteItems;
 
 /**
- * @ReadItem <item-type> <method-name> () throws Exception
+ * @WriteItems void <method-name> (List<item-type> items) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ReadItemArtifactInstance extends IOItemArtifactInstance {
+public class ItemWriterArtifactInstance extends ItemIOArtifactInstance {
 
-    private final Method readItemMethod;
+    private final Method writeItemsMethod;
 
-    public ReadItemArtifactInstance(Object object, String ref) {
+    private final Class<?> itemType;
+
+    public ItemWriterArtifactInstance(Object object, String ref, final Class<?> itemType) {
         super(object, ref);
-        readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
+        this.itemType = itemType;
+        writeItemsMethod = findAnnotatedMethod(object.getClass(), WriteItems.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && MethodUtil.hasZeroParameter(m)
+                return m.getReturnType() == Void.TYPE
+                        && m.getParameterTypes().length == 1
+                        && List.class.isAssignableFrom(m.getParameterTypes()[0])
+                        && ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments().length == 1
+                        && itemType.isAssignableFrom((Class<?>) ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments()[0])
                         && MethodUtil.throwsOneException(m, Exception.class);
             }
         });
-        readItemMethod.setAccessible(true);
+        writeItemsMethod.setAccessible(true);
     }
 
-    public Class<?> getItemType() {
-        return readItemMethod.getReturnType();
-    }
-
-    public Object readItem() throws Exception {
+    public void writeItems(List<Object> items) throws Exception {
+        // TODO check items have itemType type
         try {
-            return readItemMethod.invoke(object);
+            writeItemsMethod.invoke(object, items);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

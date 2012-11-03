@@ -31,7 +31,7 @@ import javax.batch.annotation.Open;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class IOItemArtifactInstance extends ArtifactInstance {
+class ItemIOArtifactInstance extends ArtifactInstance {
 
     private Method openMethod;
 
@@ -39,7 +39,7 @@ class IOItemArtifactInstance extends ArtifactInstance {
 
     private Method checkpointInfoMethod;
 
-    protected IOItemArtifactInstance(Object object, String ref) {
+    protected ItemIOArtifactInstance(Object object, String ref) {
         super(object, ref);
     }
 

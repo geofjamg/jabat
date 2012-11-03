@@ -16,48 +16,41 @@
 package fr.jamgotchian.jabat.artifact;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ProcessItem;
+import javax.batch.annotation.ReadItem;
 
 /**
- * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
+ * @ReadItem <item-type> <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ProcessItemArtifactInstance extends ArtifactInstance {
+public class ItemReaderArtifactInstance extends ItemIOArtifactInstance {
 
-    private Method processItemMethod;
+    private final Method readItemMethod;
 
-    private Class<?> itemType;
-
-    public ProcessItemArtifactInstance(Object object, String ref, final Class<?> itemType) {
+    public ItemReaderArtifactInstance(Object object, String ref) {
         super(object, ref);
-        this.itemType = itemType;
-    }
-
-    @Override
-    public void initialize() {
-        processItemMethod = findAnnotatedMethod(object.getClass(), ProcessItem.class, false, new Predicate<Method>() {
+        readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() != Void.TYPE
-                        && hasOneParameter(m, itemType)
-                        && throwsOneException(m, Exception.class);
+                        && MethodUtil.hasZeroParameter(m)
+                        && MethodUtil.throwsOneException(m, Exception.class);
             }
         });
-        processItemMethod.setAccessible(true);
+        readItemMethod.setAccessible(true);
     }
 
-    public Class<?> getOutputItemType() {
-        return processItemMethod.getReturnType();
+    public Class<?> getItemType() {
+        return readItemMethod.getReturnType();
     }
 
-    public Object processItem(Object item) throws Exception {
-        // TODO check item has itemType type
+    public Object readItem() throws Exception {
         try {
-            return processItemMethod.invoke(object, item);
+            return readItemMethod.invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
