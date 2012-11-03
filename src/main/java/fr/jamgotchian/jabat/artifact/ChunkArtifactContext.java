@@ -48,4 +48,11 @@ public class ChunkArtifactContext extends ArtifactContext {
         return writer;
     }
 
+    public CheckpointAlgorithmArtifact createCheckpointAlgorithm(String ref) throws Exception {
+        Object obj = factory.create(ref);
+        CheckpointAlgorithmArtifact algo = new CheckpointAlgorithmArtifact(obj, ref);
+        addArtifact(algo);
+        return algo;
+    }
+
 }
