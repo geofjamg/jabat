@@ -23,14 +23,14 @@ public interface NodeVisitor {
 
     void visit(Job job);
 
-    void visit(BatchletStepNode step);
+    void visit(BatchletStep step);
 
-    void visit(ChunkStepNode step);
+    void visit(ChunkStep step);
 
-    void visit(FlowNode flow);
+    void visit(Flow flow);
 
-    void visit(SplitNode split);
+    void visit(Split split);
 
-    void visit(DecisionNode decision);
+    void visit(Decision decision);
 
 }

@@ -22,7 +22,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ChunkStepNode extends StepNode {
+public class ChunkStep extends Step {
 
     private final Artifact readerArtifact;
 
@@ -38,10 +38,10 @@ public class ChunkStepNode extends StepNode {
 
     private final int retryLimit;
 
-    public ChunkStepNode(String id, NodeContainer container, String next, Properties properties,
-                         Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
-                         CheckpointPolicy checkpointPolicy, int commitInterval,
-                         int bufferSize, int retryLimit) {
+    public ChunkStep(String id, NodeContainer container, String next, Properties properties,
+                     Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
+                     CheckpointPolicy checkpointPolicy, int commitInterval,
+                     int bufferSize, int retryLimit) {
         super(id, container, next, properties);
         this.readerArtifact = readerArtifact;
         this.processorArtifact = processorArtifact;

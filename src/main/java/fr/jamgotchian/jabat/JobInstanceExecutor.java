@@ -25,13 +25,13 @@ import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
-import fr.jamgotchian.jabat.job.ChunkStepNode;
-import fr.jamgotchian.jabat.job.FlowNode;
-import fr.jamgotchian.jabat.job.SplitNode;
+import fr.jamgotchian.jabat.job.ChunkStep;
+import fr.jamgotchian.jabat.job.Flow;
+import fr.jamgotchian.jabat.job.Split;
 import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.DecisionNode;
+import fr.jamgotchian.jabat.job.Decision;
 import fr.jamgotchian.jabat.job.NodeVisitor;
-import fr.jamgotchian.jabat.job.BatchletStepNode;
+import fr.jamgotchian.jabat.job.BatchletStep;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
@@ -143,7 +143,7 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BatchletStepNode step) {
+    public void visit(BatchletStep step) {
         Thread.currentThread().setName("Batchlet " + step.getId());
 
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
@@ -152,7 +152,7 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.artifact().getRef());
+                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
                 stepExecution.setBatchletArtifactInstance(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
@@ -173,7 +173,7 @@ class JobInstanceExecutor implements NodeVisitor {
         }
     }
 
-    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStepNode step) {
+    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step) {
         switch (step.getCheckpointPolicy()) {
             case ITEM:
                 return new ItemCheckpointAlgorithm(step.getCommitInterval());
@@ -216,7 +216,7 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ChunkStepNode step) {
+    public void visit(ChunkStep step) {
         Thread.currentThread().setName("Chunk " + step.getId());
 
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
@@ -316,13 +316,13 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(FlowNode flow) {
+    public void visit(Flow flow) {
         Thread.currentThread().setName("Flow " + flow.getId());
         flow.getFirstChainableNode().accept(this);
     }
 
     @Override
-    public void visit(SplitNode split) {
+    public void visit(Split split) {
         Thread.currentThread().setName("Split " + split.getId());
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
@@ -346,7 +346,7 @@ class JobInstanceExecutor implements NodeVisitor {
     }
 
     @Override
-    public void visit(DecisionNode decision) {
+    public void visit(Decision decision) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

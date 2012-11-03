@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.repository;
 
 import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.StepNode;
+import fr.jamgotchian.jabat.job.Step;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +67,7 @@ public class JobRepository {
         return jobExecution;
     }
 
-    public JabatStepExecution createStepExecution(StepNode step, JabatJobExecution jobExecution) {
+    public JabatStepExecution createStepExecution(Step step, JabatJobExecution jobExecution) {
         long stepExecutionId = nextStepExecutionId++;
         JabatStepExecution stepExecution = new JabatStepExecution(stepExecutionId);
         stepExecutions.put(stepExecutionId, stepExecution);

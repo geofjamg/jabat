@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.context;
 
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
-import fr.jamgotchian.jabat.job.StepNode;
+import fr.jamgotchian.jabat.job.Step;
 import java.io.Externalizable;
 import java.util.Properties;
 import javax.batch.runtime.context.StepContext;
@@ -28,18 +28,18 @@ import javax.batch.runtime.metric.Metric;
  */
 public class JabatStepContext<T, P extends Externalizable> implements StepContext<T, P> {
 
-    private final StepNode step;
+    private final Step step;
 
     private final JabatStepExecution stepExecution;
 
     private T transientUserData;
 
-    public JabatStepContext(StepNode step, JabatStepExecution stepExecution) {
+    public JabatStepContext(Step step, JabatStepExecution stepExecution) {
         this.step = step;
         this.stepExecution = stepExecution;
     }
 
-    public StepNode getStep() {
+    public Step getStep() {
         return step;
     }
 

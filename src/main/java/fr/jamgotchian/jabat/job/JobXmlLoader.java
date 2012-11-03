@@ -76,10 +76,10 @@ public class JobXmlLoader {
             properties = stepElt.properties;
         } else if (first instanceof Job) {
             properties = ((Job) first).getProperties();
-        } else if (first instanceof BatchletStepNode) {
-            properties = ((BatchletStepNode) first).artifact().getProperties();
-        } else if (first instanceof ChunkStepNode) {
-            ChunkStepNode chunk = (ChunkStepNode) first;
+        } else if (first instanceof BatchletStep) {
+            properties = ((BatchletStep) first).getArtifact().getProperties();
+        } else if (first instanceof ChunkStep) {
+            ChunkStep chunk = (ChunkStep) first;
             if (applyTo != null) {
                 if (applyTo.equals(chunk.getReaderArtifact().getRef())) {
                     properties = chunk.getReaderArtifact().getProperties();
@@ -148,24 +148,24 @@ public class JobXmlLoader {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
                                 NodeContainer container = getContainer(element);
-                                SplitNode split = new SplitNode(id, container, next);
+                                Split split = new Split(id, container, next);
                                 container.addNode(split);
                                 element.push(split);
                             } else if ("flow".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
                                 NodeContainer container = getContainer(element);
-                                FlowNode flow = new FlowNode(id, container, next);
+                                Flow flow = new Flow(id, container, next);
                                 container.addNode(flow);
                                 element.push(flow);
                             } else if ("batchlet".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 NodeContainer container = getContainer(element);
-                                StepNode step = new BatchletStepNode(stepElt.id,
-                                                                     container,
-                                                                     stepElt.next,
-                                                                     stepElt.properties,
-                                                                     new Artifact(ref));
+                                Step step = new BatchletStep(stepElt.id,
+                                                             container,
+                                                             stepElt.next,
+                                                             stepElt.properties,
+                                                             new Artifact(ref));
                                 container.addNode(step);
                                 element.push(step);
                                 stepElt = null;
@@ -206,17 +206,17 @@ public class JobXmlLoader {
                                     retryLimit = Integer.valueOf(value);
                                 }
                                 NodeContainer container = getContainer(element);
-                                StepNode step = new ChunkStepNode(stepElt.id,
-                                                                  container,
-                                                                  stepElt.next,
-                                                                  stepElt.properties,
-                                                                  new Artifact(readerRef),
-                                                                  new Artifact(processorRef),
-                                                                  new Artifact(writerRef),
-                                                                  checkpointPolicy,
-                                                                  commitInterval,
-                                                                  bufferSize,
-                                                                  retryLimit);
+                                Step step = new ChunkStep(stepElt.id,
+                                                          container,
+                                                          stepElt.next,
+                                                          stepElt.properties,
+                                                          new Artifact(readerRef),
+                                                          new Artifact(processorRef),
+                                                          new Artifact(writerRef),
+                                                          checkpointPolicy,
+                                                          commitInterval,
+                                                          bufferSize,
+                                                          retryLimit);
                                 container.addNode(step);
                                 element.push(step);
                                 stepElt = null;

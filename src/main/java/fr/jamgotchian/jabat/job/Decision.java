@@ -15,39 +15,19 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class StepNode extends AbstractNode implements Node, Chainable, Propertiable, Listenable {
+public class Decision extends AbstractNode implements Node {
 
-    private final String next;
-
-    private Properties properties;
-
-    StepNode(String id, NodeContainer container, String next, Properties properties) {
+    public Decision(String id, NodeContainer container) {
         super(id, container);
-        this.next = next;
-        this.properties = properties;
     }
 
     @Override
-    public String getNext() {
-        return next;
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
-
-    @Override
-    public Properties getProperties() {
-        return properties;
-    }
-
-    @Override
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }
-
-    public abstract Artifact getArtifact(String ref);
 
 }

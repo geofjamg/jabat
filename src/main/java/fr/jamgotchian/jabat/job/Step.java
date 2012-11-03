@@ -15,17 +15,22 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class FlowNode extends AbstractNodeContainer implements NodeContainer, Chainable, Listenable {
+public abstract class Step extends AbstractNode implements Node, Chainable, Propertiable, Listenable {
 
     private final String next;
 
-    public FlowNode(String id, NodeContainer container, String next) {
+    private Properties properties;
+
+    Step(String id, NodeContainer container, String next, Properties properties) {
         super(id, container);
         this.next = next;
+        this.properties = properties;
     }
 
     @Override
@@ -34,8 +39,15 @@ public class FlowNode extends AbstractNodeContainer implements NodeContainer, Ch
     }
 
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
+    public Properties getProperties() {
+        return properties;
     }
+
+    @Override
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    public abstract Artifact getArtifact(String ref);
 
 }

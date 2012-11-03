@@ -18,7 +18,7 @@ package fr.jamgotchian.jabat.context;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
-import fr.jamgotchian.jabat.job.StepNode;
+import fr.jamgotchian.jabat.job.Step;
 import fr.jamgotchian.jabat.job.Job;
 import java.io.Externalizable;
 
@@ -55,7 +55,7 @@ public class JabatThreadContext {
         return stepContext.get();
     }
 
-    public void activateStepContext(StepNode step, JabatStepExecution stepExecution) {
+    public void activateStepContext(Step step, JabatStepExecution stepExecution) {
         stepContext.set(new JabatStepContext<Object, Externalizable>(step, stepExecution));
     }
 

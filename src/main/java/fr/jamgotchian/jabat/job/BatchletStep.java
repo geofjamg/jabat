@@ -15,22 +15,34 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitNode extends AbstractNodeContainer implements NodeContainer, Chainable, Listenable {
+public class BatchletStep extends Step {
 
-    private final String next;
+    private final Artifact artifact;
 
-    public SplitNode(String id, NodeContainer container, String next) {
-        super(id, container);
-        this.next = next;
+    public BatchletStep(String id, NodeContainer container, String next,
+                        Properties properties, Artifact artifact) {
+        super(id, container, next, properties);
+        this.artifact = artifact;
+    }
+
+    public Artifact getArtifact() {
+        return artifact;
     }
 
     @Override
-    public String getNext() {
-        return next;
+    public Artifact getArtifact(String ref) {
+        if (this.artifact.getRef().equals(ref)) {
+            return this.artifact;
+        } else {
+            throw new JabatException("Artifact " + ref + " not found");
+        }
     }
 
     @Override

@@ -19,10 +19,18 @@ package fr.jamgotchian.jabat.job;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DecisionNode extends AbstractNode implements Node {
+public class Split extends AbstractNodeContainer implements NodeContainer, Chainable, Listenable {
 
-    public DecisionNode(String id, NodeContainer container) {
+    private final String next;
+
+    public Split(String id, NodeContainer container, String next) {
         super(id, container);
+        this.next = next;
+    }
+
+    @Override
+    public String getNext() {
+        return next;
     }
 
     @Override
