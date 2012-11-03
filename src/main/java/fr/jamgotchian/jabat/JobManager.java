@@ -22,7 +22,7 @@ import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.artifact.BatchletArtifact;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.task.TaskManager;
 import java.util.Collections;
 import java.util.List;
@@ -129,10 +129,10 @@ public class JobManager {
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
             // TODO only stop running check execution
-            BatchletArtifact artifact = stepExecution.getBatchletArtifact();
-            if (artifact != null) {
+            BatchletArtifactInstance artifactInstance = stepExecution.getBatchletArtifactInstance();
+            if (artifactInstance != null) {
                 try {
-                    artifact.stop();
+                    artifactInstance.stop();
                     stepExecution.setStatus(Status.STOPPED);
                 } catch(Exception e) {
                     LOGGER.error(e.toString(), e);

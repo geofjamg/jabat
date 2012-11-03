@@ -27,11 +27,11 @@ public class BatchletArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public BatchletArtifact createBatchlet(String ref) throws Exception {
+    public BatchletArtifactInstance createBatchlet(String ref) throws Exception {
         Object obj = factory.create(ref);
-        BatchletArtifact artifact = new BatchletArtifact(obj, ref);
-        addArtifact(artifact);
-        return artifact;
+        BatchletArtifactInstance instance = new BatchletArtifactInstance(obj, ref);
+        addInstance(instance);
+        return instance;
     }
 
 }

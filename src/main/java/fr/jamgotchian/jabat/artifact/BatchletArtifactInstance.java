@@ -28,13 +28,13 @@ import javax.batch.annotation.Stop;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifact extends Artifact {
+public class BatchletArtifactInstance extends ArtifactInstance {
 
     private Method processMethod;
 
     private Method stopMethod;
 
-    public BatchletArtifact(Object object, String ref) {
+    public BatchletArtifactInstance(Object object, String ref) {
         super(object, ref);
     }
 

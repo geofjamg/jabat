@@ -32,7 +32,7 @@ import javax.batch.annotation.IsReadyToCheckpoint;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmArtifact extends Artifact {
+public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
 
     private Method checkpointTimeoutMethod;
 
@@ -42,7 +42,7 @@ public class CheckpointAlgorithmArtifact extends Artifact {
 
     private Method endCheckpointMethod;
 
-    public CheckpointAlgorithmArtifact(Object object, String ref) {
+    public CheckpointAlgorithmArtifactInstance(Object object, String ref) {
         super(object, ref);
     }
 

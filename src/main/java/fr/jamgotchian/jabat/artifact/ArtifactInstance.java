@@ -16,17 +16,17 @@
 package fr.jamgotchian.jabat.artifact;
 
 /**
- * Base class for all batch artifacts.
+ * This is the base class for all artifact instance wrapper.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class Artifact {
+public abstract class ArtifactInstance {
 
     protected final Object object;
 
     protected final String ref;
 
-    protected Artifact(Object object, String ref) {
+    protected ArtifactInstance(Object object, String ref) {
         this.object = object;
         this.ref = ref;
     }

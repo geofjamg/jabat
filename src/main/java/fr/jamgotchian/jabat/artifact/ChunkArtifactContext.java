@@ -27,32 +27,32 @@ public class ChunkArtifactContext extends ArtifactContext {
         super(factory);
     }
 
-    public ReadItemArtifact createItemReader(String ref) throws Exception {
+    public ReadItemArtifactInstance createItemReader(String ref) throws Exception {
         Object obj = factory.create(ref);
-        ReadItemArtifact reader = new ReadItemArtifact(obj, ref);
-        addArtifact(reader);
-        return reader;
+        ReadItemArtifactInstance instance = new ReadItemArtifactInstance(obj, ref);
+        addInstance(instance);
+        return instance;
     }
 
-    public ProcessItemArtifact createItemProcessor(String ref, Class<?> itemType) throws Exception {
+    public ProcessItemArtifactInstance createItemProcessor(String ref, Class<?> itemType) throws Exception {
         Object obj = factory.create(ref);
-        ProcessItemArtifact processor = new ProcessItemArtifact(obj, ref, itemType);
-        addArtifact(processor);
-        return processor;
+        ProcessItemArtifactInstance instance = new ProcessItemArtifactInstance(obj, ref, itemType);
+        addInstance(instance);
+        return instance;
     }
 
-    public WriteItemsArtifact createItemWriter(String ref, Class<?> outputItemType) throws Exception {
+    public WriteItemsArtifactInstance createItemWriter(String ref, Class<?> outputItemType) throws Exception {
         Object obj = factory.create(ref);
-        WriteItemsArtifact writer = new WriteItemsArtifact(obj, ref, outputItemType);
-        addArtifact(writer);
-        return writer;
+        WriteItemsArtifactInstance instance = new WriteItemsArtifactInstance(obj, ref, outputItemType);
+        addInstance(instance);
+        return instance;
     }
 
-    public CheckpointAlgorithmArtifact createCheckpointAlgorithm(String ref) throws Exception {
+    public CheckpointAlgorithmArtifactInstance createCheckpointAlgorithm(String ref) throws Exception {
         Object obj = factory.create(ref);
-        CheckpointAlgorithmArtifact algo = new CheckpointAlgorithmArtifact(obj, ref);
-        addArtifact(algo);
-        return algo;
+        CheckpointAlgorithmArtifactInstance instance = new CheckpointAlgorithmArtifactInstance(obj, ref);
+        addInstance(instance);
+        return instance;
     }
 
 }

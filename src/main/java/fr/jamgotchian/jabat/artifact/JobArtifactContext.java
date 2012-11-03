@@ -25,21 +25,21 @@ import javax.batch.spi.ArtifactFactory;
  */
 public class JobArtifactContext extends ArtifactContext {
 
-    private final List<JobListenerArtifact> jobListeners = new ArrayList<JobListenerArtifact>();
+    private final List<JobListenerArtifactInstance> jobListeners = new ArrayList<JobListenerArtifactInstance>();
 
     public JobArtifactContext(ArtifactFactory factory) {
         super(factory);
     }
 
-    public JobListenerArtifact createJobListener(String ref) throws Exception {
+    public JobListenerArtifactInstance createJobListener(String ref) throws Exception {
         Object obj = factory.create(ref);
-        JobListenerArtifact artifact = new JobListenerArtifact(obj, ref);
-        addArtifact(artifact);
-        jobListeners.add(artifact);
-        return artifact;
+        JobListenerArtifactInstance instance = new JobListenerArtifactInstance(obj, ref);
+        addInstance(instance);
+        jobListeners.add(instance);
+        return instance;
     }
 
-    public List<JobListenerArtifact> getJobListeners() {
+    public List<JobListenerArtifactInstance> getJobListeners() {
         return jobListeners;
     }
 

@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.repository;
 
-import fr.jamgotchian.jabat.artifact.BatchletArtifact;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import java.util.Date;
 import javax.batch.runtime.StepExecution;
 
@@ -39,7 +39,7 @@ public class JabatStepExecution implements StepExecution {
 
     private MetricImpl[] metrics;
 
-    private volatile BatchletArtifact batchletArtifact;
+    private volatile BatchletArtifactInstance batchletArtifact;
 
     public JabatStepExecution(long id) {
         this.id = id;
@@ -100,12 +100,12 @@ public class JabatStepExecution implements StepExecution {
         this.metrics = metrics;
     }
 
-    public BatchletArtifact getBatchletArtifact() {
+    public BatchletArtifactInstance getBatchletArtifactInstance() {
         return batchletArtifact;
     }
 
-    public void setBatchletArtifact(BatchletArtifact batchletArtifact) {
-        this.batchletArtifact = batchletArtifact;
+    public void setBatchletArtifactInstance(BatchletArtifactInstance batchletArtifactInstance) {
+        this.batchletArtifact = batchletArtifactInstance;
     }
 
 }

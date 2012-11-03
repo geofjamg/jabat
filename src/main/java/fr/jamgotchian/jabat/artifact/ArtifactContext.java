@@ -27,20 +27,20 @@ public abstract class ArtifactContext {
 
     protected final ArtifactFactory factory;
 
-    private final List<Artifact> artifacts = new ArrayList<Artifact>();
+    private final List<ArtifactInstance> instances = new ArrayList<ArtifactInstance>();
 
     public ArtifactContext(ArtifactFactory factory) {
         this.factory = factory;
     }
 
-    protected void addArtifact(Artifact artifact) {
-        artifacts.add(artifact);
-        artifact.initialize();
+    protected void addInstance(ArtifactInstance instance) {
+        instances.add(instance);
+        instance.initialize();
     }
 
     public void release() throws Exception {
-        for (Artifact artifact : artifacts) {
-            factory.destroy(artifact.getObject());
+        for (ArtifactInstance instance : instances) {
+            factory.destroy(instance.getObject());
         }
     }
 }

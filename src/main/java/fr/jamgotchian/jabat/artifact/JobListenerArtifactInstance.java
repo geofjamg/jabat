@@ -19,28 +19,28 @@ import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BeforeStep;
+import javax.batch.annotation.AfterJob;
+import javax.batch.annotation.BeforeJob;
 
 /**
- * @BeforeStep void <method-name> () throws Exception
- * @AfterStep void <method-name> () throws Exception
+ * @BeforeJob void <method-name> () throws Exception
+ * @AfterJob void <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerArtifact extends Artifact {
+public class JobListenerArtifactInstance extends ArtifactInstance {
 
-    private Method beforeStepMethod;
+    private Method beforeJobMethod;
 
-    private Method afterStepMethod;
+    private Method afterJobMethod;
 
-    public StepListenerArtifact(Object object, String ref) {
+    public JobListenerArtifactInstance(Object object, String ref) {
         super(object, ref);
     }
 
     @Override
     public void initialize() {
-        beforeStepMethod = findAnnotatedMethod(object.getClass(), BeforeStep.class, true, new Predicate<Method>() {
+        beforeJobMethod = findAnnotatedMethod(object.getClass(), BeforeJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
@@ -48,10 +48,10 @@ public class StepListenerArtifact extends Artifact {
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (beforeStepMethod != null) {
-            beforeStepMethod.setAccessible(true);
+        if (beforeJobMethod != null) {
+            beforeJobMethod.setAccessible(true);
         }
-        afterStepMethod = findAnnotatedMethod(object.getClass(), AfterStep.class, true, new Predicate<Method>() {
+        afterJobMethod = findAnnotatedMethod(object.getClass(), AfterJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
@@ -59,15 +59,15 @@ public class StepListenerArtifact extends Artifact {
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (afterStepMethod != null) {
-            afterStepMethod.setAccessible(true);
+        if (afterJobMethod != null) {
+            afterJobMethod.setAccessible(true);
         }
     }
 
-    public void beforeStep() throws Exception {
+    public void beforeJob() throws Exception {
         try {
-            if (beforeStepMethod != null) {
-                beforeStepMethod.invoke(object);
+            if (beforeJobMethod != null) {
+                beforeJobMethod.invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -78,10 +78,10 @@ public class StepListenerArtifact extends Artifact {
         }
     }
 
-    public void afterStep() throws Exception {
+    public void afterJob() throws Exception {
         try {
-            if (afterStepMethod != null) {
-                afterStepMethod.invoke(object);
+            if (afterJobMethod != null) {
+                afterJobMethod.invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {

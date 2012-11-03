@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.checkpoint;
 
-import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifact;
+import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifactInstance;
 
 /**
  *
@@ -23,9 +23,9 @@ import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifact;
  */
 public class CustomCheckpointAlgorithm implements CheckpointAlgorithm {
 
-    private final CheckpointAlgorithmArtifact artifact;
+    private final CheckpointAlgorithmArtifactInstance artifact;
 
-    public CustomCheckpointAlgorithm(CheckpointAlgorithmArtifact artifact) {
+    public CustomCheckpointAlgorithm(CheckpointAlgorithmArtifactInstance artifact) {
         this.artifact = artifact;
     }
 

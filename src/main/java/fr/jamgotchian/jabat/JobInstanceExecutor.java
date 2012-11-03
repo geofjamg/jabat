@@ -33,13 +33,13 @@ import fr.jamgotchian.jabat.job.DecisionNode;
 import fr.jamgotchian.jabat.job.NodeVisitor;
 import fr.jamgotchian.jabat.job.BatchletStepNode;
 import fr.jamgotchian.jabat.job.Node;
-import fr.jamgotchian.jabat.artifact.BatchletArtifact;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
-import fr.jamgotchian.jabat.artifact.JobListenerArtifact;
-import fr.jamgotchian.jabat.artifact.ProcessItemArtifact;
-import fr.jamgotchian.jabat.artifact.ReadItemArtifact;
+import fr.jamgotchian.jabat.artifact.JobListenerArtifactInstance;
+import fr.jamgotchian.jabat.artifact.ProcessItemArtifactInstance;
+import fr.jamgotchian.jabat.artifact.ReadItemArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.WriteItemsArtifact;
+import fr.jamgotchian.jabat.artifact.WriteItemsArtifactInstance;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.job.Listener;
 import fr.jamgotchian.jabat.repository.JobRepository;
@@ -111,7 +111,7 @@ class JobInstanceExecutor implements NodeVisitor {
                     try {
                         // before job listeners
                         for (Listener l : job.getListeners()) {
-                            JobListenerArtifact artifact = artifactContext.createJobListener(l.getRef().getName());
+                            JobListenerArtifactInstance artifact = artifactContext.createJobListener(l.getRef().getName());
                             artifact.beforeJob();
                         }
 
@@ -120,7 +120,7 @@ class JobInstanceExecutor implements NodeVisitor {
                         job.getFirstChainableNode().accept(JobInstanceExecutor.this);
 
                         // after job listeners
-                        for (JobListenerArtifact artifact : artifactContext.getJobListeners()) {
+                        for (JobListenerArtifactInstance artifact : artifactContext.getJobListeners()) {
                             artifact.afterJob();
                         }
                     } finally {
@@ -152,8 +152,8 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
-                BatchletArtifact artifact = artifactContext.createBatchlet(step.getBatchletRef().getName());
-                stepExecution.setBatchletArtifact(artifact);
+                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.getBatchletRef().getName());
+                stepExecution.setBatchletArtifactInstance(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -225,12 +225,12 @@ class JobInstanceExecutor implements NodeVisitor {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
-                ReadItemArtifact reader
+                ReadItemArtifactInstance reader
                         = artifactContext.createItemReader(step.getReaderRef().getName());
-                ProcessItemArtifact processor
+                ProcessItemArtifactInstance processor
                         = artifactContext.createItemProcessor(step.getProcessorRef().getName(),
                                                               reader.getItemType());
-                WriteItemsArtifact writer
+                WriteItemsArtifactInstance writer
                         = artifactContext.createItemWriter(step.getWriterRef().getName(),
                                                            processor.getOutputItemType());
 
