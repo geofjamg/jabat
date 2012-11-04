@@ -15,37 +15,22 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Decision extends AbstractNode implements Node {
-
-    private final Artifact artifact;
+public abstract class ControlElement {
     
-    private final List<ControlElement> controlElements = new ArrayList<ControlElement>();
+    private final String on;
+
+    public ControlElement(String on) {
+        this.on = on;
+    }
     
-    public Decision(String id, Properties properties, NodeContainer container, 
-                    Artifact artifact) {
-        super(id, properties, container);
-        this.artifact = artifact;
+    public String getOn() {
+        return on;
     }
-
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    public List<ControlElement> getControlElements() {
-        return controlElements;
-    }
-
-    @Override
-    public <A> void accept(NodeVisitor<A> visitor, A arg) {
-        visitor.visit(this, arg);
-    }
-
+    
+    public abstract ControlElementType getType();
+    
 }

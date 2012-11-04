@@ -15,37 +15,19 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Decision extends AbstractNode implements Node {
-
-    private final Artifact artifact;
+public class FailElement extends TerminatingElement {
     
-    private final List<ControlElement> controlElements = new ArrayList<ControlElement>();
-    
-    public Decision(String id, Properties properties, NodeContainer container, 
-                    Artifact artifact) {
-        super(id, properties, container);
-        this.artifact = artifact;
-    }
-
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    public List<ControlElement> getControlElements() {
-        return controlElements;
+    public FailElement(String on, String exitStatus) {
+        super(on, exitStatus);
     }
 
     @Override
-    public <A> void accept(NodeVisitor<A> visitor, A arg) {
-        visitor.visit(this, arg);
+    public ControlElementType getType() {
+        return ControlElementType.FAIL;
     }
 
 }
