@@ -37,6 +37,14 @@ public class Job extends AbstractNodeContainer implements NodeContainer, Listena
         this(id, new Properties(), new ArrayList<Artifact>());
     }
 
+    public BatchletStepBuilder newBatchlet() {
+        return new BatchletStepBuilder(this);
+    }
+
+    public ChunkStepBuilder newChunk() {
+        return new ChunkStepBuilder(this);
+    }
+
     @Override
     public void addListenerArtifact(Artifact artifact) {
         listenerArtifacts.add(artifact);

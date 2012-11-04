@@ -50,11 +50,7 @@ public class JobBuilder {
             }
         });
     }
-
-    public BatchletStepBuilder<JobBuilder> newBatchletStep() {
-        return new BatchletStepBuilder<JobBuilder>(this, null, null);
-    }
-    
+   
     public Job build() {
         if (id == null) {
             throw new JabatException("Job id is not set");

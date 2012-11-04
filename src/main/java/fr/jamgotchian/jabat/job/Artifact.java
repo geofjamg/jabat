@@ -46,8 +46,8 @@ public class Artifact implements Propertiable {
     }
 
     @Override
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public void setProperty(String name, String value) {
+        properties.setProperty(name, value);
     }
 
 }

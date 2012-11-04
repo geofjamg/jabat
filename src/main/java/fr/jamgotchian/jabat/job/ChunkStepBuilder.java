@@ -158,9 +158,11 @@ public class ChunkStepBuilder {
         if (writerArtifact == null) {
             throw new JabatException("Chunk writer artifact is not set");            
         }
-        return new ChunkStep(id, container, next, properties, listenerArtifacts, 
-                             readerArtifact, processorArtifact, writerArtifact, 
-                             getCheckpointPolicy(), commitInterval, 
-                             getBufferSize(), retryLimit);
+        ChunkStep chunk = new ChunkStep(id, container, next, properties, listenerArtifacts, 
+                                        readerArtifact, processorArtifact, writerArtifact, 
+                                        getCheckpointPolicy(), commitInterval, 
+                                        getBufferSize(), retryLimit);
+        container.addNode(chunk);
+        return chunk;
     }
 }

@@ -25,6 +25,6 @@ interface Propertiable {
 
     Properties getProperties();
 
-    void setProperties(Properties properties);
+    void setProperty(String name, String value);
 
 }

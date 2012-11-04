@@ -76,9 +76,10 @@ public class JobXmlLoader {
         }
 
         @Override
-        public void setProperties(Properties properties) {
-            this.properties = properties;
+        public void setProperty(String name, String value) {
+            properties.setProperty(name, value);
         }
+
     }
 
     private static class MultipleArtifactsElement {
@@ -246,7 +247,7 @@ public class JobXmlLoader {
                                     case JOB:
                                     case STEP:
                                     case ARTIFACT:
-                                        ((Propertiable) xmlElt.getFirst()).getProperties().setProperty(name, value);
+                                        ((Propertiable) xmlElt.getFirst()).setProperty(name, value);
                                         break;
                                     case MULTIPLE_ARTIFACTS:
                                         String applyTo = xmlsr.getAttributeValue(null, "applyTo");

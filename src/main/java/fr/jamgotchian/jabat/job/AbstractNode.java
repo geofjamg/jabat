@@ -43,8 +43,8 @@ public abstract class AbstractNode {
         return properties;
     }
 
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public void setProperty(String name, String value) {
+        properties.setProperty(name, value);
     }
 
     public NodeContainer getContainer() {

@@ -24,13 +24,9 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletStepBuilder<P> {
-
-    private final P parent;
+public class BatchletStepBuilder {
     
     private final NodeContainer container;
-
-    private final Setter<BatchletStep> setter;
     
     private String id;
     
@@ -42,29 +38,27 @@ public class BatchletStepBuilder<P> {
     
     private Artifact artifact;
     
-    public BatchletStepBuilder(P parent, NodeContainer container, Setter<BatchletStep> setter) {
-        this.parent = parent;
+    public BatchletStepBuilder(NodeContainer container) {
         this.container = container;
-        this.setter = setter;
     }
 
-    public BatchletStepBuilder<P> setId(String id) {
+    public BatchletStepBuilder setId(String id) {
         this.id = id;
         return this;
     }
 
-    public BatchletStepBuilder<P> setNext(String next) {
+    public BatchletStepBuilder setNext(String next) {
         this.next = next;
         return this;
     }
 
-    public BatchletStepBuilder<P> setProperty(String name, String value) {
+    public BatchletStepBuilder setProperty(String name, String value) {
         properties.setProperty(name, value);
         return this;
     }
 
-    public ArtifactBuilder<BatchletStepBuilder<P>> newArtifact() {
-        return new ArtifactBuilder<BatchletStepBuilder<P>>(this, new Setter<Artifact>() {
+    public ArtifactBuilder<BatchletStepBuilder> newArtifact() {
+        return new ArtifactBuilder<BatchletStepBuilder>(this, new Setter<Artifact>() {
             @Override
             public void set(Artifact artifact) {
                 BatchletStepBuilder.this.artifact = artifact;
@@ -72,14 +66,15 @@ public class BatchletStepBuilder<P> {
         });
     }
     
-    public P build() {
+    public BatchletStep build() {
         if (id == null) {
             throw new JabatException("Batchlet id is not set");
         }
         if (artifact == null) {
             throw new JabatException("Batchlet artifact is not set");            
         }
-        setter.set(new BatchletStep(id, container, next, properties, listenerArtifacts, artifact));
-        return parent;
+        BatchletStep step = new BatchletStep(id, container, next, properties, listenerArtifacts, artifact);
+        container.addNode(step);
+        return step;
     }
 }
