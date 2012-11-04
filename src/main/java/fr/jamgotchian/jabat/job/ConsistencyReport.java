@@ -15,31 +15,18 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NextElement extends ControlElement {
-
-    private final String to;
+public class ConsistencyReport {
     
-    public NextElement(String on, String to) {
-        super(on);
-        if (to == null) {
-            throw new JabatException("to parameter is null");
-        }
-        this.to = to;
-    }
+    private final List<String> errors = new ArrayList<String>();
 
-    @Override
-    public ControlElementType getType() {
-        return ControlElementType.NEXT;
+    public void addError(String error) {
+        errors.add(error);
     }
-
-    public String getTo() {
-        return to;
-    }
-
 }

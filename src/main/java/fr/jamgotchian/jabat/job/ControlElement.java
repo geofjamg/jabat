@@ -15,15 +15,20 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public abstract class ControlElement {
     
-    private final String on;
+    protected final String on;
 
     public ControlElement(String on) {
+        if (on == null) {
+            throw new JabatException("on parameter is null");
+        }
         this.on = on;
     }
     

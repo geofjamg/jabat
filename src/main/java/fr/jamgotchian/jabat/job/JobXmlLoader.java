@@ -318,7 +318,11 @@ public class JobXmlLoader {
             throw new JabatException(e);
         } catch (XMLStreamException e) {
             throw new JabatException(e);
-        }       
+        }      
+        
+        // check job consistency
+        ConsistencyReport report = new JobConsistencyChecker(job).check();
+        
         // substitute property values
         new PropertyValueSubstitutor(job, parameters).substitute();
         
