@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.Deques;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
 import java.io.FileReader;
@@ -270,6 +271,21 @@ public class JobXmlLoader {
                                         throw new JabatException("Unexpected Xml context" 
                                                 + xmlContext.getFirst());
                                 }
+                            } else if ("checkpoint-algorithm".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                if (Deques.getSecond(xmlContext) == XmlContext.CHUNK) {
+                                    Artifact checkpointAlgoArtifact = new Artifact(ref);
+                                    ChunkStep chunk = (ChunkStep) Deques.getSecond(xmlElt);
+                                    if (chunk.getCheckpointPolicy() != CheckpointPolicy.CUSTOM) {
+                                        throw new JabatException("Checkpoint algorithm should be only specified in case of custom checkpoint policy");
+                                    }
+                                    chunk.setCheckpointAlgoArtifact(checkpointAlgoArtifact);
+                                    xmlContext.push(XmlContext.ARTIFACT);
+                                    xmlElt.push(checkpointAlgoArtifact);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context" 
+                                            + xmlContext.getFirst());                                    
+                                }
                             }
                             break;
 
@@ -280,7 +296,8 @@ public class JobXmlLoader {
                             String localName = xmlsr.getLocalName();
                             if ("job".equals(localName)
                                     || "split".equals(localName)
-                                    || "flow".equals(localName)) {
+                                    || "flow".equals(localName)
+                                    || "checkpoint-algorithm".equals(localName)) {
                                 xmlContext.pop();
                                 xmlElt.pop();
                             } else if ("batchlet".equals(localName)

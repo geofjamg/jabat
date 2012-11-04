@@ -35,6 +35,7 @@ import fr.jamgotchian.jabat.job.BatchletStep;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
+import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifactInstance;
 import fr.jamgotchian.jabat.artifact.JobListenerArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ItemProcessorArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ItemReaderArtifactInstance;
@@ -187,14 +188,19 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         }
     }
 
-    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step) {
+    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step, ChunkArtifactContext artifactContext) throws Exception {
         switch (step.getCheckpointPolicy()) {
             case ITEM:
                 return new ItemCheckpointAlgorithm(step.getCommitInterval());
             case TIME:
                 return new TimeCheckpointAlgorithm(step.getCommitInterval());
             case CUSTOM:
-                return new CustomCheckpointAlgorithm(null); // TODO
+                {
+                    String ref = step.getCheckpointAlgoArtifact().getRef();
+                    CheckpointAlgorithmArtifactInstance instance 
+                            = artifactContext.createCheckpointAlgorithm(ref);
+                    return new CustomCheckpointAlgorithm(instance);
+                }
             default:
                 throw new InternalError();
         }
@@ -257,7 +263,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 stepExecution.setStatus(Status.STARTED);
 
                 // select the checkpoint algorithm
-                CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step);
+                CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step, artifactContext);
 
                 TransactionManagerSPI transaction = new NoTransactionManager();
 

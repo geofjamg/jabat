@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.batch.annotation.BatchContext;
 import javax.batch.annotation.BatchProperty;
 import javax.batch.annotation.Batchlet;
+import javax.batch.annotation.CheckpointAlgorithm;
 import javax.batch.annotation.ItemProcessor;
 import javax.batch.annotation.ItemReader;
 import javax.batch.annotation.ItemWriter;
@@ -61,7 +62,8 @@ class JabatCdiExtension implements Extension {
                                                          ItemProcessor.class,
                                                          ItemWriter.class,
                                                          JobListener.class,
-                                                         StepListener.class));
+                                                         StepListener.class,
+                                                         CheckpointAlgorithm.class));
 
     private static final Set<Class<?>> CONTEXT_CLASSES
             = Collections.unmodifiableSet(Sets.newHashSet(JobContext.class,

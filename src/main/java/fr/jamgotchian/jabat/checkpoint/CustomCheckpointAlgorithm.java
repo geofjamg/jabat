@@ -23,30 +23,30 @@ import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifactInstance;
  */
 public class CustomCheckpointAlgorithm implements CheckpointAlgorithm {
 
-    private final CheckpointAlgorithmArtifactInstance artifact;
+    private final CheckpointAlgorithmArtifactInstance instance;
 
-    public CustomCheckpointAlgorithm(CheckpointAlgorithmArtifactInstance artifact) {
-        this.artifact = artifact;
+    public CustomCheckpointAlgorithm(CheckpointAlgorithmArtifactInstance instance) {
+        this.instance = instance;
     }
 
     @Override
     public int checkpointTimeout(int timeout) throws Exception {
-        return artifact.checkpointTimeout(timeout);
+        return instance.checkpointTimeout(timeout);
     }
 
     @Override
     public void beginCheckpoint() throws Exception {
-        artifact.beginCheckpoint();
+        instance.beginCheckpoint();
     }
 
     @Override
     public boolean isReadyToCheckpoint() throws Exception {
-        return artifact.isReadyToCheckpoint();
+        return instance.isReadyToCheckpoint();
     }
 
     @Override
     public void endCheckpoint() throws Exception {
-        artifact.endCheckpoint();
+        instance.endCheckpoint();
     }
 
 }

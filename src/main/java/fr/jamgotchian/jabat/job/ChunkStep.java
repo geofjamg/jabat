@@ -35,6 +35,8 @@ public class ChunkStep extends Step {
 
     private final int commitInterval;
 
+    private Artifact checkpointAlgoArtifact;
+    
     private final int bufferSize;
 
     private final int retryLimit;
@@ -74,6 +76,14 @@ public class ChunkStep extends Step {
         return commitInterval;
     }
 
+    public Artifact getCheckpointAlgoArtifact() {
+        return checkpointAlgoArtifact;
+    }
+
+    public void setCheckpointAlgoArtifact(Artifact checkpointAlgoArtifact) {
+        this.checkpointAlgoArtifact = checkpointAlgoArtifact;
+    }
+
     public int getBufferSize() {
         return bufferSize;
     }
@@ -90,6 +100,9 @@ public class ChunkStep extends Step {
             return processorArtifact;
         } else if (writerArtifact.getRef().equals(ref)) {
             return writerArtifact;
+        } else if (checkpointAlgoArtifact != null 
+                && checkpointAlgoArtifact.getRef().equals(ref)) {
+            return checkpointAlgoArtifact;
         } else {
             throw new JabatException("Artifact " + ref + " not found");
         }
