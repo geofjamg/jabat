@@ -28,11 +28,13 @@ public abstract class Step extends AbstractNode implements Node, Chainable, List
 
     private final String next;
 
-    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
+    private final List<Artifact> listenerArtifacts;
 
-    Step(String id, NodeContainer container, String next, Properties properties) {
+    Step(String id, NodeContainer container, String next, Properties properties,
+            List<Artifact> listenerArtifacts) {
         super(id, properties, container);
         this.next = next;
+        this.listenerArtifacts = listenerArtifacts;
     }
 
     @Override

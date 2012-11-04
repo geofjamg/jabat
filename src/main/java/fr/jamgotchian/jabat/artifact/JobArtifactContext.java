@@ -25,7 +25,8 @@ import javax.batch.spi.ArtifactFactory;
  */
 public class JobArtifactContext extends ArtifactContext {
 
-    private final List<JobListenerArtifactInstance> jobListeners = new ArrayList<JobListenerArtifactInstance>();
+    private final List<JobListenerArtifactInstance> jobListeners 
+            = new ArrayList<JobListenerArtifactInstance>();
 
     public JobArtifactContext(ArtifactFactory factory) {
         super(factory);

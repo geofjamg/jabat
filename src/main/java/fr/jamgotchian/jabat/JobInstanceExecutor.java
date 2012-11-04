@@ -40,6 +40,7 @@ import fr.jamgotchian.jabat.artifact.ItemProcessorArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ItemReaderArtifactInstance;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.ItemWriterArtifactInstance;
+import fr.jamgotchian.jabat.artifact.StepListenerArtifactInstance;
 import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.repository.JobRepository;
@@ -152,18 +153,31 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
+                // before step listeners
+                for (Artifact a : step.getListenerArtifacts()) {
+                    StepListenerArtifactInstance l = artifactContext.createStepListener(a.getRef());
+                    l.beforeStep();
+                }
+
                 BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
                 stepExecution.setBatchletArtifactInstance(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
 
                 String exitStatus = artifact.process();
+            
+                jobExecution.setStatus(Status.COMPLETED);
+                stepExecution.setStatus(Status.COMPLETED);
+                
+                // after step listeners
+                // TODO should be called even if case of error?
+                for (StepListenerArtifactInstance l : artifactContext.getStepListeners()) {
+                    l.afterStep();
+                }
             } finally {
                 artifactContext.release();
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
-            jobExecution.setStatus(Status.COMPLETED);
-            stepExecution.setStatus(Status.COMPLETED);
 
             visitNextNode(step);
         } catch (Throwable t) {
@@ -225,6 +239,12 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
+                // before step listeners
+                for (Artifact a : step.getListenerArtifacts()) {
+                    StepListenerArtifactInstance l = artifactContext.createStepListener(a.getRef());
+                    l.beforeStep();
+                }
+
                 ItemReaderArtifactInstance reader
                         = artifactContext.createItemReader(step.getReaderArtifact().getRef());
                 ItemProcessorArtifactInstance processor
@@ -300,12 +320,20 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         reader.close();
                     }
                 } // end of retry loop
+
+                // TODO what should be the status if we reach the max number of retry?
+                jobExecution.setStatus(Status.COMPLETED);
+                stepExecution.setStatus(Status.COMPLETED);
+            
+                // after step listeners
+                // TODO should be called even if case of error?
+                for (StepListenerArtifactInstance l : artifactContext.getStepListeners()) {
+                    l.afterStep();
+                }
             } finally {
                 artifactContext.release();
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
-            jobExecution.setStatus(Status.COMPLETED);
-            stepExecution.setStatus(Status.COMPLETED);
 
             visitNextNode(step);
         } catch(Throwable t) {

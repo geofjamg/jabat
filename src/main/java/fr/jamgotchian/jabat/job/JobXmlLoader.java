@@ -171,6 +171,7 @@ public class JobXmlLoader {
                                                                          container,
                                                                          stepElt.next,
                                                                          stepElt.properties,
+                                                                         stepElt.listenerArtifacts,
                                                                          artifact);
                                 container.addNode(batchlet);
                                 xmlContext.push(XmlContext.BATCHLET);
@@ -222,6 +223,7 @@ public class JobXmlLoader {
                                                                 container,
                                                                 stepElt.next,
                                                                 stepElt.properties,
+                                                                stepElt.listenerArtifacts,
                                                                 readerArtifact,
                                                                 processorArtifact,
                                                                 writerArtifact,

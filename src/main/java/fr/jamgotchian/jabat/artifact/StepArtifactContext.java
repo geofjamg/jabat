@@ -15,23 +15,33 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.batch.spi.ArtifactFactory;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactContext extends StepArtifactContext {
+public class StepArtifactContext extends ArtifactContext {
 
-    public BatchletArtifactContext(ArtifactFactory factory) {
+    private final List<StepListenerArtifactInstance> stepListeners 
+            = new ArrayList<StepListenerArtifactInstance>();
+
+    public StepArtifactContext(ArtifactFactory factory) {
         super(factory);
     }
 
-    public BatchletArtifactInstance createBatchlet(String ref) throws Exception {
+    public StepListenerArtifactInstance createStepListener(String ref) throws Exception {
         Object obj = factory.create(ref);
-        BatchletArtifactInstance instance = new BatchletArtifactInstance(obj, ref);
+        StepListenerArtifactInstance instance = new StepListenerArtifactInstance(obj, ref);
         addInstance(instance);
+        stepListeners.add(instance);
         return instance;
+    }
+
+    public List<StepListenerArtifactInstance> getStepListeners() {
+        return stepListeners;
     }
 
 }

@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -27,8 +28,9 @@ public class BatchletStep extends Step {
     private final Artifact artifact;
 
     BatchletStep(String id, NodeContainer container, String next,
-                 Properties properties, Artifact artifact) {
-        super(id, container, next, properties);
+                 Properties properties, List<Artifact> listenerArtifacts, 
+                 Artifact artifact) {
+        super(id, container, next, properties, listenerArtifacts);
         this.artifact = artifact;
     }
 

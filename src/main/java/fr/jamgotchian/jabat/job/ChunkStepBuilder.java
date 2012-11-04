@@ -16,6 +16,8 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -31,6 +33,8 @@ public class ChunkStepBuilder {
     private String next;
     
     private final Properties properties = new Properties();
+
+    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
 
     private CheckpointPolicy checkpointPolicy;
     
@@ -154,7 +158,7 @@ public class ChunkStepBuilder {
         if (writerArtifact == null) {
             throw new JabatException("Chunk writer artifact is not set");            
         }
-        return new ChunkStep(id, container, next, properties, 
+        return new ChunkStep(id, container, next, properties, listenerArtifacts, 
                              readerArtifact, processorArtifact, writerArtifact, 
                              getCheckpointPolicy(), commitInterval, 
                              getBufferSize(), retryLimit);

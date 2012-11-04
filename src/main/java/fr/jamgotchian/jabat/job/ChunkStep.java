@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -38,11 +39,12 @@ public class ChunkStep extends Step {
 
     private final int retryLimit;
 
-    ChunkStep(String id, NodeContainer container, String next, Properties properties,
+    ChunkStep(String id, NodeContainer container, String next, 
+              Properties properties, List<Artifact> listenerArtifacts,
               Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
               CheckpointPolicy checkpointPolicy, int commitInterval,
               int bufferSize, int retryLimit) {
-        super(id, container, next, properties);
+        super(id, container, next, properties, listenerArtifacts);
         this.readerArtifact = readerArtifact;
         this.processorArtifact = processorArtifact;
         this.writerArtifact = writerArtifact;

@@ -21,7 +21,7 @@ import javax.batch.spi.ArtifactFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ChunkArtifactContext extends ArtifactContext {
+public class ChunkArtifactContext extends StepArtifactContext {
 
     public ChunkArtifactContext(ArtifactFactory factory) {
         super(factory);
