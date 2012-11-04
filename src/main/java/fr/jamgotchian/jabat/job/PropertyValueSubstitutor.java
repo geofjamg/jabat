@@ -24,7 +24,7 @@ import org.antlr.runtime.RecognitionException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PropertyValueSubstitutor implements NodeVisitor<Properties> {
+public class PropertyValueSubstitutor {
 
     private final Job job;
     
@@ -40,66 +40,69 @@ public class PropertyValueSubstitutor implements NodeVisitor<Properties> {
         this.job = job;
         this.jobParameters = parameters;
     }
-    
+
     public void substitute() {
-        visit(job, new Properties());
+        visitor.visit(job, new Properties());
     }
     
-    private void substitute(Properties properties, Properties jobProperties) {
-        try {
-            for (String name : properties.stringPropertyNames()) {
-                String value = properties.getProperty(name);
-                properties.setProperty(name, JobUtil.substitute(value, jobParameters, jobProperties));
+    private NodeVisitor<Properties> visitor = new NodeVisitor<Properties>() {
+        
+        private void substitute(Properties properties, Properties jobProperties) {
+            try {
+                for (String name : properties.stringPropertyNames()) {
+                    String value = properties.getProperty(name);
+                    properties.setProperty(name, JobUtil.substitute(value, jobParameters, jobProperties));
+                }
+                jobProperties.putAll(job.getProperties());
+            } catch (IOException e) {
+                throw new JabatException(e);
+            } catch (RecognitionException e) {
+                throw new JabatException(e);            
             }
-            jobProperties.putAll(job.getProperties());
-        } catch (IOException e) {
-            throw new JabatException(e);
-        } catch (RecognitionException e) {
-            throw new JabatException(e);            
         }
-    }
-    
-    @Override
-    public void visit(Job job, Properties jobProperties) {
-        substitute(job.getProperties(), jobProperties);
-        for (Node node : job.getNodes()) {
-            node.accept(this, new Properties(jobProperties));
+
+        @Override
+        public void visit(Job job, Properties jobProperties) {
+            substitute(job.getProperties(), jobProperties);
+            for (Node node : job.getNodes()) {
+                node.accept(this, new Properties(jobProperties));
+            }
         }
-    }
 
-    @Override
-    public void visit(BatchletStep step, Properties jobProperties) {
-        substitute(step.getProperties(), jobProperties);
-        substitute(step.getArtifact().getProperties(), jobProperties);
-    }
-
-    @Override
-    public void visit(ChunkStep step, Properties jobProperties) {
-        substitute(step.getProperties(), jobProperties);
-        substitute(step.getReaderArtifact().getProperties(), new Properties(jobProperties));
-        substitute(step.getProcessorArtifact().getProperties(), new Properties(jobProperties));
-        substitute(step.getWriterArtifact().getProperties(), new Properties(jobProperties));
-    }
-
-    @Override
-    public void visit(Flow flow, Properties jobProperties) {
-        substitute(flow.getProperties(), jobProperties);
-        for (Node node : flow.getNodes()) {
-            node.accept(this, new Properties(jobProperties));
+        @Override
+        public void visit(BatchletStep step, Properties jobProperties) {
+            substitute(step.getProperties(), jobProperties);
+            substitute(step.getArtifact().getProperties(), jobProperties);
         }
-    }
 
-    @Override
-    public void visit(Split split, Properties jobProperties) {
-        substitute(split.getProperties(), jobProperties);
-        for (Node node : split.getNodes()) {
-            node.accept(this, new Properties(jobProperties));
+        @Override
+        public void visit(ChunkStep step, Properties jobProperties) {
+            substitute(step.getProperties(), jobProperties);
+            substitute(step.getReaderArtifact().getProperties(), new Properties(jobProperties));
+            substitute(step.getProcessorArtifact().getProperties(), new Properties(jobProperties));
+            substitute(step.getWriterArtifact().getProperties(), new Properties(jobProperties));
         }
-    }
 
-    @Override
-    public void visit(Decision decision, Properties jobProperties) {
-        substitute(decision.getProperties(), jobProperties);
-    }
+        @Override
+        public void visit(Flow flow, Properties jobProperties) {
+            substitute(flow.getProperties(), jobProperties);
+            for (Node node : flow.getNodes()) {
+                node.accept(this, new Properties(jobProperties));
+            }
+        }
+
+        @Override
+        public void visit(Split split, Properties jobProperties) {
+            substitute(split.getProperties(), jobProperties);
+            for (Node node : split.getNodes()) {
+                node.accept(this, new Properties(jobProperties));
+            }
+        }
+
+        @Override
+        public void visit(Decision decision, Properties jobProperties) {
+            substitute(decision.getProperties(), jobProperties);
+        }
+    };
     
 }
