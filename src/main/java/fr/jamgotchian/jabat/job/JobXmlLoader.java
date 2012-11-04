@@ -20,7 +20,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.batch.runtime.NoSuchJobException;
 import javax.xml.stream.FactoryConfigurationError;
@@ -28,7 +33,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
-import org.antlr.runtime.RecognitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,69 +44,76 @@ public class JobXmlLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private static class StepElement {
+    private static class StepElement implements Listenable, Propertiable {
 
         public String id;
 
         public String next;
 
-        private final Properties properties = new Properties();
+        private Properties properties = new Properties();
+
+        private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
 
         private StepElement(String id, String next) {
             this.id = id;
             this.next = next;
         }
+
+        @Override
+        public void addListenerArtifact(Artifact artifact) {
+            listenerArtifacts.add(artifact);
+        }
+
+        @Override
+        public Collection<Artifact> getListenerArtifacts() {
+            return listenerArtifacts;
+        }
+
+        @Override
+        public Properties getProperties() {
+            return properties;
+        }
+
+        @Override
+        public void setProperties(Properties properties) {
+            this.properties = properties;
+        }
     }
 
+    private static class MultipleArtifactsElement {
+        
+        private final Map<String, Artifact> artifacts = new HashMap<String, Artifact>();
+
+        private MultipleArtifactsElement(Artifact... artifacts) {
+            for (Artifact a : artifacts) {
+                this.artifacts.put(a.getRef(), a);
+            }
+        }
+        
+        private Artifact getArtifact(String ref) {
+            Artifact a = artifacts.get(ref);
+            if (a == null) {
+                throw new JabatException("Artifact " + ref + " not found");
+            }
+            return a;
+        }
+    }
+    
+    private enum XmlContext {
+        JOB,
+        STEP,
+        BATCHLET,
+        CHUNK,
+        SPLIT,
+        FLOW,
+        DECISION,
+        ARTIFACT,
+        MULTIPLE_ARTIFACTS,
+    }
+    
     private final JobPath path = new JobPath();
 
     public JobXmlLoader() {
-    }
-
-    private static NodeContainer getContainer(Deque<Object> element) {
-        if (element.getFirst() instanceof NodeContainer) {
-            return (NodeContainer) element.getFirst();
-        } else {
-            throw new JabatException("Element is not a node container");
-        }
-    }
-
-    private static void setProperty(Deque<Object> element, StepElement stepElt,
-                                    String name, String value, String applyTo)
-            throws IOException, JabatException, RecognitionException {
-        Properties properties = null;
-        Object first = element.getFirst();
-        if (stepElt != null) {
-            properties = stepElt.properties;
-        } else if (first instanceof Job) {
-            properties = ((Job) first).getProperties();
-        } else if (first instanceof BatchletStep) {
-            properties = ((BatchletStep) first).getArtifact().getProperties();
-        } else if (first instanceof ChunkStep) {
-            ChunkStep chunk = (ChunkStep) first;
-            if (applyTo != null) {
-                if (applyTo.equals(chunk.getReaderArtifact().getRef())) {
-                    properties = chunk.getReaderArtifact().getProperties();
-                } else if (applyTo.equals(chunk.getProcessorArtifact().getRef())) {
-                    properties = chunk.getProcessorArtifact().getProperties();
-                } else if (applyTo.equals(chunk.getWriterArtifact().getRef())) {
-                    properties = chunk.getWriterArtifact().getProperties();
-                }
-            }
-        } else {
-            throw new JabatException("Cannot set the property");
-        }
-        if (properties != null) {
-            properties.setProperty(name, value);
-        }
-    }
-
-    private static Listenable getListenable(Deque<Object> element) {
-        if (element.getFirst() instanceof Listenable) {
-            return (Listenable) element.getFirst();
-        } else {
-            throw new JabatException("Element is not a listenable");
-        }
     }
 
     private Job loadFile(File file, String jobId, Properties parameters) {
@@ -110,8 +121,11 @@ public class JobXmlLoader {
         try {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(new FileReader(file));
-            Deque<Object> element = new ArrayDeque<Object>(1);
-            StepElement stepElt = null;
+            
+            // xml contextual information
+            Deque<XmlContext> xmlContext = new ArrayDeque<XmlContext>(3);
+            Deque<Object> xmlElt = new ArrayDeque<Object>(3);
+            
             while (xmlsr.hasNext()) {
                 int eventType = xmlsr.next();
                 switch (eventType) {
@@ -124,36 +138,45 @@ public class JobXmlLoader {
                                     return null;
                                 }
                                 job = new Job(id);
-                                element.push(job);
+                                xmlContext.push(XmlContext.JOB);
+                                xmlElt.push(job);
                             } else if ("step".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                stepElt = new StepElement(id, next);
+                                StepElement stepElt = new StepElement(id, next);
+                                xmlContext.push(XmlContext.STEP);
+                                xmlElt.push(stepElt);
                             } else if ("split".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                NodeContainer container = getContainer(element);
+                                NodeContainer container = (NodeContainer) xmlElt.getFirst();
                                 Split split = new Split(id, container, next);
                                 container.addNode(split);
-                                element.push(split);
+                                xmlContext.push(XmlContext.SPLIT);
+                                xmlElt.push(split);
                             } else if ("flow".equals(localName)) {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
-                                NodeContainer container = getContainer(element);
+                                NodeContainer container = (NodeContainer) xmlElt.getFirst();
                                 Flow flow = new Flow(id, container, next);
                                 container.addNode(flow);
-                                element.push(flow);
+                                xmlContext.push(XmlContext.FLOW);
+                                xmlElt.push(flow);
                             } else if ("batchlet".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                NodeContainer container = getContainer(element);
-                                Step step = new BatchletStep(stepElt.id,
-                                                             container,
-                                                             stepElt.next,
-                                                             stepElt.properties,
-                                                             new Artifact(ref));
-                                container.addNode(step);
-                                element.push(step);
-                                stepElt = null;
+                                StepElement stepElt = (StepElement) xmlElt.pop();
+                                NodeContainer container = (NodeContainer) xmlElt.getFirst();
+                                Artifact artifact = new Artifact(ref);
+                                BatchletStep batchlet = new BatchletStep(stepElt.id,
+                                                                         container,
+                                                                         stepElt.next,
+                                                                         stepElt.properties,
+                                                                         artifact);
+                                container.addNode(batchlet);
+                                xmlContext.push(XmlContext.BATCHLET);
+                                xmlContext.push(XmlContext.ARTIFACT);
+                                xmlElt.push(batchlet);
+                                xmlElt.push(artifact);
                             } else if ("chunk".equals(localName)) {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
@@ -190,31 +213,64 @@ public class JobXmlLoader {
                                 if (value != null) {
                                     retryLimit = Integer.valueOf(value);
                                 }
-                                NodeContainer container = getContainer(element);
-                                Step step = new ChunkStep(stepElt.id,
-                                                          container,
-                                                          stepElt.next,
-                                                          stepElt.properties,
-                                                          new Artifact(readerRef),
-                                                          new Artifact(processorRef),
-                                                          new Artifact(writerRef),
-                                                          checkpointPolicy,
-                                                          commitInterval,
-                                                          bufferSize,
-                                                          retryLimit);
-                                container.addNode(step);
-                                element.push(step);
-                                stepElt = null;
+                                StepElement stepElt = (StepElement) xmlElt.pop();
+                                NodeContainer container = (NodeContainer) xmlElt.getFirst();
+                                Artifact readerArtifact = new Artifact(readerRef);
+                                Artifact processorArtifact = new Artifact(processorRef);
+                                Artifact writerArtifact = new Artifact(writerRef);
+                                ChunkStep chunk = new ChunkStep(stepElt.id,
+                                                                container,
+                                                                stepElt.next,
+                                                                stepElt.properties,
+                                                                readerArtifact,
+                                                                processorArtifact,
+                                                                writerArtifact,
+                                                                checkpointPolicy,
+                                                                commitInterval,
+                                                                bufferSize,
+                                                                retryLimit);
+                                container.addNode(chunk);
+                                xmlContext.push(XmlContext.CHUNK);
+                                xmlElt.push(chunk);
+                                xmlContext.push(XmlContext.MULTIPLE_ARTIFACTS);
+                                xmlElt.push(new MultipleArtifactsElement(readerArtifact, 
+                                                                         processorArtifact, 
+                                                                         writerArtifact));
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
-                                String applyTo = xmlsr.getAttributeValue(null, "applyTo");
-                                setProperty(element, stepElt, name, value, applyTo);
+                                switch (xmlContext.getFirst()) {
+                                    case JOB:
+                                    case STEP:
+                                    case ARTIFACT:
+                                        ((Propertiable) xmlElt.getFirst()).getProperties().setProperty(name, value);
+                                        break;
+                                    case MULTIPLE_ARTIFACTS:
+                                        String applyTo = xmlsr.getAttributeValue(null, "applyTo");
+                                        if (applyTo != null) {
+                                            MultipleArtifactsElement artifacts = (MultipleArtifactsElement) xmlElt.getFirst();
+                                            artifacts.getArtifact(applyTo).getProperties().setProperty(name, value);
+                                        }
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context" 
+                                                + xmlContext.getFirst());
+                                }
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                getListenable(element).addListenerArtifact(new Artifact(ref));
+                                switch (xmlContext.getFirst()) {
+                                    case JOB:
+                                    case STEP:
+                                        Artifact artifact = new Artifact(ref);
+                                        ((Listenable) xmlElt.getFirst()).addListenerArtifact(artifact);
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context" 
+                                                + xmlContext.getFirst());
+                                }
                             }
                             break;
+
                         }
 
                     case XMLEvent.END_ELEMENT:
@@ -222,10 +278,15 @@ public class JobXmlLoader {
                             String localName = xmlsr.getLocalName();
                             if ("job".equals(localName)
                                     || "split".equals(localName)
-                                    || "flow".equals(localName)
-                                    || "batchlet".equals(localName)
+                                    || "flow".equals(localName)) {
+                                xmlContext.pop();
+                                xmlElt.pop();
+                            } else if ("batchlet".equals(localName)
                                     || "chunk".equals(localName)) {
-                                element.pop();
+                                xmlContext.pop();
+                                xmlContext.pop();
+                                xmlElt.pop();
+                                xmlElt.pop();
                             }
                         }
                         break;
@@ -237,10 +298,7 @@ public class JobXmlLoader {
             throw new JabatException(e);
         } catch (XMLStreamException e) {
             throw new JabatException(e);
-        } catch (RecognitionException e) {
-            throw new JabatException(e);
-        }
-       
+        }       
         // substitute property values
         new PropertyValueSubstitutor(job, parameters).substitute();
         
