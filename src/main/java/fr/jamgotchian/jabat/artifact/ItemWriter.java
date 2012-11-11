@@ -15,22 +15,14 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.BatchletProxy;
-import javax.batch.spi.ArtifactFactory;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactContext extends StepArtifactContext {
+public interface ItemWriter extends Resource {
 
-    public BatchletArtifactContext(ArtifactFactory factory) {
-        super(factory);
-    }
-
-    public Batchlet createBatchlet(String ref) throws Exception {
-        Object obj = create(ref);
-        return new BatchletProxy(obj);
-    }
-
+    void writeItems(List<Object> items) throws Exception;
+    
 }

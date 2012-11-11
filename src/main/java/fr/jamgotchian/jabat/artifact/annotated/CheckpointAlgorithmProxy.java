@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.CheckpointAlgorithmAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.CheckpointAlgorithm;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmArtifactInstance {
+public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
     
     private final Object object;
 
     private final CheckpointAlgorithmAnnotatedClass annotatedClass;
     
-    public CheckpointAlgorithmArtifactInstance(Object object) {
+    public CheckpointAlgorithmProxy(Object object) {
         this.object = object;
         annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
     }
 
+    @Override
     public int checkpointTimeout(int timeout) throws Exception {
         int nextTimeout = timeout;
         try {
@@ -47,6 +48,7 @@ public class CheckpointAlgorithmArtifactInstance {
         return nextTimeout;
     }
 
+    @Override
     public void beginCheckpoint() throws Exception {
         try {
             annotatedClass.getBeginCheckpointMethod().invoke(object);
@@ -59,6 +61,7 @@ public class CheckpointAlgorithmArtifactInstance {
         }
     }
 
+    @Override
     public boolean isReadyToCheckpoint() throws Exception {
         boolean isReady = false;
         try {
@@ -73,6 +76,7 @@ public class CheckpointAlgorithmArtifactInstance {
         return isReady;
     }
 
+    @Override
     public void endCheckpoint() throws Exception {
         try {
             annotatedClass.getEndCheckpointMethod().invoke(object);

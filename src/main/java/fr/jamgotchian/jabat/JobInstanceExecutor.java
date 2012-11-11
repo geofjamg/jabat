@@ -15,11 +15,18 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.artifact.Batchlet;
+import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
+import fr.jamgotchian.jabat.artifact.CheckpointAlgorithm;
+import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
+import fr.jamgotchian.jabat.artifact.ItemProcessor;
+import fr.jamgotchian.jabat.artifact.ItemReader;
+import fr.jamgotchian.jabat.artifact.ItemWriter;
+import fr.jamgotchian.jabat.artifact.JobArtifactContext;
+import fr.jamgotchian.jabat.artifact.JobListener;
+import fr.jamgotchian.jabat.artifact.StepListener;
 import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
-import fr.jamgotchian.jabat.checkpoint.CustomCheckpointAlgorithm;
-import fr.jamgotchian.jabat.checkpoint.CheckpointAlgorithm;
-import fr.jamgotchian.jabat.artifact.JobArtifactContext;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
@@ -33,15 +40,6 @@ import fr.jamgotchian.jabat.job.Decision;
 import fr.jamgotchian.jabat.job.NodeVisitor;
 import fr.jamgotchian.jabat.job.BatchletStep;
 import fr.jamgotchian.jabat.job.Node;
-import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
-import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
-import fr.jamgotchian.jabat.artifact.CheckpointAlgorithmArtifactInstance;
-import fr.jamgotchian.jabat.artifact.JobListenerArtifactInstance;
-import fr.jamgotchian.jabat.artifact.ItemProcessorArtifactInstance;
-import fr.jamgotchian.jabat.artifact.ItemReaderArtifactInstance;
-import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.ItemWriterArtifactInstance;
-import fr.jamgotchian.jabat.artifact.StepListenerArtifactInstance;
 import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.repository.JobRepository;
@@ -108,7 +106,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     try {
                         // before job listeners
                         for (Artifact a : job.getListenerArtifacts()) {
-                            JobListenerArtifactInstance l = artifactContext.createJobListener(a.getRef());
+                            JobListener l = artifactContext.createJobListener(a.getRef());
                             l.beforeJob();
                         }
 
@@ -117,7 +115,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         job.getFirstChainableNode().accept(JobInstanceExecutor.this, null);
 
                         // after job listeners
-                        for (JobListenerArtifactInstance l : artifactContext.getJobListeners()) {
+                        for (JobListener l : artifactContext.getJobListeners()) {
                             l.afterJob();
                         }
                     } finally {
@@ -151,12 +149,12 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             try {
                 // before step listeners
                 for (Artifact a : step.getListenerArtifacts()) {
-                    StepListenerArtifactInstance l = artifactContext.createStepListener(a.getRef());
+                    StepListener l = artifactContext.createStepListener(a.getRef());
                     l.beforeStep();
                 }
 
-                BatchletArtifactInstance artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
-                stepExecution.setBatchletArtifactInstance(artifact);
+                Batchlet artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
+                stepExecution.setBatchlet(artifact);
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -167,7 +165,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 
                 // after step listeners
                 // TODO should be called even if case of error?
-                for (StepListenerArtifactInstance l : artifactContext.getStepListeners()) {
+                for (StepListener l : artifactContext.getStepListeners()) {
                     l.afterStep();
                 }
             } finally {
@@ -192,9 +190,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             case CUSTOM:
                 {
                     String ref = step.getCheckpointAlgoArtifact().getRef();
-                    CheckpointAlgorithmArtifactInstance instance 
-                            = artifactContext.createCheckpointAlgorithm(ref);
-                    return new CustomCheckpointAlgorithm(instance);
+                    return artifactContext.createCheckpointAlgorithm(ref);
                 }
             default:
                 throw new InternalError();
@@ -213,16 +209,16 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             try {
                 // before step listeners
                 for (Artifact a : step.getListenerArtifacts()) {
-                    StepListenerArtifactInstance l = artifactContext.createStepListener(a.getRef());
+                    StepListener l = artifactContext.createStepListener(a.getRef());
                     l.beforeStep();
                 }
 
-                ItemReaderArtifactInstance reader
+                ItemReader reader
                         = artifactContext.createItemReader(step.getReaderArtifact().getRef());
-                ItemProcessorArtifactInstance processor
+                ItemProcessor processor
                         = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef(),
                                                               reader.getItemType());
-                ItemWriterArtifactInstance writer
+                ItemWriter writer
                         = artifactContext.createItemWriter(step.getWriterArtifact().getRef(),
                                                            processor.getOutputItemType());
 
@@ -299,7 +295,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             
                 // after step listeners
                 // TODO should be called even if case of error?
-                for (StepListenerArtifactInstance l : artifactContext.getStepListeners()) {
+                for (StepListener l : artifactContext.getStepListeners()) {
                     l.afterStep();
                 }
             } finally {

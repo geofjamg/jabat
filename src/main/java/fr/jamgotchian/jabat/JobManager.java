@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.artifact.Batchlet;
 import fr.jamgotchian.jabat.job.JobXmlLoader;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
@@ -22,7 +23,6 @@ import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.artifact.BatchletArtifactInstance;
 import fr.jamgotchian.jabat.task.TaskManager;
 import java.util.Collections;
 import java.util.List;
@@ -129,7 +129,7 @@ public class JobManager {
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
             // TODO only stop running check execution
-            BatchletArtifactInstance artifactInstance = stepExecution.getBatchletArtifactInstance();
+            Batchlet artifactInstance = stepExecution.getBatchlet();
             if (artifactInstance != null) {
                 try {
                     artifactInstance.stop();

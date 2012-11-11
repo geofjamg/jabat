@@ -15,6 +15,10 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import fr.jamgotchian.jabat.artifact.annotated.CheckpointAlgorithmProxy;
+import fr.jamgotchian.jabat.artifact.annotated.ItemProcessorProxy;
+import fr.jamgotchian.jabat.artifact.annotated.ItemReaderProxy;
+import fr.jamgotchian.jabat.artifact.annotated.ItemWriterProxy;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -27,24 +31,24 @@ public class ChunkArtifactContext extends StepArtifactContext {
         super(factory);
     }
 
-    public ItemReaderArtifactInstance createItemReader(String ref) throws Exception {
+    public ItemReader createItemReader(String ref) throws Exception {
         Object obj = create(ref);
-        return new ItemReaderArtifactInstance(obj);
+        return new ItemReaderProxy(obj);
     }
 
-    public ItemProcessorArtifactInstance createItemProcessor(String ref, Class<?> itemType) throws Exception {
+    public ItemProcessor createItemProcessor(String ref, Class<?> itemType) throws Exception {
         Object obj = create(ref);
-        return new ItemProcessorArtifactInstance(obj, itemType);
+        return new ItemProcessorProxy(obj, itemType);
     }
 
-    public ItemWriterArtifactInstance createItemWriter(String ref, Class<?> outputItemType) throws Exception {
+    public ItemWriter createItemWriter(String ref, Class<?> outputItemType) throws Exception {
         Object obj = create(ref);
-        return new ItemWriterArtifactInstance(obj, outputItemType);
+        return new ItemWriterProxy(obj, outputItemType);
     }
 
-    public CheckpointAlgorithmArtifactInstance createCheckpointAlgorithm(String ref) throws Exception {
+    public CheckpointAlgorithm createCheckpointAlgorithm(String ref) throws Exception {
         Object obj = create(ref);
-        return new CheckpointAlgorithmArtifactInstance(obj);
+        return new CheckpointAlgorithmProxy(obj);
     }
 
 }

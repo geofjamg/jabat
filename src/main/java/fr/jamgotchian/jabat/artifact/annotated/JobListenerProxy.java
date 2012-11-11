@@ -13,38 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.ItemProcessorAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.JobListener;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorArtifactInstance {
-
+public class JobListenerProxy implements JobListener {
+    
     private final Object object;
 
-    private final Class<?> inputItemType;
+    private final JobListenerAnnotatedClass annotatedClass;
 
-    private final ItemProcessorAnnotatedClass annotatedClass;
-    
-    public ItemProcessorArtifactInstance(Object object, Class<?> inputItemType) {
+    public JobListenerProxy(Object object) {
         this.object = object;
-        this.inputItemType = inputItemType;
-        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
+        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 
-    public Class<?> getOutputItemType() {
-        return annotatedClass.getProcessItemMethod().getReturnType();
-    }
-
-    public Object processItem(Object item) throws Exception {
-        // TODO check item has itemType type
+    @Override
+    public void beforeJob() throws Exception {
         try {
-            return annotatedClass.getProcessItemMethod().invoke(object, item);
+            if (annotatedClass.getBeforeJobMethod() != null) {
+                annotatedClass.getBeforeJobMethod().invoke(object);
+            }
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void afterJob() throws Exception {
+        try {
+            if (annotatedClass.getAfterJobMethod() != null) {
+                annotatedClass.getAfterJobMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.checkpoint;
+package fr.jamgotchian.jabat.artifact;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface CheckpointAlgorithm {
+public interface Batchlet {
+   
+    String process() throws Exception;
 
-    int checkpointTimeout(int timeout) throws Exception;
-
-    void beginCheckpoint() throws Exception;
-
-    boolean isReadyToCheckpoint() throws Exception;
-
-    void endCheckpoint() throws Exception;
+    void stop() throws Exception;
 
 }

@@ -15,6 +15,8 @@
  */
 package fr.jamgotchian.jabat.checkpoint;
 
+import fr.jamgotchian.jabat.artifact.CheckpointAlgorithm;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>

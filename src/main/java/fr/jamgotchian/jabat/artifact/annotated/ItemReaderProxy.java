@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.ItemWriterAnnotatedClass;
-import fr.jamgotchian.jabat.artifact.annotated.ResourceAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.ItemReader;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
- * @WriteItems void <method-name> (List<item-type> items) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemWriterArtifactInstance extends ResourceArtifactInstance {
+public class ItemReaderProxy extends ResourceProxy implements ItemReader {
 
-    private final Class<?> outputItemType;
+    private final ItemReaderAnnotatedClass annotatedClass;
     
-    private final ItemWriterAnnotatedClass annotatedClass;
-
-    public ItemWriterArtifactInstance(Object object, Class<?> outputItemType) {
+    public ItemReaderProxy(Object object) {
         super(object);
-        this.outputItemType = outputItemType;
-        annotatedClass = new ItemWriterAnnotatedClass(object.getClass(), outputItemType);
+        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
     }
 
     @Override
@@ -42,10 +36,14 @@ public class ItemWriterArtifactInstance extends ResourceArtifactInstance {
         return annotatedClass;
     }
 
-    public void writeItems(List<Object> items) throws Exception {
-        // TODO check items have itemType type
+    public Class<?> getItemType() {
+        return annotatedClass.getReadItemMethod().getReturnType();
+    }
+
+    @Override
+    public Object readItem() throws Exception {
         try {
-            annotatedClass.getWriteItemsMethod().invoke(object, items);
+            return annotatedClass.getReadItemMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

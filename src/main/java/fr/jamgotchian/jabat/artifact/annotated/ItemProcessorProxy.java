@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.ItemReaderAnnotatedClass;
-import fr.jamgotchian.jabat.artifact.annotated.ResourceAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.ItemProcessor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
+ * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderArtifactInstance extends ResourceArtifactInstance {
+public class ItemProcessorProxy implements ItemProcessor {
 
-    private final ItemReaderAnnotatedClass annotatedClass;
+    private final Object object;
+
+    private final Class<?> inputItemType;
+
+    private final ItemProcessorAnnotatedClass annotatedClass;
     
-    public ItemReaderArtifactInstance(Object object) {
-        super(object);
-        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
+    public ItemProcessorProxy(Object object, Class<?> inputItemType) {
+        this.object = object;
+        this.inputItemType = inputItemType;
+        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
+    }
+
+    public Class<?> getOutputItemType() {
+        return annotatedClass.getProcessItemMethod().getReturnType();
     }
 
     @Override
-    protected ResourceAnnotatedClass getAnnotatedClass() {
-        return annotatedClass;
-    }
-
-    public Class<?> getItemType() {
-        return annotatedClass.getReadItemMethod().getReturnType();
-    }
-
-    public Object readItem() throws Exception {
+    public Object processItem(Object item) throws Exception {
+        // TODO check item has itemType type
         try {
-            return annotatedClass.getReadItemMethod().invoke(object);
+            return annotatedClass.getProcessItemMethod().invoke(object, item);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

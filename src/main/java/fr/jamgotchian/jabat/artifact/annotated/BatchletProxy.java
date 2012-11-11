@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.JobListenerAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.Batchlet;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerArtifactInstance {
+public class BatchletProxy implements Batchlet {
     
     private final Object object;
 
-    private final JobListenerAnnotatedClass annotatedClass;
+    private final BatchletAnnotatedClass annotatedClass;
 
-    public JobListenerArtifactInstance(Object object) {
+    public BatchletProxy(Object object) {
         this.object = object;
-        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
+        annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 
-    public void beforeJob() throws Exception {
+    @Override
+    public String process() throws Exception {
+        String exitStatus = null;
         try {
-            if (annotatedClass.getBeforeJobMethod() != null) {
-                annotatedClass.getBeforeJobMethod().invoke(object);
-            }
+            exitStatus = (String) annotatedClass.getProcessMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -45,13 +45,13 @@ public class JobListenerArtifactInstance {
                 throw e;
             }
         }
+        return exitStatus;
     }
 
-    public void afterJob() throws Exception {
+    @Override
+    public void stop() throws Exception {
         try {
-            if (annotatedClass.getAfterJobMethod() != null) {
-                annotatedClass.getAfterJobMethod().invoke(object);
-            }
+            annotatedClass.getStopMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

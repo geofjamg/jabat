@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.StepListenerAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.StepListener;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerArtifactInstance {
+public class StepListenerProxy implements StepListener {
     
     private final Object object;
 
     private final StepListenerAnnotatedClass annotatedClass;
 
-    public StepListenerArtifactInstance(Object object) {
+    public StepListenerProxy(Object object) {
         this.object = object;
         annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 
+    @Override
     public void beforeStep() throws Exception {
         try {
             if (annotatedClass.getBeforeStepMethod() != null) {
@@ -47,6 +48,7 @@ public class StepListenerArtifactInstance {
         }
     }
 
+    @Override
     public void afterStep() throws Exception {
         try {
             if (annotatedClass.getAfterStepMethod() != null) {

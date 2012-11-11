@@ -15,22 +15,18 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.BatchletProxy;
-import javax.batch.spi.ArtifactFactory;
+import java.io.Externalizable;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactContext extends StepArtifactContext {
+public interface Resource {
 
-    public BatchletArtifactContext(ArtifactFactory factory) {
-        super(factory);
-    }
+    void close() throws Exception;
 
-    public Batchlet createBatchlet(String ref) throws Exception {
-        Object obj = create(ref);
-        return new BatchletProxy(obj);
-    }
+    Externalizable getCheckpointInfo() throws Exception;
 
+    void open(Externalizable checkpoint) throws Exception;
+    
 }

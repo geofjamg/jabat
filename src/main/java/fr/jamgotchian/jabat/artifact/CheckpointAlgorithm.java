@@ -15,22 +15,18 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.BatchletProxy;
-import javax.batch.spi.ArtifactFactory;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactContext extends StepArtifactContext {
+public interface CheckpointAlgorithm {
 
-    public BatchletArtifactContext(ArtifactFactory factory) {
-        super(factory);
-    }
+    void beginCheckpoint() throws Exception;
 
-    public Batchlet createBatchlet(String ref) throws Exception {
-        Object obj = create(ref);
-        return new BatchletProxy(obj);
-    }
+    int checkpointTimeout(int timeout) throws Exception;
 
+    void endCheckpoint() throws Exception;
+
+    boolean isReadyToCheckpoint() throws Exception;
+    
 }

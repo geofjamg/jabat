@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import fr.jamgotchian.jabat.artifact.annotated.StepListenerProxy;
 import java.util.ArrayList;
 import java.util.List;
 import javax.batch.spi.ArtifactFactory;
@@ -25,21 +26,20 @@ import javax.batch.spi.ArtifactFactory;
  */
 public class StepArtifactContext extends ArtifactContext {
 
-    private final List<StepListenerArtifactInstance> stepListeners 
-            = new ArrayList<StepListenerArtifactInstance>();
+    private final List<StepListener> stepListeners = new ArrayList<StepListener>();
 
     public StepArtifactContext(ArtifactFactory factory) {
         super(factory);
     }
 
-    public StepListenerArtifactInstance createStepListener(String ref) throws Exception {
+    public StepListener createStepListener(String ref) throws Exception {
         Object obj = create(ref);
-        StepListenerArtifactInstance instance = new StepListenerArtifactInstance(obj);
-        stepListeners.add(instance);
-        return instance;
+        StepListenerProxy proxy = new StepListenerProxy(obj);
+        stepListeners.add(proxy);
+        return proxy;
     }
 
-    public List<StepListenerArtifactInstance> getStepListeners() {
+    public List<StepListener> getStepListeners() {
         return stepListeners;
     }
 

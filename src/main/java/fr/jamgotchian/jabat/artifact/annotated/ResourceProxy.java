@@ -13,30 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.annotated.BatchletAnnotatedClass;
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactInstance {
+abstract class ResourceProxy {
     
-    private final Object object;
+    protected final Object object;
 
-    private final BatchletAnnotatedClass annotatedClass;
-
-    public BatchletArtifactInstance(Object object) {
+    protected ResourceProxy(Object object) {
         this.object = object;
-        annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 
-    public String process() throws Exception {
-        String exitStatus = null;
+    protected abstract ResourceAnnotatedClass getAnnotatedClass();
+
+    public void open(Externalizable checkpoint) throws Exception {
         try {
-            exitStatus = (String) annotatedClass.getProcessMethod().invoke(object);
+            getAnnotatedClass().getOpenMethod().invoke(object, checkpoint);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -44,12 +42,25 @@ public class BatchletArtifactInstance {
                 throw e;
             }
         }
-        return exitStatus;
     }
 
-    public void stop() throws Exception {
+    public void close() throws Exception {
         try {
-            annotatedClass.getStopMethod().invoke(object);
+            if (getAnnotatedClass().getCloseMethod() != null) {
+                getAnnotatedClass().getCloseMethod().invoke(object);
+            }
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public Externalizable getCheckpointInfo() throws Exception {
+        try {
+            return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
