@@ -15,24 +15,16 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.StepListenerAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BeforeStep;
 
 /**
- * @BeforeStep void <method-name> () throws Exception
- * @AfterStep void <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class StepListenerArtifactInstance extends ArtifactInstance {
 
-    private Method beforeStepMethod;
-
-    private Method afterStepMethod;
+    private StepListenerAnnotatedClass annotatedClass;
 
     public StepListenerArtifactInstance(Object object, String ref) {
         super(object, ref);
@@ -40,34 +32,13 @@ public class StepListenerArtifactInstance extends ArtifactInstance {
 
     @Override
     public void initialize() {
-        beforeStepMethod = findAnnotatedMethod(object.getClass(), BeforeStep.class, true, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        if (beforeStepMethod != null) {
-            beforeStepMethod.setAccessible(true);
-        }
-        afterStepMethod = findAnnotatedMethod(object.getClass(), AfterStep.class, true, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        if (afterStepMethod != null) {
-            afterStepMethod.setAccessible(true);
-        }
+        annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 
     public void beforeStep() throws Exception {
         try {
-            if (beforeStepMethod != null) {
-                beforeStepMethod.invoke(object);
+            if (annotatedClass.getBeforeStepMethod() != null) {
+                annotatedClass.getBeforeStepMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -80,8 +51,8 @@ public class StepListenerArtifactInstance extends ArtifactInstance {
 
     public void afterStep() throws Exception {
         try {
-            if (afterStepMethod != null) {
-                afterStepMethod.invoke(object);
+            if (annotatedClass.getAfterStepMethod() != null) {
+                annotatedClass.getAfterStepMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {

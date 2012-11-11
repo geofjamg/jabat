@@ -15,42 +15,40 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.util.MethodUtil;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.ItemReaderAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.annotated.ResourceAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.batch.annotation.ReadItem;
 
 /**
- * @ReadItem <item-type> <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderArtifactInstance extends ItemIOArtifactInstance {
+public class ItemReaderArtifactInstance extends ResourceArtifactInstance {
 
-    private final Method readItemMethod;
-
+    private ItemReaderAnnotatedClass annotatedClass;
+    
     public ItemReaderArtifactInstance(Object object, String ref) {
         super(object, ref);
-        readItemMethod = findAnnotatedMethod(object.getClass(), ReadItem.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && MethodUtil.hasZeroParameter(m)
-                        && MethodUtil.throwsOneException(m, Exception.class);
-            }
-        });
-        readItemMethod.setAccessible(true);
+    }
+
+    @Override
+    protected ResourceAnnotatedClass getAnnotatedClass() {
+        return annotatedClass;
+    }
+
+    @Override
+    public void initialize() {
+        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
+        
     }
 
     public Class<?> getItemType() {
-        return readItemMethod.getReturnType();
+        return annotatedClass.getReadItemMethod().getReturnType();
     }
 
     public Object readItem() throws Exception {
         try {
-            return readItemMethod.invoke(object);
+            return annotatedClass.getReadItemMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

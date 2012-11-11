@@ -15,43 +15,25 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.CheckpointAlgorithmAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.annotated.ResourceAnnotatedClass;
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
+abstract class ResourceArtifactInstance extends ArtifactInstance {
 
-    private CheckpointAlgorithmAnnotatedClass annotatedClass;
-    
-    public CheckpointAlgorithmArtifactInstance(Object object, String ref) {
+    protected ResourceArtifactInstance(Object object, String ref) {
         super(object, ref);
     }
 
-    @Override
-    public void initialize() {
-        annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
-    }
+    protected abstract ResourceAnnotatedClass getAnnotatedClass();
 
-    public int checkpointTimeout(int timeout) throws Exception {
-        int nextTimeout = timeout;
+    public void open(Externalizable checkpoint) throws Exception {
         try {
-            nextTimeout = (Integer) annotatedClass.getCheckpointTimeoutMethod().invoke(object, timeout);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
-        return nextTimeout;
-    }
-
-    public void beginCheckpoint() throws Exception {
-        try {
-            annotatedClass.getBeginCheckpointMethod().invoke(object);
+            getAnnotatedClass().getOpenMethod().invoke(object, checkpoint);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -61,10 +43,11 @@ public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
         }
     }
 
-    public boolean isReadyToCheckpoint() throws Exception {
-        boolean isReady = false;
+    public void close() throws Exception {
         try {
-            isReady = (Boolean) annotatedClass.getIsReadyToCheckpointMethod().invoke(object);
+            if (getAnnotatedClass().getCloseMethod() != null) {
+                getAnnotatedClass().getCloseMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -72,12 +55,11 @@ public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
                 throw e;
             }
         }
-        return isReady;
     }
 
-    public void endCheckpoint() throws Exception {
+    public Externalizable getCheckpointInfo() throws Exception {
         try {
-            annotatedClass.getEndCheckpointMethod().invoke(object);
+            return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

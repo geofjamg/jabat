@@ -15,24 +15,16 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.JobListenerAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.batch.annotation.AfterJob;
-import javax.batch.annotation.BeforeJob;
 
 /**
- * @BeforeJob void <method-name> () throws Exception
- * @AfterJob void <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class JobListenerArtifactInstance extends ArtifactInstance {
 
-    private Method beforeJobMethod;
-
-    private Method afterJobMethod;
+    private JobListenerAnnotatedClass annotatedClass;
 
     public JobListenerArtifactInstance(Object object, String ref) {
         super(object, ref);
@@ -40,34 +32,13 @@ public class JobListenerArtifactInstance extends ArtifactInstance {
 
     @Override
     public void initialize() {
-        beforeJobMethod = findAnnotatedMethod(object.getClass(), BeforeJob.class, true, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        if (beforeJobMethod != null) {
-            beforeJobMethod.setAccessible(true);
-        }
-        afterJobMethod = findAnnotatedMethod(object.getClass(), AfterJob.class, true, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        if (afterJobMethod != null) {
-            afterJobMethod.setAccessible(true);
-        }
+        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 
     public void beforeJob() throws Exception {
         try {
-            if (beforeJobMethod != null) {
-                beforeJobMethod.invoke(object);
+            if (annotatedClass.getBeforeJobMethod() != null) {
+                annotatedClass.getBeforeJobMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -80,8 +51,8 @@ public class JobListenerArtifactInstance extends ArtifactInstance {
 
     public void afterJob() throws Exception {
         try {
-            if (afterJobMethod != null) {
-                afterJobMethod.invoke(object);
+            if (annotatedClass.getAfterJobMethod() != null) {
+                annotatedClass.getAfterJobMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {

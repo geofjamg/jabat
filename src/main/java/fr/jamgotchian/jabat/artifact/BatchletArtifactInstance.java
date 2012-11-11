@@ -15,24 +15,16 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.BatchletAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.batch.annotation.Process;
-import javax.batch.annotation.Stop;
 
 /**
- * @Process String <method-name> () throws Exception
- * @Stop void <method-name> () throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BatchletArtifactInstance extends ArtifactInstance {
 
-    private Method processMethod;
-
-    private Method stopMethod;
+    private BatchletAnnotatedClass annotatedClass;
 
     public BatchletArtifactInstance(Object object, String ref) {
         super(object, ref);
@@ -40,30 +32,13 @@ public class BatchletArtifactInstance extends ArtifactInstance {
 
     @Override
     public void initialize() {
-        processMethod = findAnnotatedMethod(object.getClass(), Process.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, String.class)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        processMethod.setAccessible(true);
-        stopMethod = findAnnotatedMethod(object.getClass(), Stop.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        stopMethod.setAccessible(true);
+        annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 
     public String process() throws Exception {
         String exitStatus = null;
         try {
-            exitStatus = (String) processMethod.invoke(object);
+            exitStatus = (String) annotatedClass.getProcessMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -76,7 +51,7 @@ public class BatchletArtifactInstance extends ArtifactInstance {
 
     public void stop() throws Exception {
         try {
-            stopMethod.invoke(object);
+            annotatedClass.getStopMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.annotated;
 
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.io.Externalizable;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import javax.batch.annotation.CheckpointInfo;
 import javax.batch.annotation.Close;
@@ -28,24 +28,20 @@ import javax.batch.annotation.Open;
  * @Open void <method-name>(Externalizable checkpoint) throws Exception
  * @Close void <method-name>() throws Exception
  * @CheckpointInfo Externalizable <method-name> () throws Exception
- *
+ * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class ItemIOArtifactInstance extends ArtifactInstance {
+public abstract class ResourceAnnotatedClass extends AnnotatedClass {
+ 
+    private final Method openMethod;
 
-    private Method openMethod;
+    private final Method closeMethod;
 
-    private Method closeMethod;
+    private final Method checkpointInfoMethod;
 
-    private Method checkpointInfoMethod;
-
-    protected ItemIOArtifactInstance(Object object, String ref) {
-        super(object, ref);
-    }
-
-    @Override
-    public void initialize() {
-        openMethod = findAnnotatedMethod(object.getClass(), Open.class, false, new Predicate<Method>() {
+    protected ResourceAnnotatedClass(Class<?> clazz, Class<? extends Annotation> annotation) {
+        super(clazz, annotation);
+        openMethod = findAnnotatedMethod(clazz, Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -54,7 +50,7 @@ class ItemIOArtifactInstance extends ArtifactInstance {
             }
         });
         openMethod.setAccessible(true);
-        closeMethod = findAnnotatedMethod(object.getClass(), Close.class, true, new Predicate<Method>() {
+        closeMethod = findAnnotatedMethod(clazz, Close.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() == Void.TYPE
@@ -65,7 +61,7 @@ class ItemIOArtifactInstance extends ArtifactInstance {
         if (closeMethod != null) {
             closeMethod.setAccessible(true);
         }
-        checkpointInfoMethod = findAnnotatedMethod(object.getClass(), CheckpointInfo.class, false, new Predicate<Method>() {
+        checkpointInfoMethod = findAnnotatedMethod(clazz, CheckpointInfo.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return Externalizable.class.isAssignableFrom(m.getReturnType())
@@ -76,42 +72,16 @@ class ItemIOArtifactInstance extends ArtifactInstance {
         checkpointInfoMethod.setAccessible(true);
     }
 
-    public void open(Externalizable checkpoint) throws Exception {
-        try {
-            openMethod.invoke(object, checkpoint);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+    public Method getOpenMethod() {
+        return openMethod;
     }
 
-    public void close() throws Exception {
-        try {
-            if (closeMethod != null) {
-                closeMethod.invoke(object);
-            }
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+    public Method getCloseMethod() {
+        return closeMethod;
     }
 
-    public Externalizable getCheckpointInfo() throws Exception {
-        try {
-            return (Externalizable) checkpointInfoMethod.invoke(object);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+    public Method getCheckpointInfoMethod() {
+        return checkpointInfoMethod;
     }
-
+       
 }

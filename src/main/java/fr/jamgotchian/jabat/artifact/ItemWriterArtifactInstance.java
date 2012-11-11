@@ -15,47 +15,41 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.util.MethodUtil;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.ItemWriterAnnotatedClass;
+import fr.jamgotchian.jabat.artifact.annotated.ResourceAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
-import javax.batch.annotation.WriteItems;
 
 /**
  * @WriteItems void <method-name> (List<item-type> items) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemWriterArtifactInstance extends ItemIOArtifactInstance {
+public class ItemWriterArtifactInstance extends ResourceArtifactInstance {
 
-    private final Method writeItemsMethod;
+    private Class<?> outputItemType;
+    
+    private ItemWriterAnnotatedClass annotatedClass;
 
-    private final Class<?> itemType;
-
-    public ItemWriterArtifactInstance(Object object, String ref, final Class<?> itemType) {
+    public ItemWriterArtifactInstance(Object object, String ref, Class<?> outputItemType) {
         super(object, ref);
-        this.itemType = itemType;
-        writeItemsMethod = findAnnotatedMethod(object.getClass(), WriteItems.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return m.getReturnType() == Void.TYPE
-                        && m.getParameterTypes().length == 1
-                        && List.class.isAssignableFrom(m.getParameterTypes()[0])
-                        && ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments().length == 1
-                        && itemType.isAssignableFrom((Class<?>) ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments()[0])
-                        && MethodUtil.throwsOneException(m, Exception.class);
-            }
-        });
-        writeItemsMethod.setAccessible(true);
+        this.outputItemType = outputItemType;
+    }
+
+    @Override
+    public ResourceAnnotatedClass getAnnotatedClass() {
+        return annotatedClass;
+    }
+
+    @Override
+    public void initialize() {
+        annotatedClass = new ItemWriterAnnotatedClass(object.getClass(), outputItemType);
     }
 
     public void writeItems(List<Object> items) throws Exception {
         // TODO check items have itemType type
         try {
-            writeItemsMethod.invoke(object, items);
+            annotatedClass.getWriteItemsMethod().invoke(object, items);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

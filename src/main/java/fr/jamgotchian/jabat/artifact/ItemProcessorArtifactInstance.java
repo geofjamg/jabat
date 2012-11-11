@@ -15,11 +15,8 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import com.google.common.base.Predicate;
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import fr.jamgotchian.jabat.artifact.annotated.ItemProcessorAnnotatedClass;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.batch.annotation.ProcessItem;
 
 /**
  * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
@@ -28,36 +25,28 @@ import javax.batch.annotation.ProcessItem;
  */
 public class ItemProcessorArtifactInstance extends ArtifactInstance {
 
-    private Method processItemMethod;
+    private Class<?> inputItemType;
 
-    private Class<?> itemType;
-
-    public ItemProcessorArtifactInstance(Object object, String ref, final Class<?> itemType) {
+    private ItemProcessorAnnotatedClass annotatedClass;
+    
+    public ItemProcessorArtifactInstance(Object object, String ref, Class<?> inputItemType) {
         super(object, ref);
-        this.itemType = itemType;
+        this.inputItemType = inputItemType;
     }
 
     @Override
     public void initialize() {
-        processItemMethod = findAnnotatedMethod(object.getClass(), ProcessItem.class, false, new Predicate<Method>() {
-            @Override
-            public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && hasOneParameter(m, itemType)
-                        && throwsOneException(m, Exception.class);
-            }
-        });
-        processItemMethod.setAccessible(true);
+        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
     }
 
     public Class<?> getOutputItemType() {
-        return processItemMethod.getReturnType();
+        return annotatedClass.getProcessItemMethod().getReturnType();
     }
 
     public Object processItem(Object item) throws Exception {
         // TODO check item has itemType type
         try {
-            return processItemMethod.invoke(object, item);
+            return annotatedClass.getProcessItemMethod().invoke(object, item);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
