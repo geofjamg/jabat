@@ -23,10 +23,12 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-abstract class ResourceArtifactInstance extends ArtifactInstance {
+abstract class ResourceArtifactInstance {
+    
+    protected final Object object;
 
     protected ResourceArtifactInstance(Object object) {
-        super(object);
+        this.object = object;
     }
 
     protected abstract ResourceAnnotatedClass getAnnotatedClass();

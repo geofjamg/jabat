@@ -22,12 +22,14 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerArtifactInstance extends ArtifactInstance {
+public class StepListenerArtifactInstance {
+    
+    private final Object object;
 
     private final StepListenerAnnotatedClass annotatedClass;
 
     public StepListenerArtifactInstance(Object object) {
-        super(object);
+        this.object = object;
         annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 

@@ -23,14 +23,16 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorArtifactInstance extends ArtifactInstance {
+public class ItemProcessorArtifactInstance {
+
+    private final Object object;
 
     private final Class<?> inputItemType;
 
     private final ItemProcessorAnnotatedClass annotatedClass;
     
     public ItemProcessorArtifactInstance(Object object, Class<?> inputItemType) {
-        super(object);
+        this.object = object;
         this.inputItemType = inputItemType;
         annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
     }

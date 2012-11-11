@@ -22,12 +22,14 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerArtifactInstance extends ArtifactInstance {
+public class JobListenerArtifactInstance {
+    
+    private final Object object;
 
     private final JobListenerAnnotatedClass annotatedClass;
 
     public JobListenerArtifactInstance(Object object) {
-        super(object);
+        this.object = object;
         annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 

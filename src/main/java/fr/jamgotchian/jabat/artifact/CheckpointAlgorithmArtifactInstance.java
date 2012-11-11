@@ -22,12 +22,14 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
+public class CheckpointAlgorithmArtifactInstance {
+    
+    private final Object object;
 
     private final CheckpointAlgorithmAnnotatedClass annotatedClass;
     
     public CheckpointAlgorithmArtifactInstance(Object object) {
-        super(object);
+        this.object = object;
         annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
     }
 

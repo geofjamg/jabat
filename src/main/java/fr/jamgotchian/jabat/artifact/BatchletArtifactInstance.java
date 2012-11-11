@@ -22,12 +22,14 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletArtifactInstance extends ArtifactInstance {
+public class BatchletArtifactInstance {
+    
+    private final Object object;
 
     private final BatchletAnnotatedClass annotatedClass;
 
     public BatchletArtifactInstance(Object object) {
-        super(object);
+        this.object = object;
         annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 
