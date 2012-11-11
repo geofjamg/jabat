@@ -33,15 +33,20 @@ public class StepArtifactContext extends ArtifactContext {
     }
 
     public StepListenerArtifactInstance createStepListener(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        StepListenerArtifactInstance instance = new StepListenerArtifactInstance(obj, ref);
-        addInstance(instance);
+        Object obj = create(ref);
+        StepListenerArtifactInstance instance = new StepListenerArtifactInstance(obj);
         stepListeners.add(instance);
         return instance;
     }
 
     public List<StepListenerArtifactInstance> getStepListeners() {
         return stepListeners;
+    }
+
+    @Override
+    public void release() throws Exception {
+        super.release();
+        stepListeners.clear();
     }
 
 }

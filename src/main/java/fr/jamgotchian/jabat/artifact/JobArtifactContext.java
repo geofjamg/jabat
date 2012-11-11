@@ -33,15 +33,20 @@ public class JobArtifactContext extends ArtifactContext {
     }
 
     public JobListenerArtifactInstance createJobListener(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        JobListenerArtifactInstance instance = new JobListenerArtifactInstance(obj, ref);
-        addInstance(instance);
+        Object obj = create(ref);
+        JobListenerArtifactInstance instance = new JobListenerArtifactInstance(obj);
         jobListeners.add(instance);
         return instance;
     }
 
     public List<JobListenerArtifactInstance> getJobListeners() {
         return jobListeners;
+    }
+
+    @Override
+    public void release() throws Exception {
+        super.release();
+        jobListeners.clear();
     }
 
 }

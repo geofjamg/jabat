@@ -24,14 +24,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class JobListenerArtifactInstance extends ArtifactInstance {
 
-    private JobListenerAnnotatedClass annotatedClass;
+    private final JobListenerAnnotatedClass annotatedClass;
 
-    public JobListenerArtifactInstance(Object object, String ref) {
-        super(object, ref);
-    }
-
-    @Override
-    public void initialize() {
+    public JobListenerArtifactInstance(Object object) {
+        super(object);
         annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 

@@ -24,14 +24,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class CheckpointAlgorithmArtifactInstance extends ArtifactInstance {
 
-    private CheckpointAlgorithmAnnotatedClass annotatedClass;
+    private final CheckpointAlgorithmAnnotatedClass annotatedClass;
     
-    public CheckpointAlgorithmArtifactInstance(Object object, String ref) {
-        super(object, ref);
-    }
-
-    @Override
-    public void initialize() {
+    public CheckpointAlgorithmArtifactInstance(Object object) {
+        super(object);
         annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
     }
 

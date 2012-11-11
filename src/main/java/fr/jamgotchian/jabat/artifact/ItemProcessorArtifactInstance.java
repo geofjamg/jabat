@@ -25,17 +25,13 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ItemProcessorArtifactInstance extends ArtifactInstance {
 
-    private Class<?> inputItemType;
+    private final Class<?> inputItemType;
 
-    private ItemProcessorAnnotatedClass annotatedClass;
+    private final ItemProcessorAnnotatedClass annotatedClass;
     
-    public ItemProcessorArtifactInstance(Object object, String ref, Class<?> inputItemType) {
-        super(object, ref);
+    public ItemProcessorArtifactInstance(Object object, Class<?> inputItemType) {
+        super(object);
         this.inputItemType = inputItemType;
-    }
-
-    @Override
-    public void initialize() {
         annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
     }
 

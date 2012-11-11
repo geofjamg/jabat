@@ -27,23 +27,19 @@ import java.util.List;
  */
 public class ItemWriterArtifactInstance extends ResourceArtifactInstance {
 
-    private Class<?> outputItemType;
+    private final Class<?> outputItemType;
     
-    private ItemWriterAnnotatedClass annotatedClass;
+    private final ItemWriterAnnotatedClass annotatedClass;
 
-    public ItemWriterArtifactInstance(Object object, String ref, Class<?> outputItemType) {
-        super(object, ref);
+    public ItemWriterArtifactInstance(Object object, Class<?> outputItemType) {
+        super(object);
         this.outputItemType = outputItemType;
-    }
-
-    @Override
-    public ResourceAnnotatedClass getAnnotatedClass() {
-        return annotatedClass;
-    }
-
-    @Override
-    public void initialize() {
         annotatedClass = new ItemWriterAnnotatedClass(object.getClass(), outputItemType);
+    }
+
+    @Override
+    protected ResourceAnnotatedClass getAnnotatedClass() {
+        return annotatedClass;
     }
 
     public void writeItems(List<Object> items) throws Exception {

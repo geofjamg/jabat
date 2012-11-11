@@ -25,21 +25,16 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ItemReaderArtifactInstance extends ResourceArtifactInstance {
 
-    private ItemReaderAnnotatedClass annotatedClass;
+    private final ItemReaderAnnotatedClass annotatedClass;
     
-    public ItemReaderArtifactInstance(Object object, String ref) {
-        super(object, ref);
+    public ItemReaderArtifactInstance(Object object) {
+        super(object);
+        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
     }
 
     @Override
     protected ResourceAnnotatedClass getAnnotatedClass() {
         return annotatedClass;
-    }
-
-    @Override
-    public void initialize() {
-        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
-        
     }
 
     public Class<?> getItemType() {

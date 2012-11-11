@@ -24,14 +24,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class StepListenerArtifactInstance extends ArtifactInstance {
 
-    private StepListenerAnnotatedClass annotatedClass;
+    private final StepListenerAnnotatedClass annotatedClass;
 
-    public StepListenerArtifactInstance(Object object, String ref) {
-        super(object, ref);
-    }
-
-    @Override
-    public void initialize() {
+    public StepListenerArtifactInstance(Object object) {
+        super(object);
         annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 

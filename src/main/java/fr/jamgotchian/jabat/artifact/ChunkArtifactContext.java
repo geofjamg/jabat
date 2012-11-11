@@ -28,31 +28,23 @@ public class ChunkArtifactContext extends StepArtifactContext {
     }
 
     public ItemReaderArtifactInstance createItemReader(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        ItemReaderArtifactInstance instance = new ItemReaderArtifactInstance(obj, ref);
-        addInstance(instance);
-        return instance;
+        Object obj = create(ref);
+        return new ItemReaderArtifactInstance(obj);
     }
 
     public ItemProcessorArtifactInstance createItemProcessor(String ref, Class<?> itemType) throws Exception {
-        Object obj = factory.create(ref);
-        ItemProcessorArtifactInstance instance = new ItemProcessorArtifactInstance(obj, ref, itemType);
-        addInstance(instance);
-        return instance;
+        Object obj = create(ref);
+        return new ItemProcessorArtifactInstance(obj, itemType);
     }
 
     public ItemWriterArtifactInstance createItemWriter(String ref, Class<?> outputItemType) throws Exception {
-        Object obj = factory.create(ref);
-        ItemWriterArtifactInstance instance = new ItemWriterArtifactInstance(obj, ref, outputItemType);
-        addInstance(instance);
-        return instance;
+        Object obj = create(ref);
+        return new ItemWriterArtifactInstance(obj, outputItemType);
     }
 
     public CheckpointAlgorithmArtifactInstance createCheckpointAlgorithm(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        CheckpointAlgorithmArtifactInstance instance = new CheckpointAlgorithmArtifactInstance(obj, ref);
-        addInstance(instance);
-        return instance;
+        Object obj = create(ref);
+        return new CheckpointAlgorithmArtifactInstance(obj);
     }
 
 }

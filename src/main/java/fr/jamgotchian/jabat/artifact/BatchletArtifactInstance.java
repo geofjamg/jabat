@@ -24,14 +24,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class BatchletArtifactInstance extends ArtifactInstance {
 
-    private BatchletAnnotatedClass annotatedClass;
+    private final BatchletAnnotatedClass annotatedClass;
 
-    public BatchletArtifactInstance(Object object, String ref) {
-        super(object, ref);
-    }
-
-    @Override
-    public void initialize() {
+    public BatchletArtifactInstance(Object object) {
+        super(object);
         annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 

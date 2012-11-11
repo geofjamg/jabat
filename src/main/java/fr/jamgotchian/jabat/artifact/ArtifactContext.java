@@ -25,22 +25,24 @@ import javax.batch.spi.ArtifactFactory;
  */
 public abstract class ArtifactContext {
 
-    protected final ArtifactFactory factory;
+    private final ArtifactFactory factory;
 
-    private final List<ArtifactInstance> instances = new ArrayList<ArtifactInstance>();
+    private final List<Object> objects = new ArrayList<Object>();
 
     public ArtifactContext(ArtifactFactory factory) {
         this.factory = factory;
     }
 
-    protected void addInstance(ArtifactInstance instance) {
-        instances.add(instance);
-        instance.initialize();
+    protected Object create(String ref) throws Exception {
+        Object obj = factory.create(ref);
+        objects.add(obj);
+        return obj;
     }
 
     public void release() throws Exception {
-        for (ArtifactInstance instance : instances) {
-            factory.destroy(instance.getObject());
+        for (Object obj : objects) {
+            factory.destroy(obj);
         }
+        objects.clear();
     }
 }

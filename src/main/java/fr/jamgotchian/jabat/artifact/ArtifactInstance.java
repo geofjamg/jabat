@@ -24,21 +24,12 @@ public abstract class ArtifactInstance {
 
     protected final Object object;
 
-    protected final String ref;
-
-    protected ArtifactInstance(Object object, String ref) {
+    protected ArtifactInstance(Object object) {
         this.object = object;
-        this.ref = ref;
     }
-
-    public abstract void initialize();
 
     public Object getObject() {
         return object;
-    }
-
-    public String getRef() {
-        return ref;
     }
 
 }

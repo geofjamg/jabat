@@ -28,10 +28,8 @@ public class BatchletArtifactContext extends StepArtifactContext {
     }
 
     public BatchletArtifactInstance createBatchlet(String ref) throws Exception {
-        Object obj = factory.create(ref);
-        BatchletArtifactInstance instance = new BatchletArtifactInstance(obj, ref);
-        addInstance(instance);
-        return instance;
+        Object obj = create(ref);
+        return new BatchletArtifactInstance(obj);
     }
 
 }
