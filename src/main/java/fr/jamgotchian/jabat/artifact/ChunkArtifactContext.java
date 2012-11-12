@@ -19,6 +19,10 @@ import fr.jamgotchian.jabat.artifact.annotated.CheckpointAlgorithmProxy;
 import fr.jamgotchian.jabat.artifact.annotated.ItemProcessorProxy;
 import fr.jamgotchian.jabat.artifact.annotated.ItemReaderProxy;
 import fr.jamgotchian.jabat.artifact.annotated.ItemWriterProxy;
+import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.ItemProcessor;
+import javax.batch.api.ItemReader;
+import javax.batch.api.ItemWriter;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -33,22 +37,38 @@ public class ChunkArtifactContext extends StepArtifactContext {
 
     public ItemReader createItemReader(String ref) throws Exception {
         Object obj = create(ref);
-        return new ItemReaderProxy(obj);
+        if (obj instanceof ItemReader) {
+            return (ItemReader) obj;
+        } else {
+            return new ItemReaderProxy(obj);
+        }
     }
 
-    public ItemProcessor createItemProcessor(String ref, Class<?> itemType) throws Exception {
+    public ItemProcessor createItemProcessor(String ref) throws Exception {
         Object obj = create(ref);
-        return new ItemProcessorProxy(obj, itemType);
+        if (obj instanceof ItemProcessor) {
+            return (ItemProcessor) obj;
+        } else {
+            return new ItemProcessorProxy(obj);
+        }
     }
 
-    public ItemWriter createItemWriter(String ref, Class<?> outputItemType) throws Exception {
+    public ItemWriter createItemWriter(String ref) throws Exception {
         Object obj = create(ref);
-        return new ItemWriterProxy(obj, outputItemType);
+        if (obj instanceof ItemWriter) {
+            return (ItemWriter) obj;
+        } else {
+            return new ItemWriterProxy(obj);
+        }
     }
 
     public CheckpointAlgorithm createCheckpointAlgorithm(String ref) throws Exception {
         Object obj = create(ref);
-        return new CheckpointAlgorithmProxy(obj);
+        if (obj instanceof CheckpointAlgorithm) {
+            return (CheckpointAlgorithm) obj;
+        } else {
+            return new CheckpointAlgorithmProxy(obj);
+        }
     }
 
 }

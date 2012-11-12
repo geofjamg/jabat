@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.artifact;
 
 import fr.jamgotchian.jabat.artifact.annotated.BatchletProxy;
+import javax.batch.api.Batchlet;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -30,7 +31,11 @@ public class BatchletArtifactContext extends StepArtifactContext {
 
     public Batchlet createBatchlet(String ref) throws Exception {
         Object obj = create(ref);
-        return new BatchletProxy(obj);
+        if (obj instanceof Batchlet) {
+            return (Batchlet) obj;
+        } else {
+            return new BatchletProxy(obj);
+        }
     }
 
 }

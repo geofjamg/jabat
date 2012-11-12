@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.checkpoint;
 
-import fr.jamgotchian.jabat.artifact.CheckpointAlgorithm;
+import javax.batch.api.CheckpointAlgorithm;
 
 /**
  *

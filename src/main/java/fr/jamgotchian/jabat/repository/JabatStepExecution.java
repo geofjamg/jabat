@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.repository;
 
-import fr.jamgotchian.jabat.artifact.Batchlet;
 import java.util.Date;
+import javax.batch.api.Batchlet;
 import javax.batch.runtime.StepExecution;
 
 /**

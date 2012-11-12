@@ -20,6 +20,7 @@ import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import javax.batch.annotation.ItemWriter;
 import javax.batch.annotation.WriteItems;
@@ -30,14 +31,11 @@ import javax.batch.annotation.WriteItems;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class ItemWriterAnnotatedClass extends ResourceAnnotatedClass {
- 
-    private final Class<?> outputItemType;
- 
+  
     private final Method writeItemsMethod;
 
-    public ItemWriterAnnotatedClass(Class<?> clazz, final Class<?> outputItemType) {
+    public ItemWriterAnnotatedClass(Class<?> clazz) {
         super(clazz, ItemWriter.class);
-        this.outputItemType = outputItemType;
         writeItemsMethod = findAnnotatedMethod(clazz, WriteItems.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -45,19 +43,19 @@ public class ItemWriterAnnotatedClass extends ResourceAnnotatedClass {
                         && m.getParameterTypes().length == 1
                         && List.class.isAssignableFrom(m.getParameterTypes()[0])
                         && ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments().length == 1
-                        && outputItemType.isAssignableFrom((Class<?>) ((ParameterizedType) m.getGenericParameterTypes()[0]).getActualTypeArguments()[0])
                         && MethodUtil.throwsOneException(m, Exception.class);
             }
         });
         writeItemsMethod.setAccessible(true);
     }
 
-    public Class<?> getOutputItemType() {
-        return outputItemType;
-    }
-
     public Method getWriteItemsMethod() {
         return writeItemsMethod;
     }
     
+    public Type getItemType() {
+        return ((ParameterizedType) writeItemsMethod.getGenericParameterTypes()[0])
+                .getActualTypeArguments()[0];        
+    }
+
 }

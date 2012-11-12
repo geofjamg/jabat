@@ -15,35 +15,32 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.ItemProcessor;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.lang.reflect.InvocationTargetException;
+import javax.batch.api.ItemProcessor;
 
 /**
- * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorProxy implements ItemProcessor {
+public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
 
     private final Object object;
 
-    private final Class<?> inputItemType;
-
     private final ItemProcessorAnnotatedClass annotatedClass;
     
-    public ItemProcessorProxy(Object object, Class<?> inputItemType) {
+    public ItemProcessorProxy(Object object) {
         this.object = object;
-        this.inputItemType = inputItemType;
-        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass(), inputItemType);
-    }
-
-    public Class<?> getOutputItemType() {
-        return annotatedClass.getProcessItemMethod().getReturnType();
+        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass());
     }
 
     @Override
     public Object processItem(Object item) throws Exception {
-        // TODO check item has itemType type
+        Class<?> expectedType = annotatedClass.getItemType();
+        if (item.getClass() != expectedType) {
+            throw new JabatException("Bad item type " + item.getClass() 
+                    + ", expected " + expectedType);
+        }
         try {
             return annotatedClass.getProcessItemMethod().invoke(object, item);
         } catch(InvocationTargetException e) {

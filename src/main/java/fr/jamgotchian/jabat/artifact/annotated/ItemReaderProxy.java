@@ -15,14 +15,14 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.ItemReader;
 import java.lang.reflect.InvocationTargetException;
+import javax.batch.api.ItemReader;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderProxy extends ResourceProxy implements ItemReader {
+public class ItemReaderProxy extends ResourceProxy implements ItemReader<Object> {
 
     private final ItemReaderAnnotatedClass annotatedClass;
     
@@ -34,10 +34,6 @@ public class ItemReaderProxy extends ResourceProxy implements ItemReader {
     @Override
     protected ResourceAnnotatedClass getAnnotatedClass() {
         return annotatedClass;
-    }
-
-    public Class<?> getItemType() {
-        return annotatedClass.getReadItemMethod().getReturnType();
     }
 
     @Override

@@ -15,18 +15,11 @@
  */
 package fr.jamgotchian.jabat;
 
-import fr.jamgotchian.jabat.artifact.Batchlet;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
-import fr.jamgotchian.jabat.artifact.CheckpointAlgorithm;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.ItemProcessor;
-import fr.jamgotchian.jabat.artifact.ItemReader;
-import fr.jamgotchian.jabat.artifact.ItemWriter;
 import fr.jamgotchian.jabat.artifact.JobArtifactContext;
-import fr.jamgotchian.jabat.artifact.JobListener;
-import fr.jamgotchian.jabat.artifact.StepListener;
-import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
+import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
@@ -50,6 +43,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.batch.api.Batchlet;
+import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.ItemProcessor;
+import javax.batch.api.ItemReader;
+import javax.batch.api.ItemWriter;
+import javax.batch.api.JobListener;
+import javax.batch.api.StepListener;
 import javax.batch.spi.ArtifactFactory;
 import javax.batch.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
@@ -216,11 +216,9 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 ItemReader reader
                         = artifactContext.createItemReader(step.getReaderArtifact().getRef());
                 ItemProcessor processor
-                        = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef(),
-                                                              reader.getItemType());
+                        = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef());
                 ItemWriter writer
-                        = artifactContext.createItemWriter(step.getWriterArtifact().getRef(),
-                                                           processor.getOutputItemType());
+                        = artifactContext.createItemWriter(step.getWriterArtifact().getRef());
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -250,8 +248,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                         buffer.add(processor.processItem(item));
 
                                         if (algorithm.isReadyToCheckpoint()) {
-                                            readerChkptData = Externalizables.serialize(reader.getCheckpointInfo());
-                                            writerChkptData = Externalizables.serialize(writer.getCheckpointInfo());
+                                            readerChkptData = Externalizables.serialize(reader.checkpointInfo());
+                                            writerChkptData = Externalizables.serialize(writer.checkpointInfo());
 
                                             algorithm.endCheckpoint();
                                             transaction.commit();
@@ -277,6 +275,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                 transaction.commit();
                                 completed = true;
                             } catch (Throwable t) {
+                                LOGGER.error(t.toString(), t);
                                 transaction.rollback();
                                 retryCount++;
                                 // retry...

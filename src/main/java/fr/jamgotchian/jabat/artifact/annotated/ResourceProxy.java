@@ -58,7 +58,7 @@ abstract class ResourceProxy {
         }
     }
 
-    public Externalizable getCheckpointInfo() throws Exception {
+    public Externalizable checkpointInfo() throws Exception {
         try {
             return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
         } catch(InvocationTargetException e) {

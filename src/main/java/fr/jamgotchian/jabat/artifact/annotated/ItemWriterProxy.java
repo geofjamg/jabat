@@ -15,25 +15,24 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.ItemWriter;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.List;
+import javax.batch.api.ItemWriter;
 
 /**
  * @WriteItems void <method-name> (List<item-type> items) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemWriterProxy extends ResourceProxy implements ItemWriter {
+public class ItemWriterProxy extends ResourceProxy implements ItemWriter<Object> {
 
-    private final Class<?> outputItemType;
-    
     private final ItemWriterAnnotatedClass annotatedClass;
 
-    public ItemWriterProxy(Object object, Class<?> outputItemType) {
+    public ItemWriterProxy(Object object) {
         super(object);
-        this.outputItemType = outputItemType;
-        annotatedClass = new ItemWriterAnnotatedClass(object.getClass(), outputItemType);
+        annotatedClass = new ItemWriterAnnotatedClass(object.getClass());
     }
 
     @Override
@@ -43,7 +42,13 @@ public class ItemWriterProxy extends ResourceProxy implements ItemWriter {
 
     @Override
     public void writeItems(List<Object> items) throws Exception {
-        // TODO check items have itemType type
+        Type expectedType = annotatedClass.getItemType();
+        for (Object item : items) {
+            if (item.getClass() != expectedType) {
+                throw new JabatException("Bad item type " + item.getClass() 
+                        + ", expected " + expectedType);
+            }
+        }
         try {
             annotatedClass.getWriteItemsMethod().invoke(object, items);
         } catch(InvocationTargetException e) {

@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.artifact.StepListener;
 import java.lang.reflect.InvocationTargetException;
+import javax.batch.api.StepListener;
 
 /**
  *

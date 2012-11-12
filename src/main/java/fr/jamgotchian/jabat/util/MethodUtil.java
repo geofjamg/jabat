@@ -37,6 +37,10 @@ public class MethodUtil {
         return m.getParameterTypes().length == 0;
     }
 
+    public static boolean hasOneParameter(Method m) {
+        return m.getParameterTypes().length == 1;
+    }
+
     public static boolean hasOneParameter(Method m, Class<?> type) {
         return m.getParameterTypes().length == 1
                 && type == m.getParameterTypes()[0];

@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat.artifact;
 import fr.jamgotchian.jabat.artifact.annotated.JobListenerProxy;
 import java.util.ArrayList;
 import java.util.List;
+import javax.batch.api.JobListener;
 import javax.batch.spi.ArtifactFactory;
 
 /**
@@ -34,9 +35,14 @@ public class JobArtifactContext extends ArtifactContext {
 
     public JobListener createJobListener(String ref) throws Exception {
         Object obj = create(ref);
-        JobListenerProxy proxy = new JobListenerProxy(obj);
-        jobListeners.add(proxy);
-        return proxy;
+        JobListener jobListener;
+        if (obj instanceof JobListener) {
+            jobListener = (JobListener) obj;
+        } else {
+            jobListener = new JobListenerProxy(obj);
+        }
+        jobListeners.add(jobListener);
+        return jobListener;
     }
 
     public List<JobListener> getJobListeners() {

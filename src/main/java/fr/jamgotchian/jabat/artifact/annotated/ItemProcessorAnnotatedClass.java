@@ -28,26 +28,23 @@ import javax.batch.annotation.ProcessItem;
  */
 public class ItemProcessorAnnotatedClass extends AnnotatedClass {
 
-    private final Class<?> inputItemType;
-
     private final Method processItemMethod;
     
-    public ItemProcessorAnnotatedClass(Class<?> clazz, final Class<?> inputItemType) {
+    public ItemProcessorAnnotatedClass(Class<?> clazz) {
         super(clazz, ItemProcessor.class);
-        this.inputItemType = inputItemType;
         processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() != Void.TYPE
-                        && hasOneParameter(m, inputItemType)
+                        && hasOneParameter(m)
                         && throwsOneException(m, Exception.class);
             }
         });
         processItemMethod.setAccessible(true);
     }
 
-    public Class<?> getInputItemType() {
-        return inputItemType;
+    public Class<?> getItemType() {
+        return processItemMethod.getParameterTypes()[0];
     }
 
     public Method getProcessItemMethod() {
