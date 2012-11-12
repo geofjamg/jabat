@@ -1,7 +1,7 @@
 package fr.jamgotchian.jabat.cdi;
 
+import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import java.util.Set;
-import javax.batch.spi.ArtifactFactory;
 import javax.enterprise.inject.spi.Bean;
 
 /**
