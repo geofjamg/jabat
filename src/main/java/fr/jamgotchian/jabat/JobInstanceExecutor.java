@@ -98,8 +98,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         getTaskManager().submit(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Job " + job.getId());
-
                 try {
                     JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
                     JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
@@ -139,8 +137,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     @Override
     public void visit(BatchletStep step, Void arg) {
-        Thread.currentThread().setName("Batchlet " + step.getId());
-
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
@@ -199,8 +195,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     @Override
     public void visit(ChunkStep step, Void arg) {
-        Thread.currentThread().setName("Chunk " + step.getId());
-
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
@@ -312,13 +306,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     @Override
     public void visit(Flow flow, Void arg) {
-        Thread.currentThread().setName("Flow " + flow.getId());
         flow.getFirstChainableNode().accept(this, null);
     }
 
     @Override
     public void visit(Split split, Void arg) {
-        Thread.currentThread().setName("Split " + split.getId());
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
             final Iterator<Node> it = nodes.iterator();
