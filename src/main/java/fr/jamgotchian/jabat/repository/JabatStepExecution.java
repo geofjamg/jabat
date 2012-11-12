@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.repository;
 
+import fr.jamgotchian.jabat.repository.impl.MetricImpl;
 import java.util.Date;
 import javax.batch.api.Batchlet;
 import javax.batch.runtime.StepExecution;
@@ -23,89 +24,22 @@ import javax.batch.runtime.StepExecution;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatStepExecution implements StepExecution {
+public interface JabatStepExecution extends StepExecution {
 
-    private final long id;
+    long getId();
 
-    private volatile Status status = Status.STARTING;
+    void setStatus(Status status);
 
-    private final Date startTime;
+    void setEndTime(Date endTime);
 
-    private Date endTime;
+    void setExitStatus(String exitStatus);
 
-    private String exitStatus;
+    void setUserPersistentData(Object userPersistentData);
 
-    private Object userPersistentData;
+    void setMetrics(MetricImpl[] metrics);
 
-    private MetricImpl[] metrics;
+    Batchlet getBatchlet();
 
-    private volatile Batchlet batchlet;
-
-    public JabatStepExecution(long id) {
-        this.id = id;
-        this.startTime = new Date();
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public String getStatus() {
-        return status.name();
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    @Override
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    @Override
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    @Override
-    public String getExitStatus() {
-        return exitStatus;
-    }
-
-    public void setExitStatus(String exitStatus) {
-        this.exitStatus = exitStatus;
-    }
-
-    @Override
-    public Object getUserPersistentData() {
-        return userPersistentData;
-    }
-
-    public void setUserPersistentData(Object userPersistentData) {
-        this.userPersistentData = userPersistentData;
-    }
-
-    @Override
-    public MetricImpl[] getMetrics() {
-        return metrics;
-    }
-
-    public void setMetrics(MetricImpl[] metrics) {
-        this.metrics = metrics;
-    }
-
-    public Batchlet getBatchlet() {
-        return batchlet;
-    }
-
-    public void setBatchlet(Batchlet batchlet) {
-        this.batchlet = batchlet;
-    }
+    void setBatchlet(Batchlet batchlet);
 
 }

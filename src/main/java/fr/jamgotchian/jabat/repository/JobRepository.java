@@ -28,77 +28,22 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobRepository {
+public interface JobRepository {
 
-    private final Map<String, List<Long>> jobs = new HashMap<String, List<Long>>();
+    JabatJobInstance createJobInstance(Job job);
 
-    private final Map<Long, JabatJobInstance> jobInstances = new HashMap<Long, JabatJobInstance>();
+    JabatJobExecution createJobExecution(JabatJobInstance jobInstance);
 
-    private final Map<Long, JabatJobExecution> jobExecutions = new HashMap<Long, JabatJobExecution>();
+    JabatStepExecution createStepExecution(Step step, JabatJobExecution jobExecution);
 
-    private final Map<String, List<Long>> steps = new HashMap<String, List<Long>>();
+    Set<String> getJobIds();
 
-    private final Map<Long, JabatStepExecution> stepExecutions = new HashMap<Long, JabatStepExecution>();
+    List<Long> getJobInstanceIds(String id);
 
-    private long nextJobInstanceId = 0;
+    JabatJobInstance getJobInstance(long id);
 
-    private long nextJobExecutionId = 0;
+    JabatJobExecution getJobExecution(long id);
 
-    private long nextStepExecutionId = 0;
-
-    public JabatJobInstance createJobInstance(Job job) {
-        long jobInstanceId = nextJobInstanceId++;
-        JabatJobInstance jobInstance = new JabatJobInstance(job.getId(), jobInstanceId);
-        jobInstances.put(jobInstanceId, jobInstance);
-        List<Long> instanceIds = jobs.get(job.getId());
-        if (instanceIds == null) {
-            instanceIds = new ArrayList<Long>(1);
-            jobs.put(job.getId(), instanceIds);
-        }
-        instanceIds.add(jobInstanceId);
-        return jobInstance;
-    }
-
-    public JabatJobExecution createJobExecution(JabatJobInstance jobInstance) {
-        long jobExecutionId = nextJobExecutionId++;
-        JabatJobExecution jobExecution = new JabatJobExecution(jobExecutionId);
-        jobExecutions.put(jobExecutionId, jobExecution);
-        jobInstance.getExecutionIds().add(jobExecutionId);
-        return jobExecution;
-    }
-
-    public JabatStepExecution createStepExecution(Step step, JabatJobExecution jobExecution) {
-        long stepExecutionId = nextStepExecutionId++;
-        JabatStepExecution stepExecution = new JabatStepExecution(stepExecutionId);
-        stepExecutions.put(stepExecutionId, stepExecution);
-        List<Long> stepExecutionIds = steps.get(step.getId());
-        if (stepExecutionIds == null) {
-            stepExecutionIds = new ArrayList<Long>(1);
-            steps.put(step.getId(), stepExecutionIds);
-        }
-        stepExecutionIds.add(stepExecutionId);
-        jobExecution.getStepExecutionIds().add(stepExecutionId);
-        return stepExecution;
-    }
-
-    public Set<String> getJobIds() {
-        return jobs.keySet();
-    }
-
-    public List<Long> getJobInstanceIds(String id) {
-        return jobs.get(id);
-    }
-
-    public JabatJobInstance getJobInstance(long id) {
-        return jobInstances.get(id);
-    }
-
-    public JabatJobExecution getJobExecution(long id) {
-        return jobExecutions.get(id);
-    }
-
-    public JabatStepExecution getStepExecution(long id) {
-        return stepExecutions.get(id);
-    }
+    JabatStepExecution getStepExecution(long id);
 
 }

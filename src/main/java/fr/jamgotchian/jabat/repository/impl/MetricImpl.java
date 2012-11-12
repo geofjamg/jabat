@@ -13,19 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.repository;
+package fr.jamgotchian.jabat.repository.impl;
 
-import java.util.List;
-import javax.batch.runtime.JobInstance;
+import javax.batch.runtime.metric.Metric;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JabatJobInstance extends JobInstance {
+public class MetricImpl implements Metric {
 
-    List<Long> getExecutionIds();
+    private final String name;
 
-    long getLastExecutionId();
+    private final long value;
+
+    public MetricImpl(String name, long value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public long getValue() {
+        return value;
+    }
 
 }

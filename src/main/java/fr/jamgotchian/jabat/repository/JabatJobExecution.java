@@ -15,78 +15,19 @@
  */
 package fr.jamgotchian.jabat.repository;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import javax.batch.runtime.JobExecution;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatJobExecution implements JobExecution {
+public interface JabatJobExecution extends JobExecution {
 
-    private final long id;
+    long getId();
 
-    private volatile Status status = Status.STARTING;
+    void setStatus(Status status);
 
-    private String exitStatus;
-
-    private final Date createTime;
-
-    private final List<Long> stepExecutionIds = new ArrayList<Long>();
-
-    public JabatJobExecution(long id) {
-        this.id = id;
-        createTime = new Date();
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public String getStatus() {
-        return status.name();
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    @Override
-    public Date getStartTime() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Date getEndTime() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getExitStatus() {
-        return exitStatus;
-    }
-
-    @Override
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    @Override
-    public Date getLastUpdatedTime() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Properties getJobParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public List<Long> getStepExecutionIds() {
-        return stepExecutionIds;
-    }
+    List<Long> getStepExecutionIds();
 
 }

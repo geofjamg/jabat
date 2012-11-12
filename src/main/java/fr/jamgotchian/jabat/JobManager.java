@@ -21,6 +21,7 @@ import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
+import fr.jamgotchian.jabat.repository.impl.JobRepositoryImpl;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
@@ -46,7 +47,7 @@ public class JobManager {
 
     private final JobXmlLoader loader = new JobXmlLoader();
 
-    private final JobRepository repository = new JobRepository();
+    private final JobRepository repository = new JobRepositoryImpl();
 
     private final TaskManager taskManager;
 
