@@ -313,22 +313,19 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
     public void visit(Split split, Void arg) {
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
-            final Iterator<Node> it = nodes.iterator();
-            Node firstNode = it.next();
-            while (it.hasNext()) {
+            for (final Node node : nodes) {
                 getTaskManager().submit(new Runnable() {
                     @Override
                     public void run() {
                         JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
                         try {
-                            it.next().accept(JobInstanceExecutor.this, null);
+                            node.accept(JobInstanceExecutor.this, null);
                         } finally {
                             JabatThreadContext.getInstance().deactivateJobContext();
                         }
                     }
                 });
             }
-            firstNode.accept(this, null);
         }
     }
 

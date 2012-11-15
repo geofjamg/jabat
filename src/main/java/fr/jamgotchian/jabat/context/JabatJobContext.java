@@ -27,27 +27,18 @@ import javax.batch.runtime.context.JobContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatJobContext<T> implements JobContext<T> {
-
-    private final Job job;
+public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements JobContext<T> {
 
     private final JabatJobInstance jobInstance;
 
     private final JabatJobExecution jobExecution;
 
-    private T transientUserData;
-
     private String exitStatus;
 
     public JabatJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
-        this.job = job;
+        super(job);
         this.jobInstance = jobInstance;
         this.jobExecution = jobExecution;
-    }
-
-    @Override
-    public String getId() {
-        return job.getId();
     }
 
     @Override
@@ -62,22 +53,12 @@ public class JabatJobContext<T> implements JobContext<T> {
 
     @Override
     public Properties getProperties() {
-        return job.getProperties();
+        return node.getProperties();
     }
 
     @Override
     public String getBatchStatus() {
         return jobExecution.getStatus();
-    }
-
-    @Override
-    public T getTransientUserData() {
-        return transientUserData;
-    }
-
-    @Override
-    public void setTransientUserData(T data) {
-        this.transientUserData = data;
     }
 
     @Override

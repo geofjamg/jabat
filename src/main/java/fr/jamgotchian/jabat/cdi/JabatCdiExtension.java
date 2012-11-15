@@ -144,7 +144,7 @@ class JabatCdiExtension implements Extension {
                         for (Field field : propertyFields) {
                             // get the bean name
                             String name = at.getAnnotation(Named.class).value();
-                            Artifact artifact = JabatThreadContext.getInstance().getActiveStepContext().getStep().getArtifact(name);
+                            Artifact artifact = JabatThreadContext.getInstance().getActiveStepContext().getNode().getArtifact(name);
                             Properties properties = artifact.getProperties();
                             // TODO support the name parameter of @BatchProperty
                             String value = properties.getProperty(field.getName());
