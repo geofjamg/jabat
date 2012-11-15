@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.repository.impl;
 
-import javax.batch.runtime.metric.Metric;
+import javax.batch.runtime.Metric;
 
 /**
  *

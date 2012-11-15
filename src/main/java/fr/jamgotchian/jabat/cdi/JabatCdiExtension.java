@@ -67,7 +67,7 @@ class JabatCdiExtension implements Extension {
                                                          javax.batch.api.StepListener.class,
                                                          javax.batch.api.CheckpointAlgorithm.class));
 
-    private static final Set<Class<?>> CONTEXT_CLASSES
+    private static final Set<Class<? extends javax.batch.runtime.context.BatchContext>> CONTEXT_CLASSES
             = Collections.unmodifiableSet(Sets.newHashSet(JobContext.class,
                                                           StepContext.class));
 

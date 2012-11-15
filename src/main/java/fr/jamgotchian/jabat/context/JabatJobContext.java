@@ -15,10 +15,12 @@
  */
 package fr.jamgotchian.jabat.context;
 
-import fr.jamgotchian.jabat.repository.JabatJobInstance;
-import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.job.Job;
+import fr.jamgotchian.jabat.repository.JabatJobExecution;
+import fr.jamgotchian.jabat.repository.JabatJobInstance;
+import java.util.List;
 import java.util.Properties;
+import javax.batch.runtime.context.FlowContext;
 import javax.batch.runtime.context.JobContext;
 
 /**
@@ -86,6 +88,11 @@ public class JabatJobContext<T> implements JobContext<T> {
     @Override
     public void setExitStatus(String exitStatus) {
         this.exitStatus = exitStatus;
+    }
+
+    @Override
+    public List<FlowContext<T>> getBatchContexts() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

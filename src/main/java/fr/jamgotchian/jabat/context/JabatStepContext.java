@@ -15,12 +15,14 @@
  */
 package fr.jamgotchian.jabat.context;
 
-import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.job.Step;
+import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import java.io.Externalizable;
+import java.util.List;
 import java.util.Properties;
+import javax.batch.runtime.Metric;
+import javax.batch.runtime.context.FlowContext;
 import javax.batch.runtime.context.StepContext;
-import javax.batch.runtime.metric.Metric;
 
 /**
  *
@@ -85,12 +87,12 @@ public class JabatStepContext<T, P extends Externalizable> implements StepContex
 
     @Override
     public String getExitStatus() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return stepExecution.getExitStatus();
     }
 
     @Override
     public void setExitStatus(String status) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        stepExecution.setExitStatus(status);
     }
 
     @Override
@@ -100,6 +102,11 @@ public class JabatStepContext<T, P extends Externalizable> implements StepContex
 
     @Override
     public Metric[] getMetrics() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<FlowContext<T>> getBatchContexts() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
