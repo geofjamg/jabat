@@ -152,7 +152,7 @@ public class JobXmlLoader {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
-                                Split split = new Split(id, container, next);
+                                Split split = new Split(id, container, next, null, null);
                                 container.addNode(split);
                                 xmlContext.push(XmlContext.SPLIT);
                                 xmlElt.push(split);

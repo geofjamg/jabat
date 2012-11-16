@@ -18,7 +18,6 @@ package fr.jamgotchian.jabat.artifact.annotated;
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ItemProcessor;
 import javax.batch.annotation.ProcessItem;
 
 /**
@@ -31,7 +30,7 @@ public class ItemProcessorAnnotatedClass extends AnnotatedClass {
     private final Method processItemMethod;
     
     public ItemProcessorAnnotatedClass(Class<?> clazz) {
-        super(clazz, ItemProcessor.class);
+        super(clazz);
         processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

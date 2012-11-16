@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.JobArtifactContext;
+import fr.jamgotchian.jabat.artifact.SplitArtifactContext;
 import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
@@ -39,10 +40,10 @@ import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.Externalizables;
+import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.batch.api.Batchlet;
 import javax.batch.api.CheckpointAlgorithm;
@@ -50,6 +51,8 @@ import javax.batch.api.ItemProcessor;
 import javax.batch.api.ItemReader;
 import javax.batch.api.ItemWriter;
 import javax.batch.api.JobListener;
+import javax.batch.api.SplitAnalyzer;
+import javax.batch.api.SplitCollector;
 import javax.batch.api.StepListener;
 import javax.batch.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
@@ -313,18 +316,51 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
     public void visit(Split split, Void arg) {
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
-            for (final Node node : nodes) {
-                getTaskManager().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
-                        try {
-                            node.accept(JobInstanceExecutor.this, null);
-                        } finally {
-                            JabatThreadContext.getInstance().deactivateJobContext();
+            try {
+                SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
+                try {
+                    final List<Externalizable> collectedData = new ArrayList<Externalizable>();
+                    final SplitCollector collector = split.getCollectorArtifact() != null 
+                            ? artifactContext.createSplitCollector(split.getCollectorArtifact().getRef()) 
+                            : null;
+                    // TODO start split context
+                    for (Node node : nodes) {
+                        final Flow flow = (Flow) node;
+                        getTaskManager().submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
+                                // TODO start flow context
+                                try {
+                                    try {
+                                        flow.accept(JobInstanceExecutor.this, null);
+                                        if (collector != null) {
+                                            collectedData.add(collector.collectSplitData());
+                                        }
+                                    } finally {
+                                        // TODO end flow context
+                                        JabatThreadContext.getInstance().deactivateJobContext();
+                                    }
+                                } catch (Throwable t) {
+                                    LOGGER.error(t.toString(), t);
+                                }
+                            }
+                        });
+                    }
+                    if (split.getAnalyserArtifact() != null) {
+                        SplitAnalyzer analyser 
+                                = artifactContext.createSplitAnalyser(split.getAnalyserArtifact().getRef());
+                        for (Externalizable data : collectedData) {
+                            analyser.analyzeCollectorData(data);
+                            analyser.analyzeStatus(null, null);
                         }
                     }
-                });
+                    // TODO end split context
+                } finally {
+                    artifactContext.release();
+                }
+            } catch (Throwable t) {
+                LOGGER.error(t.toString(), t);
             }
         }
     }

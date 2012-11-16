@@ -16,35 +16,35 @@
 package fr.jamgotchian.jabat.artifact.annotated;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import java.io.Externalizable;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ReadItem;
+import javax.batch.annotation.CollectSplitData;
 
 /**
- * @ReadItem <item-type> <method-name> () throws Exception
+ * @CollectSplitData Externalizable <method-name>() throws Exception
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderAnnotatedClass extends ResourceAnnotatedClass {
- 
-    private final Method readItemMethod;
+public class SplitCollectorAnnotatedClass extends AnnotatedClass {
+    
+    private final Method collectSplitDataMethod;
 
-    public ItemReaderAnnotatedClass(Class<?> clazz) {
+    public SplitCollectorAnnotatedClass(Class<?> clazz) {
         super(clazz);
-        readItemMethod = findAnnotatedMethod(clazz, ReadItem.class, false, new Predicate<Method>() {
+        collectSplitDataMethod = findAnnotatedMethod(clazz, CollectSplitData.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && MethodUtil.hasZeroParameter(m)
-                        && MethodUtil.throwsOneException(m, Exception.class);
+                return hasReturnType(m, Externalizable.class)
+                        && hasZeroParameter(m)
+                        && throwsOneException(m, Exception.class);
             }
         });
-        readItemMethod.setAccessible(true);
+        collectSplitDataMethod.setAccessible(true);
     }
 
-    public Method getReadItemMethod() {
-        return readItemMethod;
+    public Method getCollectSplitDataMethod() {
+        return collectSplitDataMethod;
     }
-
+    
 }

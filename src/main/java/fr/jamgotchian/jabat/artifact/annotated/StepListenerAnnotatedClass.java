@@ -20,7 +20,6 @@ import com.google.common.base.Predicate;
 import java.lang.reflect.Method;
 import javax.batch.annotation.AfterStep;
 import javax.batch.annotation.BeforeStep;
-import javax.batch.annotation.StepListener;
 
 /**
  * @BeforeStep void <method-name> () throws Exception
@@ -35,7 +34,7 @@ public class StepListenerAnnotatedClass extends AnnotatedClass {
     private final Method afterStepMethod;
 
     public StepListenerAnnotatedClass(Class<?> clazz) {
-        super(clazz, StepListener.class);
+        super(clazz);
         beforeStepMethod = findAnnotatedMethod(clazz, BeforeStep.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

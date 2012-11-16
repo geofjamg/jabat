@@ -15,9 +15,6 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import fr.jamgotchian.jabat.util.JabatException;
-import java.lang.annotation.Annotation;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -26,15 +23,8 @@ public class AnnotatedClass {
         
     protected final Class<?> clazz;
 
-    protected final Class<? extends Annotation> annotation;
-
-    protected AnnotatedClass(Class<?> clazz, Class<? extends Annotation> annotation) {
-        if (!clazz.isAnnotationPresent(annotation)) {
-            throw new JabatException(clazz.getName() + " class should be annotated with "
-                    + annotation.getName());
-        }
+    protected AnnotatedClass(Class<?> clazz) {
         this.clazz = clazz;
-        this.annotation = annotation;
     }
     
 }

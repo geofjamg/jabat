@@ -19,7 +19,6 @@ import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.Method;
 import javax.batch.annotation.BeginCheckpoint;
-import javax.batch.annotation.CheckpointAlgorithm;
 import javax.batch.annotation.CheckpointTimeout;
 import javax.batch.annotation.EndCheckpoint;
 import javax.batch.annotation.IsReadyToCheckpoint;
@@ -43,7 +42,7 @@ public class CheckpointAlgorithmAnnotatedClass extends AnnotatedClass {
     private final Method endCheckpointMethod;
 
     public CheckpointAlgorithmAnnotatedClass(Class<?> clazz) {
-        super(clazz, CheckpointAlgorithm.class);
+        super(clazz);
         checkpointTimeoutMethod = findAnnotatedMethod(clazz, CheckpointTimeout.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

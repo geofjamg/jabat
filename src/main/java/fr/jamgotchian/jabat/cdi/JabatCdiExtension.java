@@ -18,10 +18,8 @@ package fr.jamgotchian.jabat.cdi;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import fr.jamgotchian.jabat.job.Artifact;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -49,24 +47,6 @@ import javax.inject.Named;
  */
 class JabatCdiExtension implements Extension {
 
-    private static final List<Class<? extends Annotation>> ARTIFACT_ANNOTATIONS
-            = Collections.unmodifiableList(Arrays.asList(javax.batch.annotation.Batchlet.class,
-                                                         javax.batch.annotation.ItemReader.class,
-                                                         javax.batch.annotation.ItemProcessor.class,
-                                                         javax.batch.annotation.ItemWriter.class,
-                                                         javax.batch.annotation.JobListener.class,
-                                                         javax.batch.annotation.StepListener.class,
-                                                         javax.batch.annotation.CheckpointAlgorithm.class));
-
-    private static final List<Class<?>> ARTIFACT_INTERFACES
-            = Collections.unmodifiableList(Arrays.asList(javax.batch.api.Batchlet.class,
-                                                         javax.batch.api.ItemReader.class,
-                                                         javax.batch.api.ItemProcessor.class,
-                                                         javax.batch.api.ItemWriter.class,
-                                                         javax.batch.api.JobListener.class,
-                                                         javax.batch.api.StepListener.class,
-                                                         javax.batch.api.CheckpointAlgorithm.class));
-
     private static final Set<Class<? extends javax.batch.runtime.context.BatchContext>> CONTEXT_CLASSES
             = Collections.unmodifiableSet(Sets.newHashSet(JobContext.class,
                                                           StepContext.class));
@@ -79,51 +59,39 @@ class JabatCdiExtension implements Extension {
     public void init(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {
         BEAN_MANAGER = beanManager;
     }
-
-    private <X> boolean isArtifact(AnnotatedType<X> at) {
-        for (Class<? extends Annotation> artifactAnnotation : ARTIFACT_ANNOTATIONS) {
-            if (at.isAnnotationPresent(artifactAnnotation)) {
-                return true;
-            }
-        }
-        for (Class<?> artifactInterface : ARTIFACT_INTERFACES) {
-            if (artifactInterface.isAssignableFrom(at.getJavaClass())) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     public <X> void injectContext(@Observes ProcessInjectionTarget<X> pit) {
         final InjectionTarget<X> it = pit.getInjectionTarget();
         final AnnotatedType<X> at = pit.getAnnotatedType();
-        if (isArtifact(at)) {
-            final List<Field> contextFields = new ArrayList<Field>();
-            final List<Field> propertyFields = new ArrayList<Field>();
-            for (AnnotatedField<? super X> annotatedField : at.getFields()) {
-                BatchContext batchContext = annotatedField.getAnnotation(BatchContext.class);
-                if  (batchContext != null) {
-                    Field field = annotatedField.getJavaMember();
-                    if (CONTEXT_CLASSES.contains(field.getType())) {
-                        contextFields.add(field);
-                    } else {
-                        pit.addDefinitionError( new InjectionException("Field annotated with "
-                                + BatchContext.class + " should be of type " + CONTEXT_CLASSES));
-                    }
-                }
-                BatchProperty batchProperty = annotatedField.getAnnotation(BatchProperty.class);
-                if (batchProperty != null) {
-                    Field field = annotatedField.getJavaMember();
-                    // TODO the field should not be final?
-                    if (field.getType() == String.class) {
-                        propertyFields.add(field);
-                    } else {
-                        pit.addDefinitionError( new InjectionException("Field annotated with "
-                                + BatchProperty.class + " should be of type " + String.class));
-                    }
+        
+        final List<Field> contextFields = new ArrayList<Field>();
+        final List<Field> propertyFields = new ArrayList<Field>();
+        
+        for (AnnotatedField<? super X> annotatedField : at.getFields()) {
+            BatchContext batchContext = annotatedField.getAnnotation(BatchContext.class);
+            if  (batchContext != null) {
+                Field field = annotatedField.getJavaMember();
+                if (CONTEXT_CLASSES.contains(field.getType())) {
+                    contextFields.add(field);
+                } else {
+                    pit.addDefinitionError( new InjectionException("Field annotated with "
+                            + BatchContext.class + " should be of type " + CONTEXT_CLASSES));
                 }
             }
+            BatchProperty batchProperty = annotatedField.getAnnotation(BatchProperty.class);
+            if (batchProperty != null) {
+                Field field = annotatedField.getJavaMember();
+                // TODO the field should not be final?
+                if (field.getType() == String.class) {
+                    propertyFields.add(field);
+                } else {
+                    pit.addDefinitionError( new InjectionException("Field annotated with "
+                            + BatchProperty.class + " should be of type " + String.class));
+                }
+            }
+        }
 
+        if (contextFields.size() > 0 || propertyFields.size() > 0) {
             InjectionTarget<X> wrapped = new InjectionTarget<X>() {
 
                 @Override

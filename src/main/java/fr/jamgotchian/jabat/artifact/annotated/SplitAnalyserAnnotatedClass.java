@@ -15,56 +15,53 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import com.google.common.base.Predicate;
+import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import java.io.Externalizable;
 import java.lang.reflect.Method;
-import javax.batch.annotation.AfterJob;
-import javax.batch.annotation.BeforeJob;
+import javax.batch.annotation.AnalyzeCollectorData;
+import javax.batch.annotation.AnalyzeStatus;
 
 /**
- * @BeforeJob void <method-name> () throws Exception
- * @AfterJob void <method-name> () throws Exception
- *
+ * [@AnalyzeCollectorData void <method-name>(Externalizable data) throws Exception]
+ * [@AnalyzeStatus void <method-name>(String batchStatus, String exitStatus) throws Exception]
+ * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerAnnotatedClass extends AnnotatedClass {
+public class SplitAnalyserAnnotatedClass extends AnnotatedClass {
     
-    private final Method beforeJobMethod;
+    private final Method analyseCollectorDataMethod;
+    
+    private final Method analyseStatusMethod;
 
-    private final Method afterJobMethod;
-
-    public JobListenerAnnotatedClass(Class<?> clazz) {
+    public SplitAnalyserAnnotatedClass(Class<?> clazz) {
         super(clazz);
-        beforeJobMethod = findAnnotatedMethod(clazz, BeforeJob.class, true, new Predicate<Method>() {
+        analyseCollectorDataMethod = findAnnotatedMethod(clazz, AnalyzeCollectorData.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
+                        && hasOneParameter(m, Externalizable.class)
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (beforeJobMethod != null) {
-            beforeJobMethod.setAccessible(true);
-        }
-        afterJobMethod = findAnnotatedMethod(clazz, AfterJob.class, true, new Predicate<Method>() {
+        analyseCollectorDataMethod.setAccessible(true);
+        analyseStatusMethod = findAnnotatedMethod(clazz, AnalyzeStatus.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
-                        && hasZeroParameter(m)
+                        && hasTwoParameters(m, String.class, String.class)
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (afterJobMethod != null) {
-            afterJobMethod.setAccessible(true);
-        }
+        analyseStatusMethod.setAccessible(true);
     }
 
-    public Method getBeforeJobMethod() {
-        return beforeJobMethod;
+    public Method getAnalyseCollectorDataMethod() {
+        return analyseCollectorDataMethod;
     }
 
-    public Method getAfterJobMethod() {
-        return afterJobMethod;
+    public Method getAnalyseStatusMethod() {
+        return analyseStatusMethod;
     }
     
 }

@@ -46,6 +46,12 @@ public class MethodUtil {
                 && type == m.getParameterTypes()[0];
     }
 
+    public static boolean hasTwoParameters(Method m, Class<?> type1, Class<?> type2) {
+        return m.getParameterTypes().length == 2
+                && type1 == m.getParameterTypes()[0]
+                && type2 == m.getParameterTypes()[1];
+    }
+
     public static boolean hasReturnType(Method m, Class<?> type) {
         return m.getReturnType() == type;
     }

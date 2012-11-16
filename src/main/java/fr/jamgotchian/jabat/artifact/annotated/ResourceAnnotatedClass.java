@@ -39,8 +39,8 @@ public abstract class ResourceAnnotatedClass extends AnnotatedClass {
 
     private final Method checkpointInfoMethod;
 
-    protected ResourceAnnotatedClass(Class<?> clazz, Class<? extends Annotation> annotation) {
-        super(clazz, annotation);
+    protected ResourceAnnotatedClass(Class<?> clazz) {
+        super(clazz);
         openMethod = findAnnotatedMethod(clazz, Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
