@@ -18,7 +18,6 @@ package fr.jamgotchian.jabat.artifact.annotated;
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.io.Externalizable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import javax.batch.annotation.CheckpointInfo;
 import javax.batch.annotation.Close;
@@ -26,12 +25,12 @@ import javax.batch.annotation.Open;
 
 /**
  * @Open void <method-name>(Externalizable checkpoint) throws Exception
- * @Close void <method-name>() throws Exception
+ * [@Close void <method-name>() throws Exception]
  * @CheckpointInfo Externalizable <method-name> () throws Exception
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class ResourceAnnotatedClass extends AnnotatedClass {
+public abstract class ResourceAnnotatedClass {
  
     private final Method openMethod;
 
@@ -40,7 +39,6 @@ public abstract class ResourceAnnotatedClass extends AnnotatedClass {
     private final Method checkpointInfoMethod;
 
     protected ResourceAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         openMethod = findAnnotatedMethod(clazz, Open.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

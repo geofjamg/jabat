@@ -22,19 +22,18 @@ import javax.batch.annotation.AfterJob;
 import javax.batch.annotation.BeforeJob;
 
 /**
- * @BeforeJob void <method-name> () throws Exception
- * @AfterJob void <method-name> () throws Exception
+ * [@BeforeJob void <method-name> () throws Exception]
+ * [@AfterJob void <method-name> () throws Exception]
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerAnnotatedClass extends AnnotatedClass {
+public class JobListenerAnnotatedClass {
     
     private final Method beforeJobMethod;
 
     private final Method afterJobMethod;
 
     public JobListenerAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         beforeJobMethod = findAnnotatedMethod(clazz, BeforeJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

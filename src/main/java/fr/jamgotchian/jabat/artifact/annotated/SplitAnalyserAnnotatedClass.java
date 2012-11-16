@@ -28,14 +28,13 @@ import javax.batch.annotation.AnalyzeStatus;
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitAnalyserAnnotatedClass extends AnnotatedClass {
+public class SplitAnalyserAnnotatedClass {
     
     private final Method analyseCollectorDataMethod;
     
     private final Method analyseStatusMethod;
 
     public SplitAnalyserAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         analyseCollectorDataMethod = findAnnotatedMethod(clazz, AnalyzeCollectorData.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

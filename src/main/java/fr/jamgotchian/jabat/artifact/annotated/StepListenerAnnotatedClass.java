@@ -22,19 +22,18 @@ import javax.batch.annotation.AfterStep;
 import javax.batch.annotation.BeforeStep;
 
 /**
- * @BeforeStep void <method-name> () throws Exception
- * @AfterStep void <method-name> () throws Exception 
+ * [@BeforeStep void <method-name> () throws Exception]
+ * [@AfterStep void <method-name> () throws Exception ]
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerAnnotatedClass extends AnnotatedClass {
+public class StepListenerAnnotatedClass {
        
     private final Method beforeStepMethod;
 
     private final Method afterStepMethod;
 
     public StepListenerAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         beforeStepMethod = findAnnotatedMethod(clazz, BeforeStep.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

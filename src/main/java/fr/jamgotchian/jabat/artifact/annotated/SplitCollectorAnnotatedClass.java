@@ -26,12 +26,11 @@ import javax.batch.annotation.CollectSplitData;
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitCollectorAnnotatedClass extends AnnotatedClass {
+public class SplitCollectorAnnotatedClass {
     
     private final Method collectSplitDataMethod;
 
     public SplitCollectorAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         collectSplitDataMethod = findAnnotatedMethod(clazz, CollectSplitData.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

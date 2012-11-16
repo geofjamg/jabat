@@ -23,18 +23,17 @@ import javax.batch.annotation.Stop;
 
 /**
  * @Process String <method-name> () throws Exception
- * @Stop void <method-name> () throws Exception
+ * [@Stop void <method-name> () throws Exception]
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletAnnotatedClass extends AnnotatedClass {
+public class BatchletAnnotatedClass {
 
     private final Method processMethod;
 
     private final Method stopMethod;
 
     public BatchletAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         processMethod = findAnnotatedMethod(clazz, Process.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

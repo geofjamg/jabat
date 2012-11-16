@@ -25,12 +25,11 @@ import javax.batch.annotation.ProcessItem;
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorAnnotatedClass extends AnnotatedClass {
+public class ItemProcessorAnnotatedClass {
 
     private final Method processItemMethod;
     
     public ItemProcessorAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

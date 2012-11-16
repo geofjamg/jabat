@@ -31,7 +31,7 @@ import javax.batch.annotation.IsReadyToCheckpoint;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmAnnotatedClass extends AnnotatedClass {
+public class CheckpointAlgorithmAnnotatedClass {
      
     private final Method checkpointTimeoutMethod;
 
@@ -42,7 +42,6 @@ public class CheckpointAlgorithmAnnotatedClass extends AnnotatedClass {
     private final Method endCheckpointMethod;
 
     public CheckpointAlgorithmAnnotatedClass(Class<?> clazz) {
-        super(clazz);
         checkpointTimeoutMethod = findAnnotatedMethod(clazz, CheckpointTimeout.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
