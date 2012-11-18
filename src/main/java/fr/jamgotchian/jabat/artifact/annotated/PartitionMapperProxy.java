@@ -15,29 +15,30 @@
  */
 package fr.jamgotchian.jabat.artifact.annotated;
 
-import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.SplitAnalyzer;
+import javax.batch.api.PartitionMapper;
+import javax.batch.api.parameters.PartitionPlan;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitAnalyserProxy implements SplitAnalyzer {
+public class PartitionMapperProxy implements PartitionMapper {
 
     private final Object object;
 
-    private final AnalyserAnnotatedClass annotatedClass;
+    private final PartitionMapperAnnotatedClass annotatedClass;
 
-    public SplitAnalyserProxy(Object object) {
+    public PartitionMapperProxy(Object object) {
         this.object = object;
-        annotatedClass = new AnalyserAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionMapperAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void analyzeCollectorData(Externalizable data) throws Exception {
+    public PartitionPlan mapPartitions() throws Exception {
+        PartitionPlan plan = null;
         try {
-            annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
+            plan = (PartitionPlan) annotatedClass.getMapPartitionsMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -45,19 +46,7 @@ public class SplitAnalyserProxy implements SplitAnalyzer {
                 throw e;
             }
         }
-    }
-
-    @Override
-    public void analyzeStatus(String batchStatus, String exitStatus) throws Exception {
-        try {
-            annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+        return plan;
     }
 
 }

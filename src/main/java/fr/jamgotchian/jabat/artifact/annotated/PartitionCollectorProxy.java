@@ -17,27 +17,28 @@ package fr.jamgotchian.jabat.artifact.annotated;
 
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.SplitAnalyzer;
+import javax.batch.api.PartitionCollector;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitAnalyserProxy implements SplitAnalyzer {
+public class PartitionCollectorProxy implements PartitionCollector {
 
     private final Object object;
 
-    private final AnalyserAnnotatedClass annotatedClass;
+    private final PartitionCollectorAnnotatedClass annotatedClass;
 
-    public SplitAnalyserProxy(Object object) {
+    public PartitionCollectorProxy(Object object) {
         this.object = object;
-        annotatedClass = new AnalyserAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionCollectorAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void analyzeCollectorData(Externalizable data) throws Exception {
+    public Externalizable collectPartitionData() throws Exception {
+        Externalizable data = null;
         try {
-            annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
+            data = (Externalizable) annotatedClass.getCollectPartitionDataMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -45,19 +46,7 @@ public class SplitAnalyserProxy implements SplitAnalyzer {
                 throw e;
             }
         }
-    }
-
-    @Override
-    public void analyzeStatus(String batchStatus, String exitStatus) throws Exception {
-        try {
-            annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+        return data;
     }
 
 }

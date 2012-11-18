@@ -25,16 +25,16 @@ import javax.batch.annotation.AnalyzeStatus;
 /**
  * [@AnalyzeCollectorData void <method-name>(Externalizable data) throws Exception]
  * [@AnalyzeStatus void <method-name>(String batchStatus, String exitStatus) throws Exception]
- * 
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitAnalyserAnnotatedClass {
-    
+public class AnalyserAnnotatedClass {
+
     private final Method analyseCollectorDataMethod;
-    
+
     private final Method analyseStatusMethod;
 
-    public SplitAnalyserAnnotatedClass(Class<?> clazz) {
+    public AnalyserAnnotatedClass(Class<?> clazz) {
         analyseCollectorDataMethod = findAnnotatedMethod(clazz, AnalyzeCollectorData.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -43,7 +43,9 @@ public class SplitAnalyserAnnotatedClass {
                         && throwsOneException(m, Exception.class);
             }
         });
-        analyseCollectorDataMethod.setAccessible(true);
+        if (analyseCollectorDataMethod != null) {
+            analyseCollectorDataMethod.setAccessible(true);
+        }
         analyseStatusMethod = findAnnotatedMethod(clazz, AnalyzeStatus.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
@@ -52,7 +54,9 @@ public class SplitAnalyserAnnotatedClass {
                         && throwsOneException(m, Exception.class);
             }
         });
-        analyseStatusMethod.setAccessible(true);
+        if (analyseStatusMethod != null) {
+            analyseStatusMethod.setAccessible(true);
+        }
     }
 
     public Method getAnalyseCollectorDataMethod() {
@@ -62,5 +66,5 @@ public class SplitAnalyserAnnotatedClass {
     public Method getAnalyseStatusMethod() {
         return analyseStatusMethod;
     }
-    
+
 }

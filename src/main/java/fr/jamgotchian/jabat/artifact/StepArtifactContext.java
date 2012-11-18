@@ -15,10 +15,18 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
+import fr.jamgotchian.jabat.artifact.annotated.PartitionAnalyserProxy;
+import fr.jamgotchian.jabat.artifact.annotated.PartitionCollectorProxy;
+import fr.jamgotchian.jabat.artifact.annotated.PartitionMapperProxy;
+import fr.jamgotchian.jabat.artifact.annotated.PartitionReducerProxy;
 import fr.jamgotchian.jabat.artifact.annotated.StepListenerProxy;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import java.util.ArrayList;
 import java.util.List;
+import javax.batch.api.PartitionAnalyzer;
+import javax.batch.api.PartitionCollector;
+import javax.batch.api.PartitionMapper;
+import javax.batch.api.PartitionReducer;
 import javax.batch.api.StepListener;
 
 /**
@@ -47,6 +55,50 @@ public class StepArtifactContext extends ArtifactContext {
 
     public List<StepListener> getStepListeners() {
         return stepListeners;
+    }
+
+    public PartitionMapper createPartitionMapper(String ref) throws Exception {
+        Object obj = create(ref);
+        PartitionMapper mapper;
+        if (obj instanceof PartitionMapper) {
+            mapper = (PartitionMapper) obj;
+        } else {
+            mapper = new PartitionMapperProxy(obj);
+        }
+        return mapper;
+    }
+
+    public PartitionReducer createPartitionReducer(String ref) throws Exception {
+        Object obj = create(ref);
+        PartitionReducer reducer;
+        if (obj instanceof PartitionReducer) {
+            reducer = (PartitionReducer) obj;
+        } else {
+            reducer = new PartitionReducerProxy(obj);
+        }
+        return reducer;
+    }
+
+    public PartitionCollector createPartitionCollector(String ref) throws Exception {
+        Object obj = create(ref);
+        PartitionCollector collector;
+        if (obj instanceof PartitionCollector) {
+            collector = (PartitionCollector) obj;
+        } else {
+            collector = new PartitionCollectorProxy(obj);
+        }
+        return collector;
+    }
+
+    public PartitionAnalyzer createPartitionAnalyser(String ref) throws Exception {
+        Object obj = create(ref);
+        PartitionAnalyzer analyser;
+        if (obj instanceof PartitionAnalyzer) {
+            analyser = (PartitionAnalyzer) obj;
+        } else {
+            analyser = new PartitionAnalyserProxy(obj);
+        }
+        return analyser;
     }
 
     @Override

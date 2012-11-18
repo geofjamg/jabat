@@ -17,19 +17,19 @@ package fr.jamgotchian.jabat.artifact.annotated;
 
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.SplitAnalyzer;
+import javax.batch.api.PartitionAnalyzer;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitAnalyserProxy implements SplitAnalyzer {
+public class PartitionAnalyserProxy implements PartitionAnalyzer {
 
     private final Object object;
 
     private final AnalyserAnnotatedClass annotatedClass;
 
-    public SplitAnalyserProxy(Object object) {
+    public PartitionAnalyserProxy(Object object) {
         this.object = object;
         annotatedClass = new AnalyserAnnotatedClass(object.getClass());
     }
