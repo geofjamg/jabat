@@ -37,7 +37,9 @@ public class SplitAnalyserProxy implements SplitAnalyzer {
     @Override
     public void analyzeCollectorData(Externalizable data) throws Exception {
         try {
-            annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
+            if (annotatedClass.getAnalyseCollectorDataMethod() != null) {
+                annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -50,7 +52,9 @@ public class SplitAnalyserProxy implements SplitAnalyzer {
     @Override
     public void analyzeStatus(String batchStatus, String exitStatus) throws Exception {
         try {
-            annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
+            if (annotatedClass.getAnalyseStatusMethod() != null) {
+                annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
