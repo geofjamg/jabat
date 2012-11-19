@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.Setter;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,27 +30,27 @@ public class ChunkStepBuilder {
     private final NodeContainer container;
 
     private String id;
-    
+
     private String next;
-    
+
     private final Properties properties = new Properties();
 
     private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
 
     private CheckpointPolicy checkpointPolicy;
-    
+
     private int commitInterval = 10;
-    
+
     private Integer bufferSize;
-    
+
     private int retryLimit = -1;
-    
+
     private Artifact readerArtifact;
-    
+
     private Artifact processorArtifact;
-    
+
     private Artifact writerArtifact;
-    
+
     public ChunkStepBuilder(NodeContainer container) {
         this.container = container;
     }
@@ -124,7 +125,7 @@ public class ChunkStepBuilder {
         this.retryLimit = retryLimit;
         return this;
     }
-    
+
     private CheckpointPolicy getCheckpointPolicy() {
         return checkpointPolicy == null ? CheckpointPolicy.ITEM : checkpointPolicy;
     }
@@ -142,25 +143,25 @@ public class ChunkStepBuilder {
                 default:
                     throw new InternalError();
             }
-        }        
+        }
     }
-    
+
     public ChunkStep build() {
         if (id == null) {
             throw new JabatException("Chunk id is not set");
         }
         if (readerArtifact == null) {
-            throw new JabatException("Chunk reader artifact is not set");            
+            throw new JabatException("Chunk reader artifact is not set");
         }
         if (processorArtifact == null) {
-            throw new JabatException("Chunk processor artifact is not set");            
+            throw new JabatException("Chunk processor artifact is not set");
         }
         if (writerArtifact == null) {
-            throw new JabatException("Chunk writer artifact is not set");            
+            throw new JabatException("Chunk writer artifact is not set");
         }
-        ChunkStep chunk = new ChunkStep(id, container, next, properties, listenerArtifacts, 
-                                        readerArtifact, processorArtifact, writerArtifact, 
-                                        getCheckpointPolicy(), commitInterval, 
+        ChunkStep chunk = new ChunkStep(id, container, next, properties, listenerArtifacts,
+                                        readerArtifact, processorArtifact, writerArtifact,
+                                        getCheckpointPolicy(), commitInterval,
                                         getBufferSize(), retryLimit);
         container.addNode(chunk);
         return chunk;

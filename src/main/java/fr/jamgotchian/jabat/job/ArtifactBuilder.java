@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.Setter;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Properties;
 
@@ -27,9 +28,9 @@ public class ArtifactBuilder<P> {
     private final P parent;
 
     private final Setter<Artifact> setter;
-    
+
     private String ref;
-        
+
     private final Properties properties = new Properties();
 
     public ArtifactBuilder(P parent, Setter<Artifact> setter) {
