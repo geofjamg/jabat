@@ -280,7 +280,7 @@ public class JobXmlLoader {
                                     if (chunk.getCheckpointPolicy() != CheckpointPolicy.CUSTOM) {
                                         throw new JabatException("Checkpoint algorithm should be only specified in case of custom checkpoint policy");
                                     }
-                                    chunk.setCheckpointAlgoArtifact(checkpointAlgoArtifact);
+                                    chunk.setCheckpointAlgo(checkpointAlgoArtifact);
                                     xmlContext.push(XmlContext.ARTIFACT);
                                     xmlElt.push(checkpointAlgoArtifact);
                                 } else {

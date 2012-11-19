@@ -188,7 +188,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 return new TimeCheckpointAlgorithm(step.getCommitInterval());
             case CUSTOM:
                 {
-                    String ref = step.getCheckpointAlgoArtifact().getRef();
+                    String ref = step.getCheckpointAlgo().getRef();
                     return artifactContext.createCheckpointAlgorithm(ref);
                 }
             default:
