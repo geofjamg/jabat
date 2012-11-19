@@ -130,10 +130,10 @@ public class JobManager {
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
             // TODO only stop running check execution
-            Batchlet artifactInstance = stepExecution.getBatchlet();
-            if (artifactInstance != null) {
+            Batchlet batchlet = stepExecution.getBatchlet();
+            if (batchlet != null) {
                 try {
-                    artifactInstance.stop();
+                    batchlet.stop();
                     stepExecution.setStatus(Status.STOPPED);
                 } catch(Exception e) {
                     LOGGER.error(e.toString(), e);
