@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.Setter;
 import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -35,7 +35,7 @@ public class ChunkStepBuilder {
 
     private final Properties properties = new Properties();
 
-    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
+    private final List<Artifact> listeners = new ArrayList<Artifact>();
 
     private CheckpointPolicy checkpointPolicy;
 
@@ -45,11 +45,11 @@ public class ChunkStepBuilder {
 
     private int retryLimit = -1;
 
-    private Artifact readerArtifact;
+    private Artifact reader;
 
-    private Artifact processorArtifact;
+    private Artifact processor;
 
-    private Artifact writerArtifact;
+    private Artifact writer;
 
     public ChunkStepBuilder(NodeContainer container) {
         this.container = container;
@@ -70,29 +70,29 @@ public class ChunkStepBuilder {
         return this;
     }
 
-    public ArtifactBuilder<ChunkStepBuilder> newReaderArtifact() {
+    public ArtifactBuilder<ChunkStepBuilder> newReader() {
         return new ArtifactBuilder<ChunkStepBuilder>(this, new Setter<Artifact>() {
             @Override
             public void set(Artifact artifact) {
-                ChunkStepBuilder.this.readerArtifact = artifact;
+                ChunkStepBuilder.this.reader = artifact;
             }
         });
     }
 
-    public ArtifactBuilder<ChunkStepBuilder> newProcessorArtifact() {
+    public ArtifactBuilder<ChunkStepBuilder> newProcessor() {
         return new ArtifactBuilder<ChunkStepBuilder>(this, new Setter<Artifact>() {
             @Override
             public void set(Artifact artifact) {
-                ChunkStepBuilder.this.processorArtifact = artifact;
+                ChunkStepBuilder.this.processor = artifact;
             }
         });
     }
 
-    public ArtifactBuilder<ChunkStepBuilder> newWriterArtifact() {
+    public ArtifactBuilder<ChunkStepBuilder> newWriter() {
         return new ArtifactBuilder<ChunkStepBuilder>(this, new Setter<Artifact>() {
             @Override
             public void set(Artifact artifact) {
-                ChunkStepBuilder.this.writerArtifact = artifact;
+                ChunkStepBuilder.this.writer = artifact;
             }
         });
     }
@@ -150,17 +150,17 @@ public class ChunkStepBuilder {
         if (id == null) {
             throw new JabatException("Chunk id is not set");
         }
-        if (readerArtifact == null) {
+        if (reader == null) {
             throw new JabatException("Chunk reader artifact is not set");
         }
-        if (processorArtifact == null) {
+        if (processor == null) {
             throw new JabatException("Chunk processor artifact is not set");
         }
-        if (writerArtifact == null) {
+        if (writer == null) {
             throw new JabatException("Chunk writer artifact is not set");
         }
-        ChunkStep chunk = new ChunkStep(id, container, next, properties, listenerArtifacts,
-                                        readerArtifact, processorArtifact, writerArtifact,
+        ChunkStep chunk = new ChunkStep(id, container, next, properties, listeners,
+                                        reader, processor, writer,
                                         getCheckpointPolicy(), commitInterval,
                                         getBufferSize(), retryLimit);
         container.addNode(chunk);

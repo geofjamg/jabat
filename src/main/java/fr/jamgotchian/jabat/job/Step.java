@@ -27,13 +27,15 @@ public abstract class Step extends AbstractNode implements Node, Chainable, List
 
     private final String next;
 
-    private final List<Artifact> listenerArtifacts;
+    private Partition partition;
+
+    private final List<Artifact> listeners;
 
     Step(String id, NodeContainer container, String next, Properties properties,
-            List<Artifact> listenerArtifacts) {
+         List<Artifact> listeners) {
         super(id, properties, container);
         this.next = next;
-        this.listenerArtifacts = listenerArtifacts;
+        this.listeners = listeners;
     }
 
     @Override
@@ -41,16 +43,24 @@ public abstract class Step extends AbstractNode implements Node, Chainable, List
         return next;
     }
 
-    @Override
-    public void addListenerArtifact(Artifact artifact) {
-        listenerArtifacts.add(artifact);
+    public Partition getPartition() {
+        return partition;
+    }
+
+    public void setPartition(Partition partition) {
+        this.partition = partition;
     }
 
     @Override
-    public Collection<Artifact> getListenerArtifacts() {
-        return listenerArtifacts;
+    public void addListener(Artifact listener) {
+        listeners.add(listener);
     }
-    
+
+    @Override
+    public Collection<Artifact> getListeners() {
+        return listeners;
+    }
+
     public abstract Artifact getArtifact(String ref);
 
 }

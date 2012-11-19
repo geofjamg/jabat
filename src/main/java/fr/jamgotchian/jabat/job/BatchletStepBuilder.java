@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.Setter;
 import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -35,7 +35,7 @@ public class BatchletStepBuilder {
 
     private final Properties properties = new Properties();
 
-    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
+    private final List<Artifact> listeners = new ArrayList<Artifact>();
 
     private Artifact artifact;
 
@@ -74,7 +74,7 @@ public class BatchletStepBuilder {
         if (artifact == null) {
             throw new JabatException("Batchlet artifact is not set");
         }
-        BatchletStep step = new BatchletStep(id, container, next, properties, listenerArtifacts, artifact);
+        BatchletStep step = new BatchletStep(id, container, next, properties, listeners, artifact);
         container.addNode(step);
         return step;
     }

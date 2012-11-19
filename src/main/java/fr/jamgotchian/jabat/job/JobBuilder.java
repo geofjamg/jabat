@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.Setter;
 import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +31,7 @@ public class JobBuilder {
 
     private final Properties properties = new Properties();
 
-    private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
+    private final List<Artifact> listeners = new ArrayList<Artifact>();
 
     public JobBuilder setId(String id) {
         this.id = id;
@@ -43,11 +43,11 @@ public class JobBuilder {
         return this;
     }
 
-    public ArtifactBuilder<JobBuilder> newListenerArtifact() {
+    public ArtifactBuilder<JobBuilder> newListener() {
         return new ArtifactBuilder<JobBuilder>(this, new Setter<Artifact>() {
             @Override
-            public void set(Artifact artifact) {
-                JobBuilder.this.listenerArtifacts.add(artifact);
+            public void set(Artifact listener) {
+                JobBuilder.this.listeners.add(listener);
             }
         });
     }
@@ -56,6 +56,6 @@ public class JobBuilder {
         if (id == null) {
             throw new JabatException("Job id is not set");
         }
-        return new Job(id, properties, listenerArtifacts);
+        return new Job(id, properties, listeners);
     }
 }

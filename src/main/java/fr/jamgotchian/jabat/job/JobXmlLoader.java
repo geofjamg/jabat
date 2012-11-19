@@ -53,7 +53,7 @@ public class JobXmlLoader {
 
         private Properties properties = new Properties();
 
-        private final List<Artifact> listenerArtifacts = new ArrayList<Artifact>();
+        private final List<Artifact> listeners = new ArrayList<Artifact>();
 
         private StepElement(String id, String next) {
             this.id = id;
@@ -61,13 +61,13 @@ public class JobXmlLoader {
         }
 
         @Override
-        public void addListenerArtifact(Artifact artifact) {
-            listenerArtifacts.add(artifact);
+        public void addListener(Artifact listener) {
+            listeners.add(listener);
         }
 
         @Override
-        public Collection<Artifact> getListenerArtifacts() {
-            return listenerArtifacts;
+        public Collection<Artifact> getListeners() {
+            return listeners;
         }
 
         @Override
@@ -83,7 +83,7 @@ public class JobXmlLoader {
     }
 
     private static class MultipleArtifactsElement {
-        
+
         private final Map<String, Artifact> artifacts = new HashMap<String, Artifact>();
 
         private MultipleArtifactsElement(Artifact... artifacts) {
@@ -91,7 +91,7 @@ public class JobXmlLoader {
                 this.artifacts.put(a.getRef(), a);
             }
         }
-        
+
         private Artifact getArtifact(String ref) {
             Artifact a = artifacts.get(ref);
             if (a == null) {
@@ -100,7 +100,7 @@ public class JobXmlLoader {
             return a;
         }
     }
-    
+
     private enum XmlContext {
         JOB,
         STEP,
@@ -112,7 +112,7 @@ public class JobXmlLoader {
         ARTIFACT,
         MULTIPLE_ARTIFACTS,
     }
-    
+
     private final JobPath path = new JobPath();
 
     public JobXmlLoader() {
@@ -123,11 +123,11 @@ public class JobXmlLoader {
         try {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(new FileReader(file));
-            
+
             // xml contextual information
             Deque<XmlContext> xmlContext = new ArrayDeque<XmlContext>(3);
             Deque<Object> xmlElt = new ArrayDeque<Object>(3);
-            
+
             while (xmlsr.hasNext()) {
                 int eventType = xmlsr.next();
                 switch (eventType) {
@@ -173,7 +173,7 @@ public class JobXmlLoader {
                                                                          container,
                                                                          stepElt.next,
                                                                          stepElt.properties,
-                                                                         stepElt.listenerArtifacts,
+                                                                         stepElt.listeners,
                                                                          artifact);
                                 container.addNode(batchlet);
                                 xmlContext.push(XmlContext.BATCHLET);
@@ -225,7 +225,7 @@ public class JobXmlLoader {
                                                                 container,
                                                                 stepElt.next,
                                                                 stepElt.properties,
-                                                                stepElt.listenerArtifacts,
+                                                                stepElt.listeners,
                                                                 readerArtifact,
                                                                 processorArtifact,
                                                                 writerArtifact,
@@ -237,8 +237,8 @@ public class JobXmlLoader {
                                 xmlContext.push(XmlContext.CHUNK);
                                 xmlElt.push(chunk);
                                 xmlContext.push(XmlContext.MULTIPLE_ARTIFACTS);
-                                xmlElt.push(new MultipleArtifactsElement(readerArtifact, 
-                                                                         processorArtifact, 
+                                xmlElt.push(new MultipleArtifactsElement(readerArtifact,
+                                                                         processorArtifact,
                                                                          writerArtifact));
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
@@ -257,7 +257,7 @@ public class JobXmlLoader {
                                         }
                                         break;
                                     default:
-                                        throw new JabatException("Unexpected Xml context" 
+                                        throw new JabatException("Unexpected Xml context"
                                                 + xmlContext.getFirst());
                                 }
                             } else if ("listener".equals(localName)) {
@@ -266,10 +266,10 @@ public class JobXmlLoader {
                                     case JOB:
                                     case STEP:
                                         Artifact artifact = new Artifact(ref);
-                                        ((Listenable) xmlElt.getFirst()).addListenerArtifact(artifact);
+                                        ((Listenable) xmlElt.getFirst()).addListener(artifact);
                                         break;
                                     default:
-                                        throw new JabatException("Unexpected Xml context" 
+                                        throw new JabatException("Unexpected Xml context"
                                                 + xmlContext.getFirst());
                                 }
                             } else if ("checkpoint-algorithm".equals(localName)) {
@@ -284,8 +284,8 @@ public class JobXmlLoader {
                                     xmlContext.push(XmlContext.ARTIFACT);
                                     xmlElt.push(checkpointAlgoArtifact);
                                 } else {
-                                    throw new JabatException("Unexpected Xml context" 
-                                            + xmlContext.getFirst());                                    
+                                    throw new JabatException("Unexpected Xml context"
+                                            + xmlContext.getFirst());
                                 }
                             }
                             break;
@@ -318,16 +318,16 @@ public class JobXmlLoader {
             throw new JabatException(e);
         } catch (XMLStreamException e) {
             throw new JabatException(e);
-        }      
-        
+        }
+
         // check job consistency
         ConsistencyReport report = new JobConsistencyChecker(job).check();
-        
+
         // substitute property values
         new PropertyValueSubstitutor(job, parameters).substitute();
-        
+
         LOGGER.debug("Load job xml {} file {}", jobId, file);
-        
+
         return job;
     }
 

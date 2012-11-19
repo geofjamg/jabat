@@ -25,47 +25,47 @@ import java.util.Properties;
  */
 public class ChunkStep extends Step {
 
-    private final Artifact readerArtifact;
+    private final Artifact reader;
 
-    private final Artifact processorArtifact;
+    private final Artifact processor;
 
-    private final Artifact writerArtifact;
+    private final Artifact writer;
 
     private final CheckpointPolicy checkpointPolicy;
 
     private final int commitInterval;
 
     private Artifact checkpointAlgoArtifact;
-    
+
     private final int bufferSize;
 
     private final int retryLimit;
 
-    ChunkStep(String id, NodeContainer container, String next, 
+    ChunkStep(String id, NodeContainer container, String next,
               Properties properties, List<Artifact> listenerArtifacts,
-              Artifact readerArtifact, Artifact processorArtifact, Artifact writerArtifact,
+              Artifact reader, Artifact processor, Artifact writer,
               CheckpointPolicy checkpointPolicy, int commitInterval,
               int bufferSize, int retryLimit) {
         super(id, container, next, properties, listenerArtifacts);
-        this.readerArtifact = readerArtifact;
-        this.processorArtifact = processorArtifact;
-        this.writerArtifact = writerArtifact;
+        this.reader = reader;
+        this.processor = processor;
+        this.writer = writer;
         this.checkpointPolicy = checkpointPolicy;
         this.commitInterval = commitInterval;
         this.bufferSize = bufferSize;
         this.retryLimit = retryLimit;
     }
 
-    public Artifact getReaderArtifact() {
-        return readerArtifact;
+    public Artifact getReader() {
+        return reader;
     }
 
-    public Artifact getProcessorArtifact() {
-        return processorArtifact;
+    public Artifact getProcessor() {
+        return processor;
     }
 
-    public Artifact getWriterArtifact() {
-        return writerArtifact;
+    public Artifact getWriter() {
+        return writer;
     }
 
     public CheckpointPolicy getCheckpointPolicy() {
@@ -94,13 +94,13 @@ public class ChunkStep extends Step {
 
     @Override
     public Artifact getArtifact(String ref) {
-        if (readerArtifact.getRef().equals(ref)) {
-            return readerArtifact;
-        } else if (processorArtifact.getRef().equals(ref)) {
-            return processorArtifact;
-        } else if (writerArtifact.getRef().equals(ref)) {
-            return writerArtifact;
-        } else if (checkpointAlgoArtifact != null 
+        if (reader.getRef().equals(ref)) {
+            return reader;
+        } else if (processor.getRef().equals(ref)) {
+            return processor;
+        } else if (writer.getRef().equals(ref)) {
+            return writer;
+        } else if (checkpointAlgoArtifact != null
                 && checkpointAlgoArtifact.getRef().equals(ref)) {
             return checkpointAlgoArtifact;
         } else {

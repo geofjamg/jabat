@@ -106,7 +106,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
                     try {
                         // before job listeners
-                        for (Artifact a : job.getListenerArtifacts()) {
+                        for (Artifact a : job.getListeners()) {
                             JobListener l = artifactContext.createJobListener(a.getRef());
                             l.beforeJob();
                         }
@@ -147,7 +147,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
                 // before step listeners
-                for (Artifact a : step.getListenerArtifacts()) {
+                for (Artifact a : step.getListeners()) {
                     StepListener l = artifactContext.createStepListener(a.getRef());
                     l.beforeStep();
                 }
@@ -158,10 +158,10 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 stepExecution.setStatus(Status.STARTED);
 
                 String exitStatus = artifact.process();
-            
+
                 jobExecution.setStatus(Status.COMPLETED);
                 stepExecution.setStatus(Status.COMPLETED);
-                
+
                 // after step listeners
                 // TODO should be called even if case of error?
                 for (StepListener l : artifactContext.getStepListeners()) {
@@ -205,17 +205,17 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
                 // before step listeners
-                for (Artifact a : step.getListenerArtifacts()) {
+                for (Artifact a : step.getListeners()) {
                     StepListener l = artifactContext.createStepListener(a.getRef());
                     l.beforeStep();
                 }
 
                 ItemReader reader
-                        = artifactContext.createItemReader(step.getReaderArtifact().getRef());
+                        = artifactContext.createItemReader(step.getReader().getRef());
                 ItemProcessor processor
-                        = artifactContext.createItemProcessor(step.getProcessorArtifact().getRef());
+                        = artifactContext.createItemProcessor(step.getProcessor().getRef());
                 ItemWriter writer
-                        = artifactContext.createItemWriter(step.getWriterArtifact().getRef());
+                        = artifactContext.createItemWriter(step.getWriter().getRef());
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -288,7 +288,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 // TODO what should be the status if we reach the max number of retry?
                 jobExecution.setStatus(Status.COMPLETED);
                 stepExecution.setStatus(Status.COMPLETED);
-            
+
                 // after step listeners
                 // TODO should be called even if case of error?
                 for (StepListener l : artifactContext.getStepListeners()) {
@@ -320,8 +320,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
                 try {
                     final List<Externalizable> collectedData = new ArrayList<Externalizable>();
-                    final SplitCollector collector = split.getCollectorArtifact() != null 
-                            ? artifactContext.createSplitCollector(split.getCollectorArtifact().getRef()) 
+                    final SplitCollector collector = split.getCollectorArtifact() != null
+                            ? artifactContext.createSplitCollector(split.getCollectorArtifact().getRef())
                             : null;
                     // TODO start split context
                     for (Node node : nodes) {
@@ -348,7 +348,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         });
                     }
                     if (split.getAnalyserArtifact() != null) {
-                        SplitAnalyzer analyser 
+                        SplitAnalyzer analyser
                                 = artifactContext.createSplitAnalyser(split.getAnalyserArtifact().getRef());
                         for (Externalizable data : collectedData) {
                             analyser.analyzeCollectorData(data);

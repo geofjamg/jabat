@@ -26,11 +26,11 @@ import java.util.Properties;
  */
 public class Job extends AbstractNodeContainer implements NodeContainer, Listenable {
 
-    private final List<Artifact> listenerArtifacts;
+    private final List<Artifact> listeners;
 
-    public Job(String id, Properties properties, List<Artifact> listenerArtifacts) {
+    public Job(String id, Properties properties, List<Artifact> listeners) {
         super(id, properties, null);
-        this.listenerArtifacts = listenerArtifacts;
+        this.listeners = listeners;
     }
 
     public Job(String id) {
@@ -46,15 +46,15 @@ public class Job extends AbstractNodeContainer implements NodeContainer, Listena
     }
 
     @Override
-    public void addListenerArtifact(Artifact artifact) {
-        listenerArtifacts.add(artifact);
+    public void addListener(Artifact artifact) {
+        listeners.add(artifact);
     }
 
     @Override
-    public Collection<Artifact> getListenerArtifacts() {
-        return listenerArtifacts;
+    public Collection<Artifact> getListeners() {
+        return listeners;
     }
-    
+
     @Override
     public <A> void accept(NodeVisitor<A> visitor, A arg) {
         visitor.visit(this, arg);

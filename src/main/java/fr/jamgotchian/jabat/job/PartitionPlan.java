@@ -15,16 +15,41 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.Collection;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-interface Listenable {
+public class PartitionPlan implements Propertiable {
 
-    void addListener(Artifact listener);
+    private int instances;
 
-    Collection<Artifact> getListeners();
+    private int threads;
+
+    private final Properties properties = new Properties();
+
+    public PartitionPlan(int instances, int threads) {
+        this.instances = instances;
+        this.threads = threads;
+    }
+
+    public int getInstances() {
+        return instances;
+    }
+
+    public int getThreads() {
+        return threads;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return properties;
+    }
+
+    @Override
+    public void setProperty(String name, String value) {
+        properties.setProperty(name, value);
+    }
 
 }

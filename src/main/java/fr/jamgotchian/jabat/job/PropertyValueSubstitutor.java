@@ -27,7 +27,7 @@ import org.antlr.runtime.RecognitionException;
 public class PropertyValueSubstitutor {
 
     private final Job job;
-    
+
     private final Properties jobParameters;
 
     public PropertyValueSubstitutor(Job job, Properties parameters) {
@@ -44,9 +44,9 @@ public class PropertyValueSubstitutor {
     public void substitute() {
         visitor.visit(job, new Properties());
     }
-    
+
     private NodeVisitor<Properties> visitor = new NodeVisitor<Properties>() {
-        
+
         private void substitute(Properties properties, Properties jobProperties) {
             try {
                 for (String name : properties.stringPropertyNames()) {
@@ -57,7 +57,7 @@ public class PropertyValueSubstitutor {
             } catch (IOException e) {
                 throw new JabatException(e);
             } catch (RecognitionException e) {
-                throw new JabatException(e);            
+                throw new JabatException(e);
             }
         }
 
@@ -78,9 +78,9 @@ public class PropertyValueSubstitutor {
         @Override
         public void visit(ChunkStep step, Properties jobProperties) {
             substitute(step.getProperties(), jobProperties);
-            substitute(step.getReaderArtifact().getProperties(), new Properties(jobProperties));
-            substitute(step.getProcessorArtifact().getProperties(), new Properties(jobProperties));
-            substitute(step.getWriterArtifact().getProperties(), new Properties(jobProperties));
+            substitute(step.getReader().getProperties(), new Properties(jobProperties));
+            substitute(step.getProcessor().getProperties(), new Properties(jobProperties));
+            substitute(step.getWriter().getProperties(), new Properties(jobProperties));
         }
 
         @Override
@@ -104,5 +104,5 @@ public class PropertyValueSubstitutor {
             substitute(decision.getProperties(), jobProperties);
         }
     };
-    
+
 }
