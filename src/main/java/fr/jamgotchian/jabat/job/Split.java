@@ -25,16 +25,13 @@ public class Split extends AbstractNodeContainer implements NodeContainer, Chain
 
     private final String next;
 
-    private final Artifact collector;
+    private Artifact collector;
 
-    private final Artifact analyser;
+    private Artifact analyser;
 
-    public Split(String id, NodeContainer container, String next,
-                 Artifact collector, Artifact analyser) {
+    public Split(String id, NodeContainer container, String next) {
         super(id, new Properties(), container);
         this.next = next;
-        this.collector = collector;
-        this.analyser = analyser;
     }
 
     @Override
@@ -46,8 +43,16 @@ public class Split extends AbstractNodeContainer implements NodeContainer, Chain
         return collector;
     }
 
+    public void setCollector(Artifact collector) {
+        this.collector = collector;
+    }
+
     public Artifact getAnalyser() {
         return analyser;
+    }
+
+    public void setAnalyser(Artifact analyser) {
+        this.analyser = analyser;
     }
 
     @Override

@@ -15,7 +15,6 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.Deques;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
 import java.io.FileReader;
@@ -84,7 +83,9 @@ public class JobXmlLoader {
         FLOW,
         DECISION,
         CHECKPOINT_ALGORITHM,
-        LISTENER
+        LISTENER,
+        COLLECTOR,
+        ANALYSER
     }
 
     private final JobPath path = new JobPath();
@@ -126,7 +127,7 @@ public class JobXmlLoader {
                                 String id = xmlsr.getAttributeValue(null, "id");
                                 String next = xmlsr.getAttributeValue(null, "next");
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
-                                Split split = new Split(id, container, next, null, null);
+                                Split split = new Split(id, container, next);
                                 container.addNode(split);
                                 xmlContext.push(XmlContext.SPLIT);
                                 xmlElt.push(split);
@@ -237,7 +238,8 @@ public class JobXmlLoader {
                                             } else if (chunk.getWriter().getRef().equals(artifactName)) {
                                                 chunk.getWriter().setProperty(propertyName, value);
                                             } else {
-                                                throw new JabatException("Artifact " + artifactName + " not found");
+                                                throw new JabatException("Artifact " + artifactName
+                                                        + " not found");
                                             }
                                         }
                                         break;
@@ -248,6 +250,8 @@ public class JobXmlLoader {
                                         break;
                                     case CHECKPOINT_ALGORITHM:
                                     case LISTENER:
+                                    case COLLECTOR:
+                                    case ANALYSER:
                                         ((Artifact) xmlElt.getFirst()).setProperty(name, value);
                                         break;
                                     default:
@@ -265,7 +269,7 @@ public class JobXmlLoader {
                                         ((StepElement) xmlElt.getFirst()).addListener(listener);
                                         break;
                                     default:
-                                        throw new JabatException("Unexpected Xml context"
+                                        throw new JabatException("Unexpected Xml context "
                                                 + xmlContext.getFirst());
                                 }
                                 xmlContext.push(XmlContext.LISTENER);
@@ -282,7 +286,31 @@ public class JobXmlLoader {
                                     xmlContext.push(XmlContext.CHECKPOINT_ALGORITHM);
                                     xmlElt.push(checkpointAlgo);
                                 } else {
-                                    throw new JabatException("Unexpected Xml context"
+                                    throw new JabatException("Unexpected Xml context "
+                                            + xmlContext.getFirst());
+                                }
+                            } else if ("collector".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                if (xmlContext.getFirst() == XmlContext.SPLIT) {
+                                    Split split = (Split) xmlElt.getFirst();
+                                    Artifact collector = new Artifact(ref);
+                                    split.setCollector(collector);
+                                    xmlContext.push(XmlContext.COLLECTOR);
+                                    xmlElt.push(collector);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context "
+                                            + xmlContext.getFirst());
+                                }
+                            } else if ("analyser".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                if (xmlContext.getFirst() == XmlContext.SPLIT) {
+                                    Split split = (Split) xmlElt.getFirst();
+                                    Artifact analyser = new Artifact(ref);
+                                    split.setAnalyser(analyser);
+                                    xmlContext.push(XmlContext.ANALYSER);
+                                    xmlElt.push(analyser);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
                                 }
                             }
@@ -300,7 +328,9 @@ public class JobXmlLoader {
                                     || "batchlet".equals(localName)
                                     || "chunk".equals(localName)
                                     || "checkpoint-algorithm".equals(localName)
-                                    || "listener".equals(localName)) {
+                                    || "listener".equals(localName)
+                                    || "collector".equals(localName)
+                                    || "analyser".equals(localName)) {
                                 xmlContext.pop();
                                 xmlElt.pop();
                             }
