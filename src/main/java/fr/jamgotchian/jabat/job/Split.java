@@ -24,17 +24,17 @@ import java.util.Properties;
 public class Split extends AbstractNodeContainer implements NodeContainer, Chainable {
 
     private final String next;
-    
-    private final Artifact collectorArtifact;
-    
-    private final Artifact analyserArtifact;
-    
-    public Split(String id, NodeContainer container, String next, 
-                 Artifact collectorArtifact, Artifact analyserArtifact) {
+
+    private final Artifact collector;
+
+    private final Artifact analyser;
+
+    public Split(String id, NodeContainer container, String next,
+                 Artifact collector, Artifact analyser) {
         super(id, new Properties(), container);
         this.next = next;
-        this.collectorArtifact = collectorArtifact;
-        this.analyserArtifact = analyserArtifact;
+        this.collector = collector;
+        this.analyser = analyser;
     }
 
     @Override
@@ -42,14 +42,14 @@ public class Split extends AbstractNodeContainer implements NodeContainer, Chain
         return next;
     }
 
-    public Artifact getCollectorArtifact() {
-        return collectorArtifact;
+    public Artifact getCollector() {
+        return collector;
     }
 
-    public Artifact getAnalyserArtifact() {
-        return analyserArtifact;
+    public Artifact getAnalyser() {
+        return analyser;
     }
-    
+
     @Override
     public <A> void accept(NodeVisitor<A> visitor, A arg) {
         visitor.visit(this, arg);

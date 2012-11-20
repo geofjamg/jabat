@@ -21,7 +21,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Artifact implements Propertiable {
+public class Artifact {
 
     private final String ref;
 
@@ -40,12 +40,10 @@ public class Artifact implements Propertiable {
         return ref;
     }
 
-    @Override
     public Properties getProperties() {
         return properties;
     }
 
-    @Override
     public void setProperty(String name, String value) {
         properties.setProperty(name, value);
     }

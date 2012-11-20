@@ -22,7 +22,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class Step extends AbstractNode implements Node, Chainable, Listenable {
+public abstract class Step extends AbstractNode implements Node, Chainable {
 
     private final String next;
 
@@ -50,12 +50,10 @@ public abstract class Step extends AbstractNode implements Node, Chainable, List
         this.partition = partition;
     }
 
-    @Override
     public void addListener(Artifact listener) {
         listeners.add(listener);
     }
 
-    @Override
     public List<Artifact> getListeners() {
         return listeners;
     }

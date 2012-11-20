@@ -22,11 +22,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import javax.batch.runtime.NoSuchJobException;
 import javax.xml.stream.FactoryConfigurationError;
@@ -45,7 +42,7 @@ public class JobXmlLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private static class StepElement implements Listenable, Propertiable {
+    private static class StepElement {
 
         public String id;
 
@@ -60,45 +57,22 @@ public class JobXmlLoader {
             this.next = next;
         }
 
-        @Override
         public void addListener(Artifact listener) {
             listeners.add(listener);
         }
 
-        @Override
         public List<Artifact> getListeners() {
             return listeners;
         }
 
-        @Override
         public Properties getProperties() {
             return properties;
         }
 
-        @Override
         public void setProperty(String name, String value) {
             properties.setProperty(name, value);
         }
 
-    }
-
-    private static class MultipleArtifactsElement {
-
-        private final Map<String, Artifact> artifacts = new HashMap<String, Artifact>();
-
-        private MultipleArtifactsElement(Artifact... artifacts) {
-            for (Artifact a : artifacts) {
-                this.artifacts.put(a.getRef(), a);
-            }
-        }
-
-        private Artifact getArtifact(String ref) {
-            Artifact a = artifacts.get(ref);
-            if (a == null) {
-                throw new JabatException("Artifact " + ref + " not found");
-            }
-            return a;
-        }
     }
 
     private enum XmlContext {
@@ -109,8 +83,8 @@ public class JobXmlLoader {
         SPLIT,
         FLOW,
         DECISION,
-        ARTIFACT,
-        MULTIPLE_ARTIFACTS,
+        CHECKPOINT_ALGORITHM,
+        LISTENER
     }
 
     private final JobPath path = new JobPath();
@@ -177,9 +151,7 @@ public class JobXmlLoader {
                                                                          artifact);
                                 container.addNode(batchlet);
                                 xmlContext.push(XmlContext.BATCHLET);
-                                xmlContext.push(XmlContext.ARTIFACT);
                                 xmlElt.push(batchlet);
-                                xmlElt.push(artifact);
                             } else if ("chunk".equals(localName)) {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
@@ -218,17 +190,17 @@ public class JobXmlLoader {
                                 }
                                 StepElement stepElt = (StepElement) xmlElt.pop();
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
-                                Artifact readerArtifact = new Artifact(readerRef);
-                                Artifact processorArtifact = new Artifact(processorRef);
-                                Artifact writerArtifact = new Artifact(writerRef);
+                                Artifact reader = new Artifact(readerRef);
+                                Artifact processor = new Artifact(processorRef);
+                                Artifact writer = new Artifact(writerRef);
                                 ChunkStep chunk = new ChunkStep(stepElt.id,
                                                                 container,
                                                                 stepElt.next,
                                                                 stepElt.properties,
                                                                 stepElt.listeners,
-                                                                readerArtifact,
-                                                                processorArtifact,
-                                                                writerArtifact,
+                                                                reader,
+                                                                processor,
+                                                                writer,
                                                                 checkpointPolicy,
                                                                 commitInterval,
                                                                 bufferSize,
@@ -236,53 +208,79 @@ public class JobXmlLoader {
                                 container.addNode(chunk);
                                 xmlContext.push(XmlContext.CHUNK);
                                 xmlElt.push(chunk);
-                                xmlContext.push(XmlContext.MULTIPLE_ARTIFACTS);
-                                xmlElt.push(new MultipleArtifactsElement(readerArtifact,
-                                                                         processorArtifact,
-                                                                         writerArtifact));
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
                                 switch (xmlContext.getFirst()) {
                                     case JOB:
-                                    case STEP:
-                                    case ARTIFACT:
-                                        ((Propertiable) xmlElt.getFirst()).setProperty(name, value);
+                                        ((Job) xmlElt.getFirst()).setProperty(name, value);
                                         break;
-                                    case MULTIPLE_ARTIFACTS:
-                                        String applyTo = xmlsr.getAttributeValue(null, "applyTo");
-                                        if (applyTo != null) {
-                                            MultipleArtifactsElement artifacts = (MultipleArtifactsElement) xmlElt.getFirst();
-                                            artifacts.getArtifact(applyTo).getProperties().setProperty(name, value);
+                                    case STEP:
+                                        ((StepElement) xmlElt.getFirst()).setProperty(name, value);
+                                        break;
+                                    case BATCHLET:
+                                        ((BatchletStep) xmlElt.getFirst()).getArtifact().setProperty(name, value);
+                                        break;
+                                    case CHUNK:
+                                        {
+                                            ChunkStep chunk = (ChunkStep) xmlElt.getFirst();
+                                            String[] split = name.split(":");
+                                            if (split.length != 2) {
+                                                throw new JabatException("Chunk property syntax error, it should be <artifact-name:property-name>");
+                                            }
+                                            String artifactName = split[0];
+                                            String propertyName = split[1];
+                                            if (chunk.getReader().getRef().equals(artifactName)) {
+                                                chunk.getReader().setProperty(propertyName, value);
+                                            } else if (chunk.getProcessor().getRef().equals(artifactName)) {
+                                                chunk.getProcessor().setProperty(propertyName, value);
+                                            } else if (chunk.getWriter().getRef().equals(artifactName)) {
+                                                chunk.getWriter().setProperty(propertyName, value);
+                                            } else {
+                                                throw new JabatException("Artifact " + artifactName + " not found");
+                                            }
                                         }
                                         break;
+                                    case SPLIT:
+                                    case FLOW:
+                                    case DECISION:
+                                        ((Node) xmlElt.getFirst()).setProperty(name, value);
+                                        break;
+                                    case CHECKPOINT_ALGORITHM:
+                                    case LISTENER:
+                                        ((Artifact) xmlElt.getFirst()).setProperty(name, value);
+                                        break;
                                     default:
-                                        throw new JabatException("Unexpected Xml context"
+                                        throw new JabatException("Unexpected Xml context "
                                                 + xmlContext.getFirst());
                                 }
                             } else if ("listener".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
+                                Artifact listener = new Artifact(ref);
                                 switch (xmlContext.getFirst()) {
                                     case JOB:
+                                        ((Job) xmlElt.getFirst()).addListener(listener);
+                                        break;
                                     case STEP:
-                                        Artifact artifact = new Artifact(ref);
-                                        ((Listenable) xmlElt.getFirst()).addListener(artifact);
+                                        ((StepElement) xmlElt.getFirst()).addListener(listener);
                                         break;
                                     default:
                                         throw new JabatException("Unexpected Xml context"
                                                 + xmlContext.getFirst());
                                 }
+                                xmlContext.push(XmlContext.LISTENER);
+                                xmlElt.push(listener);
                             } else if ("checkpoint-algorithm".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                if (Deques.getSecond(xmlContext) == XmlContext.CHUNK) {
-                                    Artifact checkpointAlgoArtifact = new Artifact(ref);
-                                    ChunkStep chunk = (ChunkStep) Deques.getSecond(xmlElt);
+                                if (xmlContext.getFirst() == XmlContext.CHUNK) {
+                                    ChunkStep chunk = (ChunkStep) xmlElt.getFirst();
                                     if (chunk.getCheckpointPolicy() != CheckpointPolicy.CUSTOM) {
                                         throw new JabatException("Checkpoint algorithm should be only specified in case of custom checkpoint policy");
                                     }
-                                    chunk.setCheckpointAlgo(checkpointAlgoArtifact);
-                                    xmlContext.push(XmlContext.ARTIFACT);
-                                    xmlElt.push(checkpointAlgoArtifact);
+                                    Artifact checkpointAlgo = new Artifact(ref);
+                                    chunk.setCheckpointAlgo(checkpointAlgo);
+                                    xmlContext.push(XmlContext.CHECKPOINT_ALGORITHM);
+                                    xmlElt.push(checkpointAlgo);
                                 } else {
                                     throw new JabatException("Unexpected Xml context"
                                             + xmlContext.getFirst());
@@ -298,14 +296,12 @@ public class JobXmlLoader {
                             if ("job".equals(localName)
                                     || "split".equals(localName)
                                     || "flow".equals(localName)
-                                    || "checkpoint-algorithm".equals(localName)) {
+                                    || "checkpoint-algorithm".equals(localName)
+                                    || "batchlet".equals(localName)
+                                    || "chunk".equals(localName)
+                                    || "checkpoint-algorithm".equals(localName)
+                                    || "listener".equals(localName)) {
                                 xmlContext.pop();
-                                xmlElt.pop();
-                            } else if ("batchlet".equals(localName)
-                                    || "chunk".equals(localName)) {
-                                xmlContext.pop();
-                                xmlContext.pop();
-                                xmlElt.pop();
                                 xmlElt.pop();
                             }
                         }

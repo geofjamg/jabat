@@ -15,15 +15,21 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.Properties;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Node extends Propertiable {
+public interface Node {
 
     String getId();
 
     NodeContainer getContainer();
+
+    Properties getProperties();
+
+    void setProperty(String name, String value);
 
     <A> void accept(NodeVisitor<A> visitor, A arg);
 }

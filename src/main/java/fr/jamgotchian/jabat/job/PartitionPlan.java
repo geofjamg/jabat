@@ -21,7 +21,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionPlan implements Propertiable {
+public class PartitionPlan {
 
     private int instances;
 
@@ -42,12 +42,10 @@ public class PartitionPlan implements Propertiable {
         return threads;
     }
 
-    @Override
     public Properties getProperties() {
         return properties;
     }
 
-    @Override
     public void setProperty(String name, String value) {
         properties.setProperty(name, value);
     }

@@ -23,7 +23,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Job extends AbstractNodeContainer implements NodeContainer, Listenable {
+public class Job extends AbstractNodeContainer implements NodeContainer {
 
     private final List<Artifact> listeners;
 
@@ -44,12 +44,10 @@ public class Job extends AbstractNodeContainer implements NodeContainer, Listena
         return new ChunkStepBuilder(this);
     }
 
-    @Override
-    public void addListener(Artifact artifact) {
-        listeners.add(artifact);
+    public void addListener(Artifact listener) {
+        listeners.add(listener);
     }
 
-    @Override
     public List<Artifact> getListeners() {
         return listeners;
     }

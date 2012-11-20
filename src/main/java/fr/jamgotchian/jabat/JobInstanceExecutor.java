@@ -320,8 +320,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
                 try {
                     final List<Externalizable> collectedData = new ArrayList<Externalizable>();
-                    final SplitCollector collector = split.getCollectorArtifact() != null
-                            ? artifactContext.createSplitCollector(split.getCollectorArtifact().getRef())
+                    final SplitCollector collector = split.getCollector() != null
+                            ? artifactContext.createSplitCollector(split.getCollector().getRef())
                             : null;
                     // TODO start split context
                     for (Node node : nodes) {
@@ -347,9 +347,9 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                             }
                         });
                     }
-                    if (split.getAnalyserArtifact() != null) {
+                    if (split.getAnalyser() != null) {
                         SplitAnalyzer analyser
-                                = artifactContext.createSplitAnalyser(split.getAnalyserArtifact().getRef());
+                                = artifactContext.createSplitAnalyser(split.getAnalyser().getRef());
                         for (Externalizable data : collectedData) {
                             analyser.analyzeCollectorData(data);
                             analyser.analyzeStatus(null, null);
