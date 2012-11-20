@@ -66,7 +66,7 @@ public class JobXmlLoader {
         }
 
         @Override
-        public Collection<Artifact> getListeners() {
+        public List<Artifact> getListeners() {
             return listeners;
         }
 

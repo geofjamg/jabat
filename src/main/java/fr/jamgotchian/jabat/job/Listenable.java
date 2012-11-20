@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -25,6 +25,6 @@ interface Listenable {
 
     void addListener(Artifact listener);
 
-    Collection<Artifact> getListeners();
+    List<Artifact> getListeners();
 
 }

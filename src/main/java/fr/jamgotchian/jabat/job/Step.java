@@ -57,7 +57,7 @@ public abstract class Step extends AbstractNode implements Node, Chainable, List
     }
 
     @Override
-    public Collection<Artifact> getListeners() {
+    public List<Artifact> getListeners() {
         return listeners;
     }
 

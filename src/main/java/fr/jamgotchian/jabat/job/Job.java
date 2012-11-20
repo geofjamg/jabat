@@ -51,7 +51,7 @@ public class Job extends AbstractNodeContainer implements NodeContainer, Listena
     }
 
     @Override
-    public Collection<Artifact> getListeners() {
+    public List<Artifact> getListeners() {
         return listeners;
     }
 
