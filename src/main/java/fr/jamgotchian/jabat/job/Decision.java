@@ -26,17 +26,20 @@ import java.util.Properties;
 public class Decision extends AbstractNode implements Node {
 
     private final Artifact artifact;
-    
+
     private final List<ControlElement> controlElements = new ArrayList<ControlElement>();
-    
-    public Decision(String id, Properties properties, NodeContainer container, 
-                    Artifact artifact) {
-        super(id, properties, container);
+
+    public Decision(String id, NodeContainer container, Artifact artifact) {
+        super(id, new Properties(), container);
         this.artifact = artifact;
     }
 
     public Artifact getArtifact() {
         return artifact;
+    }
+
+    public void addControlElement(ControlElement ctrlElt) {
+        controlElements.add(ctrlElt);
     }
 
     public List<ControlElement> getControlElements() {

@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,6 +30,8 @@ public abstract class Step extends AbstractNode implements Node, Chainable {
     private Partition partition;
 
     private final List<Artifact> listeners;
+
+    private final List<TerminatingElement> terminatingElements = new ArrayList<TerminatingElement>();
 
     Step(String id, NodeContainer container, String next, Properties properties,
          List<Artifact> listeners) {
@@ -56,6 +59,14 @@ public abstract class Step extends AbstractNode implements Node, Chainable {
 
     public List<Artifact> getListeners() {
         return listeners;
+    }
+
+    public void addTerminatingElement(TerminatingElement ctrlElt) {
+        terminatingElements.add(ctrlElt);
+    }
+
+    public List<TerminatingElement> getTerminatingElements() {
+        return terminatingElements;
     }
 
     public abstract Artifact getArtifact(String ref);

@@ -47,9 +47,12 @@ public class JobXmlLoader {
 
         public String next;
 
-        private Properties properties = new Properties();
+        private final Properties properties = new Properties();
 
         private final List<Artifact> listeners = new ArrayList<Artifact>();
+
+        private final List<TerminatingElement> terminatingElements
+                = new ArrayList<TerminatingElement>();
 
         private StepElement(String id, String next) {
             this.id = id;
@@ -70,6 +73,14 @@ public class JobXmlLoader {
 
         public void setProperty(String name, String value) {
             properties.setProperty(name, value);
+        }
+
+        public void addTerminatingElement(TerminatingElement ctrlElt) {
+            terminatingElements.add(ctrlElt);
+        }
+
+        public List<TerminatingElement> getTerminatingElements() {
+            return terminatingElements;
         }
 
     }
@@ -209,6 +220,13 @@ public class JobXmlLoader {
                                 container.addNode(chunk);
                                 xmlContext.push(XmlContext.CHUNK);
                                 xmlElt.push(chunk);
+                            } else if ("decision".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                NodeContainer container = (NodeContainer) xmlElt.getFirst();
+                                Decision decision = new Decision(ref, container, new Artifact(ref));
+                                container.addNode(decision);
+                                xmlContext.push(XmlContext.DECISION);
+                                xmlElt.push(decision);
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
@@ -309,6 +327,61 @@ public class JobXmlLoader {
                                     split.setAnalyser(analyser);
                                     xmlContext.push(XmlContext.ANALYSER);
                                     xmlElt.push(analyser);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context "
+                                            + xmlContext.getFirst());
+                                }
+                            } else if ("end".equals(localName)) {
+                                String on = xmlsr.getAttributeValue(null, "on");
+                                String exitStatus = xmlsr.getAttributeValue(null, "exit-status");
+                                EndElement end = new EndElement(on, exitStatus);
+                                switch (xmlContext.getFirst()) {
+                                    case STEP:
+                                        ((StepElement) xmlElt.getFirst()).addTerminatingElement(end);
+                                        break;
+                                    case DECISION:
+                                        ((Decision) xmlElt.getFirst()).addControlElement(end);
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context "
+                                                + xmlContext.getFirst());
+                                }
+                            } else if ("fail".equals(localName)) {
+                                String on = xmlsr.getAttributeValue(null, "on");
+                                String exitStatus = xmlsr.getAttributeValue(null, "exit-status");
+                                FailElement fail = new FailElement(on, exitStatus);
+                                switch (xmlContext.getFirst()) {
+                                    case STEP:
+                                        ((StepElement) xmlElt.getFirst()).addTerminatingElement(fail);
+                                        break;
+                                    case DECISION:
+                                        ((Decision) xmlElt.getFirst()).addControlElement(fail);
+                                    default:
+                                        throw new JabatException("Unexpected Xml context "
+                                                + xmlContext.getFirst());
+                                }
+                            } else if ("stop".equals(localName)) {
+                                String on = xmlsr.getAttributeValue(null, "on");
+                                String exitStatus = xmlsr.getAttributeValue(null, "exit-status");
+                                String restart = xmlsr.getAttributeValue(null, "restart");
+                                StopElement stop = new StopElement(on, exitStatus, restart);
+                                switch (xmlContext.getFirst()) {
+                                    case STEP:
+                                        ((StepElement) xmlElt.getFirst()).addTerminatingElement(stop);
+                                        break;
+                                    case DECISION:
+                                        ((Decision) xmlElt.getFirst()).addControlElement(stop);
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context "
+                                                + xmlContext.getFirst());
+                                }
+                            } else if ("next".equals(localName)) {
+                                String on = xmlsr.getAttributeValue(null, "on");
+                                String to = xmlsr.getAttributeValue(null, "to");
+                                if (xmlContext.getFirst() == XmlContext.DECISION) {
+                                    NextElement next = new NextElement(on, to);
+                                    ((Decision) xmlElt.getFirst()).addControlElement(next);
                                 } else {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
