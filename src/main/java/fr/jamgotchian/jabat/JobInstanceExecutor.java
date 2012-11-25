@@ -37,7 +37,7 @@ import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.repository.JobRepository;
-import fr.jamgotchian.jabat.spi.ArtifactFactory;
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.Externalizables;
 import java.io.Externalizable;

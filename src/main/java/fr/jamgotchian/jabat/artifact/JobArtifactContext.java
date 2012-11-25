@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.artifact;
 
 import fr.jamgotchian.jabat.artifact.annotation.JobListenerProxy;
-import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import java.util.ArrayList;
 import java.util.List;
 import javax.batch.api.JobListener;

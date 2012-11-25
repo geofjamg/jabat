@@ -23,7 +23,7 @@ import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.Status;
-import fr.jamgotchian.jabat.spi.ArtifactFactory;
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Collections;

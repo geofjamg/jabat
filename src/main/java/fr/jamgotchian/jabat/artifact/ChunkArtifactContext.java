@@ -19,7 +19,6 @@ import fr.jamgotchian.jabat.artifact.annotation.CheckpointAlgorithmProxy;
 import fr.jamgotchian.jabat.artifact.annotation.ItemProcessorProxy;
 import fr.jamgotchian.jabat.artifact.annotation.ItemReaderProxy;
 import fr.jamgotchian.jabat.artifact.annotation.ItemWriterProxy;
-import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import javax.batch.api.CheckpointAlgorithm;
 import javax.batch.api.ItemProcessor;
 import javax.batch.api.ItemReader;

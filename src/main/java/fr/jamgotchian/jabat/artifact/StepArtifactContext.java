@@ -20,7 +20,6 @@ import fr.jamgotchian.jabat.artifact.annotation.PartitionCollectorProxy;
 import fr.jamgotchian.jabat.artifact.annotation.PartitionMapperProxy;
 import fr.jamgotchian.jabat.artifact.annotation.PartitionReducerProxy;
 import fr.jamgotchian.jabat.artifact.annotation.StepListenerProxy;
-import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import java.util.ArrayList;
 import java.util.List;
 import javax.batch.api.PartitionAnalyzer;
