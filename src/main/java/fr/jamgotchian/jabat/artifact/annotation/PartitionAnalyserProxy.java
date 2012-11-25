@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;

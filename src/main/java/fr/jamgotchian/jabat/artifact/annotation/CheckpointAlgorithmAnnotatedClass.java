@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
@@ -32,7 +32,7 @@ import javax.batch.annotation.IsReadyToCheckpoint;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class CheckpointAlgorithmAnnotatedClass {
-     
+
     private final Method checkpointTimeoutMethod;
 
     private final Method beginCheckpointMethod;
@@ -77,7 +77,7 @@ public class CheckpointAlgorithmAnnotatedClass {
                         && throwsOneException(m, Exception.class);
             }
         });
-        endCheckpointMethod.setAccessible(true);        
+        endCheckpointMethod.setAccessible(true);
     }
 
     public Method getCheckpointTimeoutMethod() {

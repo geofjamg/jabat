@@ -13,40 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ProcessItem;
+import javax.batch.annotation.ReadItem;
 
 /**
- * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
- * 
+ * @ReadItem <item-type> <method-name> () throws Exception
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorAnnotatedClass {
+public class ItemReaderAnnotatedClass extends ResourceAnnotatedClass {
 
-    private final Method processItemMethod;
-    
-    public ItemProcessorAnnotatedClass(Class<?> clazz) {
-        processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
+    private final Method readItemMethod;
+
+    public ItemReaderAnnotatedClass(Class<?> clazz) {
+        super(clazz);
+        readItemMethod = findAnnotatedMethod(clazz, ReadItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return m.getReturnType() != Void.TYPE
-                        && hasOneParameter(m)
-                        && throwsOneException(m, Exception.class);
+                        && MethodUtil.hasZeroParameter(m)
+                        && MethodUtil.throwsOneException(m, Exception.class);
             }
         });
-        processItemMethod.setAccessible(true);
+        readItemMethod.setAccessible(true);
     }
 
-    public Class<?> getItemType() {
-        return processItemMethod.getParameterTypes()[0];
+    public Method getReadItemMethod() {
+        return readItemMethod;
     }
 
-    public Method getProcessItemMethod() {
-        return processItemMethod;
-    }
-       
 }

@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.ItemReader;
+import java.lang.reflect.Type;
+import java.util.List;
+import javax.batch.api.ItemWriter;
 
 /**
+ * @WriteItems void <method-name> (List<item-type> items) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderProxy extends ResourceProxy implements ItemReader<Object> {
+public class ItemWriterProxy extends ResourceProxy implements ItemWriter<Object> {
 
-    private final ItemReaderAnnotatedClass annotatedClass;
-    
-    public ItemReaderProxy(Object object) {
+    private final ItemWriterAnnotatedClass annotatedClass;
+
+    public ItemWriterProxy(Object object) {
         super(object);
-        annotatedClass = new ItemReaderAnnotatedClass(object.getClass());
+        annotatedClass = new ItemWriterAnnotatedClass(object.getClass());
     }
 
     @Override
@@ -37,9 +41,16 @@ public class ItemReaderProxy extends ResourceProxy implements ItemReader<Object>
     }
 
     @Override
-    public Object readItem() throws Exception {
+    public void writeItems(List<Object> items) throws Exception {
+        Type expectedType = annotatedClass.getItemType();
+        for (Object item : items) {
+            if (item.getClass() != expectedType) {
+                throw new JabatException("Bad item type " + item.getClass()
+                        + ", expected " + expectedType);
+            }
+        }
         try {
-            return annotatedClass.getReadItemMethod().invoke(object);
+            annotatedClass.getWriteItemsMethod().invoke(object, items);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

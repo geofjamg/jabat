@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
-import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.PartitionCollector;
+import javax.batch.api.PartitionMapper;
+import javax.batch.api.parameters.PartitionPlan;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionCollectorProxy implements PartitionCollector {
+public class PartitionMapperProxy implements PartitionMapper {
 
     private final Object object;
 
-    private final PartitionCollectorAnnotatedClass annotatedClass;
+    private final PartitionMapperAnnotatedClass annotatedClass;
 
-    public PartitionCollectorProxy(Object object) {
+    public PartitionMapperProxy(Object object) {
         this.object = object;
-        annotatedClass = new PartitionCollectorAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionMapperAnnotatedClass(object.getClass());
     }
 
     @Override
-    public Externalizable collectPartitionData() throws Exception {
-        Externalizable data = null;
+    public PartitionPlan mapPartitions() throws Exception {
+        PartitionPlan plan = null;
         try {
-            data = (Externalizable) annotatedClass.getCollectPartitionDataMethod().invoke(object);
+            plan = (PartitionPlan) annotatedClass.getMapPartitionsMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -46,7 +46,7 @@ public class PartitionCollectorProxy implements PartitionCollector {
                 throw e;
             }
         }
-        return data;
+        return plan;
     }
 
 }

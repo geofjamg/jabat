@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import java.lang.reflect.InvocationTargetException;
 import javax.batch.api.Batchlet;
@@ -23,7 +23,7 @@ import javax.batch.api.Batchlet;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BatchletProxy implements Batchlet {
-    
+
     private final Object object;
 
     private final BatchletAnnotatedClass annotatedClass;

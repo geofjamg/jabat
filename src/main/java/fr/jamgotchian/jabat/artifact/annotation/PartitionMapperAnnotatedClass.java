@@ -13,37 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
-import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
-import java.io.Externalizable;
+import com.google.common.base.Predicate;
 import java.lang.reflect.Method;
-import javax.batch.annotation.CollectSplitData;
+import javax.batch.annotation.MapPartitions;
+import javax.batch.api.parameters.PartitionPlan;
 
 /**
- * @CollectSplitData Externalizable <method-name>() throws Exception
- * 
+ * @MapPartitions PartitionPlan <method-name>( ) throws Exception
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitCollectorAnnotatedClass {
-    
-    private final Method collectSplitDataMethod;
+public class PartitionMapperAnnotatedClass {
 
-    public SplitCollectorAnnotatedClass(Class<?> clazz) {
-        collectSplitDataMethod = findAnnotatedMethod(clazz, CollectSplitData.class, false, new Predicate<Method>() {
+    private final Method mapPartitionsMethod;
+
+    public PartitionMapperAnnotatedClass(Class<?> clazz) {
+        mapPartitionsMethod = findAnnotatedMethod(clazz, MapPartitions.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return hasReturnType(m, Externalizable.class)
+                return hasReturnType(m, PartitionPlan.class)
                         && hasZeroParameter(m)
                         && throwsOneException(m, Exception.class);
             }
         });
-        collectSplitDataMethod.setAccessible(true);
+        mapPartitionsMethod.setAccessible(true);
     }
 
-    public Method getCollectSplitDataMethod() {
-        return collectSplitDataMethod;
+    public Method getMapPartitionsMethod() {
+        return mapPartitionsMethod;
     }
-    
+
 }

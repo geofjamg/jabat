@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import com.google.common.base.Predicate;
 import fr.jamgotchian.jabat.util.MethodUtil;
@@ -26,11 +26,11 @@ import javax.batch.annotation.WriteItems;
 
 /**
  * @WriteItems void <method-name> (List<item-type> items) throws Exception
- * 
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class ItemWriterAnnotatedClass extends ResourceAnnotatedClass {
-  
+
     private final Method writeItemsMethod;
 
     public ItemWriterAnnotatedClass(Class<?> clazz) {
@@ -51,10 +51,10 @@ public class ItemWriterAnnotatedClass extends ResourceAnnotatedClass {
     public Method getWriteItemsMethod() {
         return writeItemsMethod;
     }
-    
+
     public Type getItemType() {
         return ((ParameterizedType) writeItemsMethod.getGenericParameterTypes()[0])
-                .getActualTypeArguments()[0];        
+                .getActualTypeArguments()[0];
     }
 
 }

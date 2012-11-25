@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.JobListener;
+import javax.batch.api.PartitionCollector;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerProxy implements JobListener {
-    
+public class PartitionCollectorProxy implements PartitionCollector {
+
     private final Object object;
 
-    private final JobListenerAnnotatedClass annotatedClass;
+    private final PartitionCollectorAnnotatedClass annotatedClass;
 
-    public JobListenerProxy(Object object) {
+    public PartitionCollectorProxy(Object object) {
         this.object = object;
-        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionCollectorAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void beforeJob() throws Exception {
+    public Externalizable collectPartitionData() throws Exception {
+        Externalizable data = null;
         try {
-            if (annotatedClass.getBeforeJobMethod() != null) {
-                annotatedClass.getBeforeJobMethod().invoke(object);
-            }
+            data = (Externalizable) annotatedClass.getCollectPartitionDataMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -46,21 +46,7 @@ public class JobListenerProxy implements JobListener {
                 throw e;
             }
         }
-    }
-
-    @Override
-    public void afterJob() throws Exception {
-        try {
-            if (annotatedClass.getAfterJobMethod() != null) {
-                annotatedClass.getAfterJobMethod().invoke(object);
-            }
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+        return data;
     }
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import com.google.common.base.Predicate;
@@ -28,7 +28,7 @@ import javax.batch.annotation.BeforeJob;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class JobListenerAnnotatedClass {
-    
+
     private final Method beforeJobMethod;
 
     private final Method afterJobMethod;
@@ -65,5 +65,5 @@ public class JobListenerAnnotatedClass {
     public Method getAfterJobMethod() {
         return afterJobMethod;
     }
-    
+
 }

@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.StepListener;
+import javax.batch.api.SplitCollector;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerProxy implements StepListener {
-    
+public class SplitCollectorProxy implements SplitCollector {
+
     private final Object object;
 
-    private final StepListenerAnnotatedClass annotatedClass;
+    private final SplitCollectorAnnotatedClass annotatedClass;
 
-    public StepListenerProxy(Object object) {
+    public SplitCollectorProxy(Object object) {
         this.object = object;
-        annotatedClass = new StepListenerAnnotatedClass(object.getClass());
+        annotatedClass = new SplitCollectorAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void beforeStep() throws Exception {
+    public Externalizable collectSplitData() throws Exception {
+        Externalizable data = null;
         try {
-            if (annotatedClass.getBeforeStepMethod() != null) {
-                annotatedClass.getBeforeStepMethod().invoke(object);
-            }
+            data = (Externalizable) annotatedClass.getCollectSplitDataMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -46,21 +46,7 @@ public class StepListenerProxy implements StepListener {
                 throw e;
             }
         }
-    }
-
-    @Override
-    public void afterStep() throws Exception {
-        try {
-            if (annotatedClass.getAfterStepMethod() != null) {
-                annotatedClass.getAfterStepMethod().invoke(object);
-            }
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+        return data;
     }
 
 }

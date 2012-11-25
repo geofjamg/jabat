@@ -13,45 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.CheckpointAlgorithm;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
-    
-    private final Object object;
+abstract class ResourceProxy {
 
-    private final CheckpointAlgorithmAnnotatedClass annotatedClass;
-    
-    public CheckpointAlgorithmProxy(Object object) {
+    protected final Object object;
+
+    protected ResourceProxy(Object object) {
         this.object = object;
-        annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
     }
 
-    @Override
-    public int checkpointTimeout(int timeout) throws Exception {
-        int nextTimeout = timeout;
-        try {
-            nextTimeout = (Integer) annotatedClass.getCheckpointTimeoutMethod().invoke(object, timeout);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
-        return nextTimeout;
-    }
+    protected abstract ResourceAnnotatedClass getAnnotatedClass();
 
-    @Override
-    public void beginCheckpoint() throws Exception {
+    public void open(Externalizable checkpoint) throws Exception {
         try {
-            annotatedClass.getBeginCheckpointMethod().invoke(object);
+            getAnnotatedClass().getOpenMethod().invoke(object, checkpoint);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -61,11 +44,11 @@ public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
         }
     }
 
-    @Override
-    public boolean isReadyToCheckpoint() throws Exception {
-        boolean isReady = false;
+    public void close() throws Exception {
         try {
-            isReady = (Boolean) annotatedClass.getIsReadyToCheckpointMethod().invoke(object);
+            if (getAnnotatedClass().getCloseMethod() != null) {
+                getAnnotatedClass().getCloseMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -73,13 +56,11 @@ public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
                 throw e;
             }
         }
-        return isReady;
     }
 
-    @Override
-    public void endCheckpoint() throws Exception {
+    public Externalizable checkpointInfo() throws Exception {
         try {
-            annotatedClass.getEndCheckpointMethod().invoke(object);
+            return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

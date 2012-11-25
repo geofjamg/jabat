@@ -15,10 +15,10 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.CheckpointAlgorithmProxy;
-import fr.jamgotchian.jabat.artifact.annotated.ItemProcessorProxy;
-import fr.jamgotchian.jabat.artifact.annotated.ItemReaderProxy;
-import fr.jamgotchian.jabat.artifact.annotated.ItemWriterProxy;
+import fr.jamgotchian.jabat.artifact.annotation.CheckpointAlgorithmProxy;
+import fr.jamgotchian.jabat.artifact.annotation.ItemProcessorProxy;
+import fr.jamgotchian.jabat.artifact.annotation.ItemReaderProxy;
+import fr.jamgotchian.jabat.artifact.annotation.ItemWriterProxy;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import javax.batch.api.CheckpointAlgorithm;
 import javax.batch.api.ItemProcessor;

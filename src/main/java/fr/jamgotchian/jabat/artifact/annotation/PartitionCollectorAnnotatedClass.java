@@ -13,38 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.jabat.util.MethodUtil;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
+import java.io.Externalizable;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ReadItem;
+import javax.batch.annotation.CollectPartitionData;
 
 /**
- * @ReadItem <item-type> <method-name> () throws Exception
- * 
+ * @CollectPartitionData Externalizable <method-name>() throws Exception
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemReaderAnnotatedClass extends ResourceAnnotatedClass {
- 
-    private final Method readItemMethod;
+public class PartitionCollectorAnnotatedClass {
 
-    public ItemReaderAnnotatedClass(Class<?> clazz) {
-        super(clazz);
-        readItemMethod = findAnnotatedMethod(clazz, ReadItem.class, false, new Predicate<Method>() {
+    private final Method collectPartitionDataMethod;
+
+    public PartitionCollectorAnnotatedClass(Class<?> clazz) {
+        collectPartitionDataMethod = findAnnotatedMethod(clazz, CollectPartitionData.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && MethodUtil.hasZeroParameter(m)
-                        && MethodUtil.throwsOneException(m, Exception.class);
+                return hasReturnType(m, Externalizable.class)
+                        && hasZeroParameter(m)
+                        && throwsOneException(m, Exception.class);
             }
         });
-        readItemMethod.setAccessible(true);
+        collectPartitionDataMethod.setAccessible(true);
     }
 
-    public Method getReadItemMethod() {
-        return readItemMethod;
+    public Method getCollectPartitionDataMethod() {
+        return collectPartitionDataMethod;
     }
 
 }

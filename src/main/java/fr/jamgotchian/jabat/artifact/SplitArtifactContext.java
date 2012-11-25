@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.artifact;
 
-import fr.jamgotchian.jabat.artifact.annotated.SplitAnalyserProxy;
-import fr.jamgotchian.jabat.artifact.annotated.SplitCollectorProxy;
+import fr.jamgotchian.jabat.artifact.annotation.SplitAnalyserProxy;
+import fr.jamgotchian.jabat.artifact.annotation.SplitCollectorProxy;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import javax.batch.api.SplitAnalyzer;
 import javax.batch.api.SplitCollector;

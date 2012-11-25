@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import fr.jamgotchian.jabat.util.JabatException;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +28,7 @@ public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
     private final Object object;
 
     private final ItemProcessorAnnotatedClass annotatedClass;
-    
+
     public ItemProcessorProxy(Object object) {
         this.object = object;
         annotatedClass = new ItemProcessorAnnotatedClass(object.getClass());
@@ -38,7 +38,7 @@ public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
     public Object processItem(Object item) throws Exception {
         Class<?> expectedType = annotatedClass.getItemType();
         if (item.getClass() != expectedType) {
-            throw new JabatException("Bad item type " + item.getClass() 
+            throw new JabatException("Bad item type " + item.getClass()
                     + ", expected " + expectedType);
         }
         try {

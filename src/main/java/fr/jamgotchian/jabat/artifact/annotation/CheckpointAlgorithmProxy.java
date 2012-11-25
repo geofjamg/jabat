@@ -13,32 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.PartitionReducer;
+import javax.batch.api.CheckpointAlgorithm;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionReducerProxy implements PartitionReducer {
+public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
 
     private final Object object;
 
-    private final PartitionReducerAnnotatedClass annotatedClass;
+    private final CheckpointAlgorithmAnnotatedClass annotatedClass;
 
-    public PartitionReducerProxy(Object object) {
+    public CheckpointAlgorithmProxy(Object object) {
         this.object = object;
-        annotatedClass = new PartitionReducerAnnotatedClass(object.getClass());
+        annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void beginPartitionedStep() throws Exception {
+    public int checkpointTimeout(int timeout) throws Exception {
+        int nextTimeout = timeout;
         try {
-            if (annotatedClass.getBeginPartitionedStepMethod() != null) {
-                annotatedClass.getBeginPartitionedStepMethod().invoke(object);
+            nextTimeout = (Integer) annotatedClass.getCheckpointTimeoutMethod().invoke(object, timeout);
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
             }
+        }
+        return nextTimeout;
+    }
+
+    @Override
+    public void beginCheckpoint() throws Exception {
+        try {
+            annotatedClass.getBeginCheckpointMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -49,11 +62,10 @@ public class PartitionReducerProxy implements PartitionReducer {
     }
 
     @Override
-    public void beforePartitionedStepCompletion() throws Exception {
+    public boolean isReadyToCheckpoint() throws Exception {
+        boolean isReady = false;
         try {
-            if (annotatedClass.getBeforePartitionedStepCompletionMethod() != null) {
-                annotatedClass.getBeforePartitionedStepCompletionMethod().invoke(object);
-            }
+            isReady = (Boolean) annotatedClass.getIsReadyToCheckpointMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -61,29 +73,13 @@ public class PartitionReducerProxy implements PartitionReducer {
                 throw e;
             }
         }
+        return isReady;
     }
 
     @Override
-    public void rollbackPartitionedStep() throws Exception {
+    public void endCheckpoint() throws Exception {
         try {
-            if (annotatedClass.getRollbackPartitionedStepMethod() != null) {
-                annotatedClass.getRollbackPartitionedStepMethod().invoke(object);
-            }
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    @Override
-    public void afterPartitionedStepCompletion(String status) throws Exception {
-        try {
-            if (annotatedClass.getAfterPartitionedStepCompletionMethod() != null) {
-                annotatedClass.getAfterPartitionedStepCompletionMethod().invoke(object, status);
-            }
+            annotatedClass.getEndCheckpointMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

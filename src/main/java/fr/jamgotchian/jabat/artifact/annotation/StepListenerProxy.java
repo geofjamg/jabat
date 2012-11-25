@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
-import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.SplitCollector;
+import javax.batch.api.StepListener;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SplitCollectorProxy implements SplitCollector {
-      
+public class StepListenerProxy implements StepListener {
+
     private final Object object;
 
-    private final SplitCollectorAnnotatedClass annotatedClass;
+    private final StepListenerAnnotatedClass annotatedClass;
 
-    public SplitCollectorProxy(Object object) {
+    public StepListenerProxy(Object object) {
         this.object = object;
-        annotatedClass = new SplitCollectorAnnotatedClass(object.getClass());
+        annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 
     @Override
-    public Externalizable collectSplitData() throws Exception {
-        Externalizable data = null;
+    public void beforeStep() throws Exception {
         try {
-            data = (Externalizable) annotatedClass.getCollectSplitDataMethod().invoke(object);
+            if (annotatedClass.getBeforeStepMethod() != null) {
+                annotatedClass.getBeforeStepMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -46,7 +46,21 @@ public class SplitCollectorProxy implements SplitCollector {
                 throw e;
             }
         }
-        return data;
     }
-  
+
+    @Override
+    public void afterStep() throws Exception {
+        try {
+            if (annotatedClass.getAfterStepMethod() != null) {
+                annotatedClass.getAfterStepMethod().invoke(object);
+            }
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
 }

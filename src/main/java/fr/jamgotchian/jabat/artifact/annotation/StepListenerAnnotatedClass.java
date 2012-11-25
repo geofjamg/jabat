@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
 import com.google.common.base.Predicate;
@@ -28,7 +28,7 @@ import javax.batch.annotation.BeforeStep;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class StepListenerAnnotatedClass {
-       
+
     private final Method beforeStepMethod;
 
     private final Method afterStepMethod;
@@ -65,5 +65,5 @@ public class StepListenerAnnotatedClass {
     public Method getAfterStepMethod() {
         return afterStepMethod;
     }
-    
+
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotated;
+package fr.jamgotchian.jabat.artifact.annotation;
 
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.util.MethodUtil.*;
@@ -27,11 +27,11 @@ import javax.batch.annotation.Open;
  * @Open void <method-name>(Externalizable checkpoint) throws Exception
  * [@Close void <method-name>() throws Exception]
  * @CheckpointInfo Externalizable <method-name> () throws Exception
- * 
+ *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public abstract class ResourceAnnotatedClass {
- 
+
     private final Method openMethod;
 
     private final Method closeMethod;
@@ -81,5 +81,5 @@ public abstract class ResourceAnnotatedClass {
     public Method getCheckpointInfoMethod() {
         return checkpointInfoMethod;
     }
-       
+
 }
