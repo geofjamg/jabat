@@ -38,8 +38,10 @@ import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.job.Partition;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.Externalizables;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,9 +53,11 @@ import javax.batch.api.ItemProcessor;
 import javax.batch.api.ItemReader;
 import javax.batch.api.ItemWriter;
 import javax.batch.api.JobListener;
+import javax.batch.api.PartitionMapper;
 import javax.batch.api.SplitAnalyzer;
 import javax.batch.api.SplitCollector;
 import javax.batch.api.StepListener;
+import javax.batch.api.parameters.PartitionPlan;
 import javax.batch.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +161,21 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
                 stepExecution.setStatus(Status.STARTED);
 
-                String exitStatus = artifact.process();
+                String exitStatus = null;
+                Partition partition = step.getPartition();
+                if (partition.getPlan() != null || partition.getMapper() != null) {
+                    PartitionPlan plan;
+                    if (partition.getMapper() != null) {
+                        PartitionMapper mapper = artifactContext.createPartitionMapper(partition.getMapper().getRef());
+                        plan = mapper.mapPartitions();
+                    } else {
+                        partition.getPlan();
+                    }
+                    // TODO
+                    throw new JabatException("TODO");
+                } else {
+                    exitStatus = artifact.process();
+                }
 
                 jobExecution.setStatus(Status.COMPLETED);
                 stepExecution.setStatus(Status.COMPLETED);

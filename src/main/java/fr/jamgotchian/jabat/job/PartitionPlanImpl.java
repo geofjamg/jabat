@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact.annotation;
+package fr.jamgotchian.jabat.job;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -25,13 +25,18 @@ import javax.batch.api.parameters.PartitionPlan;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionPlanImpl implements PartitionPlan{
+public class PartitionPlanImpl implements PartitionPlan {
 
     private int partitionCount;
 
     private int threadCount;
 
     private Properties[] properties;
+
+    public PartitionPlanImpl(int partitionCount, int threadCount) {
+        this.partitionCount = partitionCount;
+        this.threadCount = threadCount;
+    }
 
     @Override
     public void setPartitionCount(int count) {

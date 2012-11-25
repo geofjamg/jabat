@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.XmlUtil;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -95,8 +96,11 @@ public class JobXmlLoader {
         DECISION,
         CHECKPOINT_ALGORITHM,
         LISTENER,
+        MAPPER,
+        REDUCER,
         COLLECTOR,
-        ANALYSER
+        ANALYSER,
+        PARTITION
     }
 
     private final JobPath path = new JobPath();
@@ -168,38 +172,22 @@ public class JobXmlLoader {
                                 String readerRef = xmlsr.getAttributeValue(null, "reader");
                                 String processorRef = xmlsr.getAttributeValue(null, "processor");
                                 String writerRef = xmlsr.getAttributeValue(null, "writer");
-                                CheckpointPolicy checkpointPolicy = CheckpointPolicy.ITEM;
-                                String value = xmlsr.getAttributeValue(null, "checkpoint-policy");
-                                if (value != null) {
-                                    checkpointPolicy = CheckpointPolicy.valueOf(value.toUpperCase());
+                                CheckpointPolicy checkpointPolicy = XmlUtil.getAttributeEnumValue(xmlsr, null, "checkpoint-policy", CheckpointPolicy.class, CheckpointPolicy.ITEM);
+                                int commitInterval = XmlUtil.getAttributeIntValue(xmlsr, null, "commit-interval", 10);
+                                int defaultBufferSize;
+                                switch (checkpointPolicy) {
+                                    case ITEM:
+                                        defaultBufferSize = commitInterval;
+                                        break;
+                                    case TIME:
+                                    case CUSTOM:
+                                        defaultBufferSize = 10;
+                                        break;
+                                    default:
+                                        throw new InternalError();
                                 }
-                                value = xmlsr.getAttributeValue(null, "commit-interval");
-                                int commitInterval = 10;
-                                if (value != null) {
-                                    commitInterval = Integer.valueOf(value);
-                                }
-                                int bufferSize;
-                                value = xmlsr.getAttributeValue(null, "buffer-size");
-                                if (value != null) {
-                                    bufferSize = Integer.valueOf(value);
-                                } else {
-                                    switch (checkpointPolicy) {
-                                        case ITEM:
-                                            bufferSize = commitInterval;
-                                            break;
-                                        case TIME:
-                                        case CUSTOM:
-                                            bufferSize = 10;
-                                            break;
-                                        default:
-                                            throw new InternalError();
-                                    }
-                                }
-                                value = xmlsr.getAttributeValue(null, "retry-limit");
-                                int retryLimit = -1;
-                                if (value != null) {
-                                    retryLimit = Integer.valueOf(value);
-                                }
+                                int bufferSize = XmlUtil.getAttributeIntValue(xmlsr, null, "buffer-size", defaultBufferSize);
+                                int retryLimit = XmlUtil.getAttributeIntValue(xmlsr, null, "retry-limit", -1);
                                 StepElement stepElt = (StepElement) xmlElt.pop();
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
                                 Artifact reader = new Artifact(readerRef);
@@ -272,6 +260,8 @@ public class JobXmlLoader {
                                     case ANALYSER:
                                         ((Artifact) xmlElt.getFirst()).setProperty(name, value);
                                         break;
+                                    case PARTITION:
+                                        throw new JabatException("TODO");
                                     default:
                                         throw new JabatException("Unexpected Xml context "
                                                 + xmlContext.getFirst());
@@ -309,24 +299,72 @@ public class JobXmlLoader {
                                 }
                             } else if ("collector".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                if (xmlContext.getFirst() == XmlContext.SPLIT) {
-                                    Split split = (Split) xmlElt.getFirst();
-                                    Artifact collector = new Artifact(ref);
-                                    split.setCollector(collector);
-                                    xmlContext.push(XmlContext.COLLECTOR);
-                                    xmlElt.push(collector);
+                                Artifact collector = new Artifact(ref);
+                                switch (xmlContext.getFirst()) {
+                                    case SPLIT:
+                                        {
+                                            Split split = (Split) xmlElt.getFirst();
+                                            split.setCollector(collector);
+                                            xmlContext.push(XmlContext.COLLECTOR);
+                                            xmlElt.push(collector);
+                                        }
+                                        break;
+                                    case PARTITION:
+                                        {
+                                            Partition partition = (Partition) xmlElt.getFirst();
+                                            partition.setCollector(collector);
+                                            xmlContext.push(XmlContext.COLLECTOR);
+                                            xmlElt.push(collector);
+                                        }
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context "
+                                                + xmlContext.getFirst());
+                                }
+                            } else if ("analyser".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                Artifact analyser = new Artifact(ref);
+                                switch (xmlContext.getFirst()) {
+                                    case SPLIT:
+                                        {
+                                            Split split = (Split) xmlElt.getFirst();
+                                            split.setAnalyser(analyser);
+                                            xmlContext.push(XmlContext.ANALYSER);
+                                            xmlElt.push(analyser);
+                                        }
+                                        break;
+                                    case PARTITION:
+                                        {
+                                            Partition partition = (Partition) xmlElt.getFirst();
+                                            partition.setAnalyser(analyser);
+                                            xmlContext.push(XmlContext.ANALYSER);
+                                            xmlElt.push(analyser);
+                                        }
+                                        break;
+                                    default:
+                                        throw new JabatException("Unexpected Xml context "
+                                                + xmlContext.getFirst());
+                                }
+                            } else if ("mapper".equals(localName)) {
+                                String ref = xmlsr.getAttributeValue(null, "ref");
+                                Artifact mapper = new Artifact(ref);
+                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
+                                    Partition partition = (Partition) xmlElt.getFirst();
+                                    partition.setMapper(mapper);
+                                    xmlContext.push(XmlContext.MAPPER);
+                                    xmlElt.push(mapper);
                                 } else {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
                                 }
-                            } else if ("analyser".equals(localName)) {
+                            } else if ("reducer".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
-                                if (xmlContext.getFirst() == XmlContext.SPLIT) {
-                                    Split split = (Split) xmlElt.getFirst();
-                                    Artifact analyser = new Artifact(ref);
-                                    split.setAnalyser(analyser);
-                                    xmlContext.push(XmlContext.ANALYSER);
-                                    xmlElt.push(analyser);
+                                Artifact reducer = new Artifact(ref);
+                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
+                                    Partition partition = (Partition) xmlElt.getFirst();
+                                    partition.setReducer(reducer);
+                                    xmlContext.push(XmlContext.REDUCER);
+                                    xmlElt.push(reducer);
                                 } else {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
@@ -386,6 +424,28 @@ public class JobXmlLoader {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
                                 }
+                            } else if ("partition".equals(localName)) {
+                                if (xmlContext.getFirst() == XmlContext.BATCHLET
+                                        || xmlContext.getFirst() == XmlContext.CHUNK) {
+                                    Partition partition = new Partition();
+                                    ((Step) xmlElt.getFirst()).setPartition(partition);
+                                    xmlContext.push(XmlContext.PARTITION);
+                                    xmlElt.push(partition);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context "
+                                            + xmlContext.getFirst());
+                                }
+                            } else if ("plan".equals(localName)) {
+                                int instances = XmlUtil.getAttributeIntValue(xmlsr, null, "instances", 1);
+                                int threads = XmlUtil.getAttributeIntValue(xmlsr, null, "threads", instances);
+                                PartitionPlanImpl plan = new PartitionPlanImpl(instances, threads);
+                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
+                                    ((Partition) xmlElt.getFirst()).setPlan(plan);
+                                } else {
+                                    throw new JabatException("Unexpected Xml context "
+                                            + xmlContext.getFirst());
+                                }
+
                             }
                             break;
 
@@ -403,7 +463,10 @@ public class JobXmlLoader {
                                     || "checkpoint-algorithm".equals(localName)
                                     || "listener".equals(localName)
                                     || "collector".equals(localName)
-                                    || "analyser".equals(localName)) {
+                                    || "analyser".equals(localName)
+                                    || "mapper".equals(localName)
+                                    || "reducer".equals(localName)
+                                    || "partition".equals(localName)) {
                                 xmlContext.pop();
                                 xmlElt.pop();
                             }

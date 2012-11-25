@@ -21,7 +21,7 @@ package fr.jamgotchian.jabat.job;
  */
 public class Partition {
 
-    private PartitionPlan plan;
+    private PartitionPlanImpl plan;
 
     private Artifact mapper;
 
@@ -34,11 +34,11 @@ public class Partition {
     public Partition() {
     }
 
-    public PartitionPlan getPlan() {
+    public PartitionPlanImpl getPlan() {
         return plan;
     }
 
-    public void setPlan(PartitionPlan plan) {
+    public void setPlan(PartitionPlanImpl plan) {
         this.plan = plan;
     }
 
