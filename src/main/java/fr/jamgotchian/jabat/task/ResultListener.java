@@ -15,20 +15,14 @@
  */
 package fr.jamgotchian.jabat.task;
 
-import java.util.concurrent.Callable;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface TaskManager {
+public interface ResultListener<V> {
 
-    void submit(Runnable task);
+    void onSuccess(V result);
 
-    <V> void submit(Callable<V> task, ResultListener<V> listener);
-
-    void initialize() throws Exception;
-
-    void shutdownAndWaitForTermination() throws Exception;
+    void onFailure(Throwable thrown);
 
 }

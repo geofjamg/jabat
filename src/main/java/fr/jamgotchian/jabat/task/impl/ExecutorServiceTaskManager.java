@@ -15,8 +15,14 @@
  */
 package fr.jamgotchian.jabat.task.impl;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import fr.jamgotchian.jabat.task.ResultListener;
 import fr.jamgotchian.jabat.task.TaskManager;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +32,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ExecutorServiceTaskManager implements TaskManager {
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ListeningExecutorService executor
+            = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
     public ExecutorServiceTaskManager() {
     }
@@ -34,6 +41,24 @@ public class ExecutorServiceTaskManager implements TaskManager {
     @Override
     public void submit(Runnable task) {
         executor.submit(task);
+    }
+
+    @Override
+    public <V> void submit(Callable<V> task, final ResultListener<V> listener) {
+        ListenableFuture<V> future = executor.submit(task);
+        Futures.addCallback(future, new FutureCallback<V>() {
+
+            @Override
+            public void onSuccess(V result) {
+                listener.onSuccess(result);
+            }
+
+            @Override
+            public void onFailure(Throwable thrown) {
+                listener.onFailure(thrown);
+            }
+
+        });
     }
 
     @Override
