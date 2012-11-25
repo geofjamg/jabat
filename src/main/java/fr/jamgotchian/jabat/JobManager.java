@@ -15,16 +15,17 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.config.Configuration;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.JobXmlLoader;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
-import fr.jamgotchian.jabat.repository.impl.JobRepositoryImpl;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -47,15 +48,24 @@ public class JobManager {
 
     private final JobXmlLoader loader = new JobXmlLoader();
 
-    private final JobRepository repository = new JobRepositoryImpl();
-
     private final TaskManager taskManager;
 
     private final ArtifactFactory artifactFactory;
 
-    public JobManager(TaskManager taskManager, ArtifactFactory artifactFactory) {
-        this.taskManager = taskManager;
-        this.artifactFactory = artifactFactory;
+    private final JobRepository repository;
+
+    public JobManager() {
+        Configuration cfg = new Configuration();
+        Class<?> taskManagerClass = cfg.getTaskManagerClass();
+        Class<?> artifactFactoryClass = cfg.getArtifactFactoryClass();
+        Class<?> jobRepositoryClass = cfg.getJobRepositoryClass();
+        try {
+            taskManager = (TaskManager) taskManagerClass.newInstance();
+            artifactFactory = (ArtifactFactory) artifactFactoryClass.newInstance();
+            repository = (JobRepository) jobRepositoryClass.newInstance();
+        } catch(ReflectiveOperationException e) {
+            throw new JabatException(e);
+        }
     }
 
     public void initialize() throws Exception {
