@@ -1,6 +1,7 @@
 package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.spi.ArtifactFactory;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
 
@@ -13,7 +14,7 @@ public class JabatCdiArtifactFactory implements ArtifactFactory {
     @Override
     public void initialize() throws Exception {
         if (JabatCdiExtension.BEAN_MANAGER == null) {
-            throw new Exception("CDI container not initialized");
+            throw new JabatException("CDI container not initialized");
         }
     }
 
@@ -21,7 +22,7 @@ public class JabatCdiArtifactFactory implements ArtifactFactory {
     public Object create(String ref) throws Exception {
         Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(ref);
         if (beans.isEmpty()) {
-            throw new Exception("Batch artifact " + ref + " not found");
+            throw new JabatException("Batch artifact " + ref + " not found");
         }
         return beans.iterator().next().create(null);
     }
