@@ -33,6 +33,8 @@ public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements Job
 
     private final JabatJobExecution jobExecution;
 
+    private Properties properties;
+
     private String exitStatus;
 
     public JabatJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
@@ -53,7 +55,11 @@ public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements Job
 
     @Override
     public Properties getProperties() {
-        return node.getProperties();
+        return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     @Override

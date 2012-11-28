@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat.job;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import javax.batch.api.parameters.PartitionPlan;
 
 /**
  *
@@ -27,7 +28,15 @@ public abstract class Step extends AbstractNode implements Node, Chainable {
 
     private final String next;
 
-    private Partition partition;
+    private PartitionPlan partitionPlan;
+
+    private Artifact partitionMapper;
+
+    private Artifact partitionReducer;
+
+    private Artifact partitionCollector;
+
+    private Artifact partitionAnalyser;
 
     private final List<Artifact> listeners;
 
@@ -45,12 +54,44 @@ public abstract class Step extends AbstractNode implements Node, Chainable {
         return next;
     }
 
-    public Partition getPartition() {
-        return partition;
+    public PartitionPlan getPartitionPlan() {
+        return partitionPlan;
     }
 
-    public void setPartition(Partition partition) {
-        this.partition = partition;
+    public void setPartitionPlan(PartitionPlan partitionPlan) {
+        this.partitionPlan = partitionPlan;
+    }
+
+    public Artifact getPartitionMapper() {
+        return partitionMapper;
+    }
+
+    public void setPartitionMapper(Artifact partitionMapper) {
+        this.partitionMapper = partitionMapper;
+    }
+
+    public Artifact getPartitionReducer() {
+        return partitionReducer;
+    }
+
+    public void setPartitionReducer(Artifact partitionReducer) {
+        this.partitionReducer = partitionReducer;
+    }
+
+    public Artifact getPartitionCollector() {
+        return partitionCollector;
+    }
+
+    public void setPartitionCollector(Artifact partitionCollector) {
+        this.partitionCollector = partitionCollector;
+    }
+
+    public Artifact getPartitionAnalyser() {
+        return partitionAnalyser;
+    }
+
+    public void setPartitionAnalyser(Artifact partitionAnalyser) {
+        this.partitionAnalyser = partitionAnalyser;
     }
 
     public void addListener(Artifact listener) {
@@ -69,6 +110,44 @@ public abstract class Step extends AbstractNode implements Node, Chainable {
         return terminatingElements;
     }
 
-    public abstract Artifact getArtifact(String ref);
+    @Override
+    public Artifact getArtifact(String ref) {
+        if (partitionMapper != null
+                && partitionMapper.getRef().equals(ref)) {
+            return partitionMapper;
+        } else if (partitionReducer != null
+                && partitionReducer.getRef().equals(ref)) {
+            return partitionReducer;
+        } else if (partitionCollector != null
+                && partitionCollector.getRef().equals(ref)) {
+            return partitionCollector;
+        } else if (partitionAnalyser != null
+                && partitionAnalyser.getRef().equals(ref)) {
+            return partitionAnalyser;
+        } else {
+            for (Artifact listener : listeners) {
+                if (listener.getRef().equals(ref)) {
+                    return listener;
+                }
+            }
+        }
+        return null;
+    }
+
+    protected void getArtifacts(List<Artifact> artifacts) {
+        if (partitionMapper != null) {
+            artifacts.add(partitionMapper);
+        }
+        if (partitionReducer != null) {
+            artifacts.add(partitionReducer);
+        }
+        if (partitionCollector != null) {
+            artifacts.add(partitionCollector);
+        }
+        if (partitionAnalyser != null) {
+            artifacts.add(partitionAnalyser);
+        }
+        artifacts.addAll(listeners);
+    }
 
 }

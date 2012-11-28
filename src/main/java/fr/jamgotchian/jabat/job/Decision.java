@@ -15,7 +15,9 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,6 +38,20 @@ public class Decision extends AbstractNode implements Node {
 
     public Artifact getArtifact() {
         return artifact;
+    }
+
+    @Override
+    public Artifact getArtifact(String ref) {
+        if (artifact.getRef().equals(ref)) {
+            return artifact;
+        } else {
+            throw new JabatException("Artifact " + ref + " not found");
+        }
+    }
+
+    @Override
+    public List<Artifact> getArtifacts() {
+        return Collections.singletonList(artifact);
     }
 
     public void addControlElement(ControlElement ctrlElt) {

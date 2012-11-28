@@ -26,83 +26,60 @@ import org.antlr.runtime.RecognitionException;
  */
 public class PropertyValueSubstitutor {
 
-    private final Job job;
-
     private final Properties jobParameters;
 
-    public PropertyValueSubstitutor(Job job, Properties parameters) {
-        if (job == null) {
-            throw new IllegalArgumentException("job is null");
-        }
+    public PropertyValueSubstitutor(Properties parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("parameters is null");
         }
-        this.job = job;
         this.jobParameters = parameters;
     }
 
-    public void substitute() {
-        visitor.visit(job, new Properties());
+    public void substitute(Node node) {
+        Properties jobProperties = getJobPropertiesAtLevel(node);
+        substitute(node, jobProperties);
+        for (Artifact artifact : node.getArtifacts()) {
+            substitute(artifact, jobProperties);
+        }
     }
 
-    private NodeVisitor<Properties> visitor = new NodeVisitor<Properties>() {
+    private void substitute(Propertiable propertiable, Properties jobProperties) {
+        Properties result = substitute(propertiable.getProperties(), jobProperties);
+        propertiable.getSubstitutedProperties().clear();
+        propertiable.getSubstitutedProperties().putAll(result);
+    }
 
-        private void substitute(Properties properties, Properties jobProperties) {
-            try {
-                for (String name : properties.stringPropertyNames()) {
-                    String value = properties.getProperty(name);
-                    properties.setProperty(name, JobUtil.substitute(value, jobParameters, jobProperties));
-                }
-                jobProperties.putAll(job.getProperties());
-            } catch (IOException e) {
-                throw new JabatException(e);
-            } catch (RecognitionException e) {
-                throw new JabatException(e);
+    private Properties getJobPropertiesAtLevel(Node node) {
+        Properties jobProperties = new Properties();
+        if (node.getContainer() != null) {
+            getJobPropertiesAtLevel(node.getContainer(), jobProperties);
+        }
+        return jobProperties;
+    }
+
+    private void getJobPropertiesAtLevel(Node node, Properties jobProperties) {
+        if (node.getContainer() != null) {
+            getJobPropertiesAtLevel(node.getContainer(), jobProperties);
+        }
+        Properties result = substitute(node.getProperties(), jobProperties);
+        // merge result of substitution with job properties
+        jobProperties.putAll(result);
+    }
+
+    private Properties substitute(Properties properties, Properties jobProperties) {
+        Properties result = new Properties();
+        try {
+            for (String name : properties.stringPropertyNames()) {
+                String value = properties.getProperty(name);
+                String substitutedValue = JobUtil.substitute(value, jobParameters, jobProperties);
+                result.setProperty(name, substitutedValue);
             }
+        } catch (IOException e) {
+            throw new JabatException(e);
+        } catch (RecognitionException e) {
+            throw new JabatException(e);
         }
-
-        @Override
-        public void visit(Job job, Properties jobProperties) {
-            substitute(job.getProperties(), jobProperties);
-            for (Node node : job.getNodes()) {
-                node.accept(this, new Properties(jobProperties));
-            }
-        }
-
-        @Override
-        public void visit(BatchletStep step, Properties jobProperties) {
-            substitute(step.getProperties(), jobProperties);
-            substitute(step.getArtifact().getProperties(), jobProperties);
-        }
-
-        @Override
-        public void visit(ChunkStep step, Properties jobProperties) {
-            substitute(step.getProperties(), jobProperties);
-            substitute(step.getReader().getProperties(), new Properties(jobProperties));
-            substitute(step.getProcessor().getProperties(), new Properties(jobProperties));
-            substitute(step.getWriter().getProperties(), new Properties(jobProperties));
-        }
-
-        @Override
-        public void visit(Flow flow, Properties jobProperties) {
-            substitute(flow.getProperties(), jobProperties);
-            for (Node node : flow.getNodes()) {
-                node.accept(this, new Properties(jobProperties));
-            }
-        }
-
-        @Override
-        public void visit(Split split, Properties jobProperties) {
-            substitute(split.getProperties(), jobProperties);
-            for (Node node : split.getNodes()) {
-                node.accept(this, new Properties(jobProperties));
-            }
-        }
-
-        @Override
-        public void visit(Decision decision, Properties jobProperties) {
-            substitute(decision.getProperties(), jobProperties);
-        }
-    };
+        return result;
+    }
 
 }

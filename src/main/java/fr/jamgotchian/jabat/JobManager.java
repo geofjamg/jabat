@@ -114,7 +114,7 @@ public class JobManager {
         JabatJobInstance jobInstance = repository.createJobInstance(job);
 
         // start the execution
-        job.accept(new JobInstanceExecutor(this, jobInstance), null);
+        job.accept(new JobInstanceExecutor(this, jobInstance, parameters), null);
 
         return jobInstance.getInstanceId();
     }

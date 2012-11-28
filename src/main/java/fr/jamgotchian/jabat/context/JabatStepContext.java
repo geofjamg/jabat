@@ -28,10 +28,12 @@ import javax.batch.runtime.context.StepContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatStepContext<T, P extends Externalizable> extends JabatBatchContext<Step, T> 
+public class JabatStepContext<T, P extends Externalizable> extends JabatBatchContext<Step, T>
                                                            implements StepContext<T, P> {
 
     private final JabatStepExecution stepExecution;
+
+    private Properties properties;
 
     private T transientUserData;
 
@@ -47,7 +49,11 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
 
     @Override
     public Properties getProperties() {
-        return node.getProperties();
+        return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     @Override

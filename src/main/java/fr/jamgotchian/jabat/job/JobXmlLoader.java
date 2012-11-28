@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Properties;
+import javax.batch.api.parameters.PartitionPlan;
 import javax.batch.runtime.NoSuchJobException;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
@@ -44,9 +45,19 @@ public class JobXmlLoader {
 
     private static class StepElement {
 
-        public String id;
+        private String id;
 
-        public String next;
+        private String next;
+
+        private PartitionPlan partitionPlan;
+
+        private Artifact partitionMapper;
+
+        private Artifact partitionReducer;
+
+        private Artifact partitionCollector;
+
+        private Artifact partitionAnalyser;
 
         private final Properties properties = new Properties();
 
@@ -60,27 +71,71 @@ public class JobXmlLoader {
             this.next = next;
         }
 
-        public void addListener(Artifact listener) {
+        private String getId() {
+            return id;
+        }
+
+        private String getNext() {
+            return next;
+        }
+
+        private PartitionPlan getPartitionPlan() {
+            return partitionPlan;
+        }
+
+        private void setPartitionPlan(PartitionPlan partitionPlan) {
+            this.partitionPlan = partitionPlan;
+        }
+
+        private Artifact getPartitionReducer() {
+            return partitionReducer;
+        }
+
+        private void setPartitionMapper(Artifact partitionMapper) {
+            this.partitionMapper = partitionMapper;
+        }
+
+        private Artifact getPartitionMapper() {
+            return partitionMapper;
+        }
+
+        private void setPartitionReducer(Artifact partitionReducer) {
+            this.partitionReducer = partitionReducer;
+        }
+
+        private Artifact getPartitionCollector() {
+            return partitionCollector;
+        }
+
+        private void setPartitionCollector(Artifact partitionCollector) {
+            this.partitionCollector = partitionCollector;
+        }
+
+        private Artifact getPartitionAnalyser() {
+            return partitionAnalyser;
+        }
+
+        private void setPartitionAnalyser(Artifact partitionAnalyser) {
+            this.partitionAnalyser = partitionAnalyser;
+        }
+
+        private void addListener(Artifact listener) {
             listeners.add(listener);
         }
 
-        public List<Artifact> getListeners() {
+        private List<Artifact> getListeners() {
             return listeners;
         }
 
-        public Properties getProperties() {
+        private Properties getProperties() {
             return properties;
         }
 
-        public void setProperty(String name, String value) {
-            properties.setProperty(name, value);
-        }
-
-        public void addTerminatingElement(TerminatingElement ctrlElt) {
+        private void addTerminatingElement(TerminatingElement ctrlElt) {
             terminatingElements.add(ctrlElt);
         }
 
-        public List<TerminatingElement> getTerminatingElements() {
+        private List<TerminatingElement> getTerminatingElements() {
             return terminatingElements;
         }
 
@@ -99,8 +154,7 @@ public class JobXmlLoader {
         MAPPER,
         REDUCER,
         COLLECTOR,
-        ANALYSER,
-        PARTITION
+        ANALYSER
     }
 
     private final JobPath path = new JobPath();
@@ -159,11 +213,11 @@ public class JobXmlLoader {
                                 StepElement stepElt = (StepElement) xmlElt.pop();
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
                                 Artifact artifact = new Artifact(ref);
-                                BatchletStep batchlet = new BatchletStep(stepElt.id,
+                                BatchletStep batchlet = new BatchletStep(stepElt.getId(),
                                                                          container,
-                                                                         stepElt.next,
-                                                                         stepElt.properties,
-                                                                         stepElt.listeners,
+                                                                         stepElt.getNext(),
+                                                                         stepElt.getProperties(),
+                                                                         stepElt.getListeners(),
                                                                          artifact);
                                 container.addNode(batchlet);
                                 xmlContext.push(XmlContext.BATCHLET);
@@ -193,11 +247,11 @@ public class JobXmlLoader {
                                 Artifact reader = new Artifact(readerRef);
                                 Artifact processor = new Artifact(processorRef);
                                 Artifact writer = new Artifact(writerRef);
-                                ChunkStep chunk = new ChunkStep(stepElt.id,
+                                ChunkStep chunk = new ChunkStep(stepElt.getId(),
                                                                 container,
-                                                                stepElt.next,
-                                                                stepElt.properties,
-                                                                stepElt.listeners,
+                                                                stepElt.getNext(),
+                                                                stepElt.getProperties(),
+                                                                stepElt.getListeners(),
                                                                 reader,
                                                                 processor,
                                                                 writer,
@@ -205,13 +259,29 @@ public class JobXmlLoader {
                                                                 commitInterval,
                                                                 bufferSize,
                                                                 retryLimit);
+                                if (stepElt.getPartitionPlan() != null) {
+                                    chunk.setPartitionPlan(stepElt.getPartitionPlan());
+                                }
+                                if (stepElt.getPartitionMapper() != null) {
+                                    chunk.setPartitionMapper(stepElt.getPartitionMapper());
+                                }
+                                if (stepElt.getPartitionReducer() != null) {
+                                    chunk.setPartitionReducer(stepElt.getPartitionReducer());
+                                }
+                                if (stepElt.getPartitionCollector() != null) {
+                                    chunk.setPartitionCollector(stepElt.getPartitionCollector());
+                                }
+                                if (stepElt.getPartitionAnalyser() != null) {
+                                    chunk.setPartitionAnalyser(stepElt.getPartitionAnalyser());
+                                }
                                 container.addNode(chunk);
                                 xmlContext.push(XmlContext.CHUNK);
                                 xmlElt.push(chunk);
                             } else if ("decision".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 NodeContainer container = (NodeContainer) xmlElt.getFirst();
-                                Decision decision = new Decision(ref, container, new Artifact(ref));
+                                Artifact artifact = new Artifact(ref);
+                                Decision decision = new Decision(ref, container, artifact);
                                 container.addNode(decision);
                                 xmlContext.push(XmlContext.DECISION);
                                 xmlElt.push(decision);
@@ -220,13 +290,13 @@ public class JobXmlLoader {
                                 String value = xmlsr.getAttributeValue(null, "value");
                                 switch (xmlContext.getFirst()) {
                                     case JOB:
-                                        ((Job) xmlElt.getFirst()).setProperty(name, value);
+                                        ((Job) xmlElt.getFirst()).getProperties().setProperty(name, value);
                                         break;
                                     case STEP:
-                                        ((StepElement) xmlElt.getFirst()).setProperty(name, value);
+                                        ((StepElement) xmlElt.getFirst()).getProperties().setProperty(name, value);
                                         break;
                                     case BATCHLET:
-                                        ((BatchletStep) xmlElt.getFirst()).getArtifact().setProperty(name, value);
+                                        ((BatchletStep) xmlElt.getFirst()).getArtifact().getProperties().setProperty(name, value);
                                         break;
                                     case CHUNK:
                                         {
@@ -238,11 +308,11 @@ public class JobXmlLoader {
                                             String artifactName = split[0];
                                             String propertyName = split[1];
                                             if (chunk.getReader().getRef().equals(artifactName)) {
-                                                chunk.getReader().setProperty(propertyName, value);
+                                                chunk.getReader().getProperties().setProperty(propertyName, value);
                                             } else if (chunk.getProcessor().getRef().equals(artifactName)) {
-                                                chunk.getProcessor().setProperty(propertyName, value);
+                                                chunk.getProcessor().getProperties().setProperty(propertyName, value);
                                             } else if (chunk.getWriter().getRef().equals(artifactName)) {
-                                                chunk.getWriter().setProperty(propertyName, value);
+                                                chunk.getWriter().getProperties().setProperty(propertyName, value);
                                             } else {
                                                 throw new JabatException("Artifact " + artifactName
                                                         + " not found");
@@ -252,16 +322,14 @@ public class JobXmlLoader {
                                     case SPLIT:
                                     case FLOW:
                                     case DECISION:
-                                        ((Node) xmlElt.getFirst()).setProperty(name, value);
+                                        ((Node) xmlElt.getFirst()).getProperties().setProperty(name, value);
                                         break;
                                     case CHECKPOINT_ALGORITHM:
                                     case LISTENER:
                                     case COLLECTOR:
                                     case ANALYSER:
-                                        ((Artifact) xmlElt.getFirst()).setProperty(name, value);
+                                        ((Artifact) xmlElt.getFirst()).getProperties().setProperty(name, value);
                                         break;
-                                    case PARTITION:
-                                        throw new JabatException("TODO");
                                     default:
                                         throw new JabatException("Unexpected Xml context "
                                                 + xmlContext.getFirst());
@@ -309,10 +377,10 @@ public class JobXmlLoader {
                                             xmlElt.push(collector);
                                         }
                                         break;
-                                    case PARTITION:
+                                    case STEP:
                                         {
-                                            Partition partition = (Partition) xmlElt.getFirst();
-                                            partition.setCollector(collector);
+                                            StepElement step = (StepElement) xmlElt.getFirst();
+                                            step.setPartitionCollector(collector);
                                             xmlContext.push(XmlContext.COLLECTOR);
                                             xmlElt.push(collector);
                                         }
@@ -333,10 +401,10 @@ public class JobXmlLoader {
                                             xmlElt.push(analyser);
                                         }
                                         break;
-                                    case PARTITION:
+                                    case STEP:
                                         {
-                                            Partition partition = (Partition) xmlElt.getFirst();
-                                            partition.setAnalyser(analyser);
+                                            StepElement step = (StepElement) xmlElt.getFirst();
+                                            step.setPartitionAnalyser(analyser);
                                             xmlContext.push(XmlContext.ANALYSER);
                                             xmlElt.push(analyser);
                                         }
@@ -348,9 +416,9 @@ public class JobXmlLoader {
                             } else if ("mapper".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 Artifact mapper = new Artifact(ref);
-                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
-                                    Partition partition = (Partition) xmlElt.getFirst();
-                                    partition.setMapper(mapper);
+                                if (xmlContext.getFirst() == XmlContext.STEP) {
+                                    StepElement step = (StepElement) xmlElt.getFirst();
+                                    step.setPartitionMapper(mapper);
                                     xmlContext.push(XmlContext.MAPPER);
                                     xmlElt.push(mapper);
                                 } else {
@@ -360,9 +428,9 @@ public class JobXmlLoader {
                             } else if ("reducer".equals(localName)) {
                                 String ref = xmlsr.getAttributeValue(null, "ref");
                                 Artifact reducer = new Artifact(ref);
-                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
-                                    Partition partition = (Partition) xmlElt.getFirst();
-                                    partition.setReducer(reducer);
+                                if (xmlContext.getFirst() == XmlContext.STEP) {
+                                    StepElement step = (StepElement) xmlElt.getFirst();
+                                    step.setPartitionReducer(reducer);
                                     xmlContext.push(XmlContext.REDUCER);
                                     xmlElt.push(reducer);
                                 } else {
@@ -424,28 +492,16 @@ public class JobXmlLoader {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
                                 }
-                            } else if ("partition".equals(localName)) {
-                                if (xmlContext.getFirst() == XmlContext.BATCHLET
-                                        || xmlContext.getFirst() == XmlContext.CHUNK) {
-                                    Partition partition = new Partition();
-                                    ((Step) xmlElt.getFirst()).setPartition(partition);
-                                    xmlContext.push(XmlContext.PARTITION);
-                                    xmlElt.push(partition);
-                                } else {
-                                    throw new JabatException("Unexpected Xml context "
-                                            + xmlContext.getFirst());
-                                }
                             } else if ("plan".equals(localName)) {
                                 int instances = XmlUtil.getAttributeIntValue(xmlsr, null, "instances", 1);
                                 int threads = XmlUtil.getAttributeIntValue(xmlsr, null, "threads", instances);
                                 PartitionPlanImpl plan = new PartitionPlanImpl(instances, threads);
-                                if (xmlContext.getFirst() == XmlContext.PARTITION) {
-                                    ((Partition) xmlElt.getFirst()).setPlan(plan);
+                                if (xmlContext.getFirst() == XmlContext.STEP) {
+                                    ((StepElement) xmlElt.getFirst()).setPartitionPlan(plan);
                                 } else {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
                                 }
-
                             }
                             break;
 
@@ -465,8 +521,7 @@ public class JobXmlLoader {
                                     || "collector".equals(localName)
                                     || "analyser".equals(localName)
                                     || "mapper".equals(localName)
-                                    || "reducer".equals(localName)
-                                    || "partition".equals(localName)) {
+                                    || "reducer".equals(localName)) {
                                 xmlContext.pop();
                                 xmlElt.pop();
                             }
@@ -484,9 +539,6 @@ public class JobXmlLoader {
 
         // check job consistency
         ConsistencyReport report = new JobConsistencyChecker(job).check();
-
-        // substitute property values
-        new PropertyValueSubstitutor(job, parameters).substitute();
 
         LOGGER.debug("Load job xml {} file {}", jobId, file);
 

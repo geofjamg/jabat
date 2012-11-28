@@ -24,8 +24,10 @@ import java.util.Properties;
 public abstract class AbstractNode {
 
     private final String id;
-    
+
     private Properties properties;
+
+    private Properties substitutedproperties = new Properties();
 
     private final NodeContainer container;
 
@@ -43,8 +45,8 @@ public abstract class AbstractNode {
         return properties;
     }
 
-    public void setProperty(String name, String value) {
-        properties.setProperty(name, value);
+    public Properties getSubstitutedProperties() {
+        return substitutedproperties;
     }
 
     public NodeContainer getContainer() {

@@ -15,42 +15,34 @@
  */
 package fr.jamgotchian.jabat.job;
 
-import fr.jamgotchian.jabat.util.JabatException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Flow extends AbstractNodeContainer implements NodeContainer, Chainable {
+public class AbstractNodeVisitor<A> implements NodeVisitor<A> {
 
-    private final String next;
-
-    public Flow(String id, NodeContainer container, String next) {
-        super(id, new Properties(), container);
-        this.next = next;
+    @Override
+    public void visit(Job job, A arg) {
     }
 
     @Override
-    public String getNext() {
-        return next;
+    public void visit(BatchletStep step, A arg) {
     }
 
     @Override
-    public Artifact getArtifact(String ref) {
-        throw new JabatException("Artifact " + ref + " not found");
+    public void visit(ChunkStep step, A arg) {
     }
 
     @Override
-    public List<Artifact> getArtifacts() {
-        return Collections.emptyList();
+    public void visit(Flow flow, A arg) {
     }
 
     @Override
-    public <A> void accept(NodeVisitor<A> visitor, A arg) {
-        visitor.visit(this, arg);
+    public void visit(Split split, A arg) {
+    }
+
+    @Override
+    public void visit(Decision decision, A arg) {
     }
 
 }

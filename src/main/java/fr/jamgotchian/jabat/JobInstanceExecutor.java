@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
 import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
 import fr.jamgotchian.jabat.artifact.JobArtifactContext;
@@ -22,23 +23,22 @@ import fr.jamgotchian.jabat.artifact.SplitArtifactContext;
 import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
+import fr.jamgotchian.jabat.job.Artifact;
+import fr.jamgotchian.jabat.job.BatchletStep;
+import fr.jamgotchian.jabat.job.Chainable;
+import fr.jamgotchian.jabat.job.ChunkStep;
+import fr.jamgotchian.jabat.job.Decision;
+import fr.jamgotchian.jabat.job.Flow;
+import fr.jamgotchian.jabat.job.Job;
+import fr.jamgotchian.jabat.job.Node;
+import fr.jamgotchian.jabat.job.NodeVisitor;
+import fr.jamgotchian.jabat.job.PropertyValueSubstitutor;
+import fr.jamgotchian.jabat.job.Split;
+import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
-import fr.jamgotchian.jabat.repository.Status;
-import fr.jamgotchian.jabat.repository.JabatJobExecution;
-import fr.jamgotchian.jabat.job.ChunkStep;
-import fr.jamgotchian.jabat.job.Flow;
-import fr.jamgotchian.jabat.job.Split;
-import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.Decision;
-import fr.jamgotchian.jabat.job.NodeVisitor;
-import fr.jamgotchian.jabat.job.BatchletStep;
-import fr.jamgotchian.jabat.job.Node;
-import fr.jamgotchian.jabat.job.Artifact;
-import fr.jamgotchian.jabat.job.Chainable;
 import fr.jamgotchian.jabat.repository.JobRepository;
-import fr.jamgotchian.jabat.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.job.Partition;
+import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.Externalizables;
 import fr.jamgotchian.jabat.util.JabatException;
@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import javax.batch.api.Batchlet;
 import javax.batch.api.CheckpointAlgorithm;
 import javax.batch.api.ItemProcessor;
@@ -78,9 +79,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     private JabatJobExecution jobExecution;
 
-    JobInstanceExecutor(JobManager jobManager, JabatJobInstance jobInstance) {
+    private Properties parameters;
+
+    JobInstanceExecutor(JobManager jobManager, JabatJobInstance jobInstance,
+                        Properties parameters) {
         this.jobManager = jobManager;
         this.jobInstance = jobInstance;
+        this.parameters = parameters;
     }
 
     private JobRepository getRepository() {
@@ -106,7 +111,16 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             @Override
             public void run() {
                 try {
+                    // create job context
                     JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
+
+                    // apply substitutions to job level elements
+                    new PropertyValueSubstitutor(parameters).substitute(job);
+
+                    // store job level properties in job context
+                    JabatThreadContext.getInstance().getActiveJobContext()
+                            .setProperties(job.getSubstitutedProperties());
+
                     JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
                     try {
                         // before job listeners
@@ -125,6 +139,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         }
                     } finally {
                         artifactContext.release();
+
+                        // destroy job context
                         JabatThreadContext.getInstance().deactivateJobContext();
                     }
                 } catch (Throwable t) {
@@ -147,7 +163,16 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
+            // create step context
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+
+            // apply substitutions to step level elements
+            new PropertyValueSubstitutor(parameters).substitute(step);
+
+            // store step level properties in step context
+            JabatThreadContext.getInstance().getActiveStepContext()
+                    .setProperties(step.getProperties());
+
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
             try {
                 // before step listeners
@@ -162,18 +187,18 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 stepExecution.setStatus(Status.STARTED);
 
                 String exitStatus = null;
-                Partition partition = step.getPartition();
-                if (partition.getPlan() != null || partition.getMapper() != null) {
+                if (step.getPartitionPlan() != null || step.getPartitionMapper() != null) {
                     PartitionPlan plan;
-                    if (partition.getMapper() != null) {
-                        PartitionMapper mapper = artifactContext.createPartitionMapper(partition.getMapper().getRef());
+                    if (step.getPartitionMapper() != null) {
+                        PartitionMapper mapper = artifactContext.createPartitionMapper(step.getPartitionMapper().getRef());
                         plan = mapper.mapPartitions();
                     } else {
-                        partition.getPlan();
+                        plan = step.getPartitionPlan();
                     }
                     // TODO
                     throw new JabatException("TODO");
                 } else {
+                    // processing
                     exitStatus = artifact.process();
                 }
 
@@ -187,6 +212,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 }
             } finally {
                 artifactContext.release();
+
+                // store step context persistent area
+                // TODO
+
+                // destroy step context
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
 
@@ -219,7 +249,16 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         JabatStepExecution stepExecution = getRepository().createStepExecution(step, jobExecution);
 
         try {
+            // create step context
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+
+            // apply substitutions to step level elements
+            new PropertyValueSubstitutor(parameters).substitute(step);
+
+            // store step level properties in step context
+            JabatThreadContext.getInstance().getActiveStepContext()
+                    .setProperties(step.getProperties());
+
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
             try {
                 // before step listeners
@@ -249,14 +288,17 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 boolean completed = false;
                 int retryCount = 0;
                 while (!(completed || (step.getRetryLimit() != -1 && retryCount >= step.getRetryLimit()))) {
+                    // open item reader
                     reader.open(Externalizables.deserialize(readerChkptData));
                     try {
+                        // open item writer
                         writer.open(Externalizables.deserialize(writerChkptData));
                         try {
                             try {
                                 transaction.begin();
                                 algorithm.beginCheckpoint();
                                 try {
+                                    // chunk processing
                                     Object item;
                                     List<Object> buffer = new ArrayList<Object>(step.getBufferSize());
                                     while ((item = reader.readItem()) != null) {
@@ -296,9 +338,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                 // retry...
                             }
                         } finally {
+                            // close item writer
                             writer.close();
                         }
                     } finally {
+                        // close item reader
                         reader.close();
                     }
                 } // end of retry loop
@@ -314,6 +358,10 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 }
             } finally {
                 artifactContext.release();
+
+                // store step context persistent area
+
+                // destroy step context
                 JabatThreadContext.getInstance().deactivateStepContext();
             }
 
@@ -327,7 +375,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     @Override
     public void visit(Flow flow, Void arg) {
+        // create flow context
+        // TODO
+
         flow.getFirstChainableNode().accept(this, null);
+
+        // destroy flow context
+        // TODO
     }
 
     @Override
@@ -335,28 +389,32 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         Collection<Node> nodes = split.getNodes();
         if (nodes.size() > 0) {
             try {
+                // create split context
+                // TODO
+
                 SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
                 try {
                     final List<Externalizable> collectedData = new ArrayList<Externalizable>();
                     final SplitCollector collector = split.getCollector() != null
                             ? artifactContext.createSplitCollector(split.getCollector().getRef())
                             : null;
-                    // TODO start split context
+                    // for each flow
                     for (Node node : nodes) {
                         final Flow flow = (Flow) node;
+
+                        // run flow in its own thread
                         getTaskManager().submit(new Runnable() {
                             @Override
                             public void run() {
                                 JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
-                                // TODO start flow context
                                 try {
                                     try {
                                         flow.accept(JobInstanceExecutor.this, null);
+                                        // collect data
                                         if (collector != null) {
                                             collectedData.add(collector.collectSplitData());
                                         }
                                     } finally {
-                                        // TODO end flow context
                                         JabatThreadContext.getInstance().deactivateJobContext();
                                     }
                                 } catch (Throwable t) {
@@ -369,13 +427,18 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         SplitAnalyzer analyser
                                 = artifactContext.createSplitAnalyser(split.getAnalyser().getRef());
                         for (Externalizable data : collectedData) {
+                            // analyse data
                             analyser.analyzeCollectorData(data);
+
+                            // analyse status
                             analyser.analyzeStatus(null, null);
                         }
                     }
-                    // TODO end split context
                 } finally {
                     artifactContext.release();
+
+                    // destroy split context
+                    // TODO
                 }
             } catch (Throwable t) {
                 LOGGER.error(t.toString(), t);

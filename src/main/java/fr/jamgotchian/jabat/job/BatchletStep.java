@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,7 +29,7 @@ public class BatchletStep extends Step {
     private final Artifact artifact;
 
     BatchletStep(String id, NodeContainer container, String next,
-                 Properties properties, List<Artifact> listenerArtifacts, 
+                 Properties properties, List<Artifact> listenerArtifacts,
                  Artifact artifact) {
         super(id, container, next, properties, listenerArtifacts);
         this.artifact = artifact;
@@ -40,11 +41,22 @@ public class BatchletStep extends Step {
 
     @Override
     public Artifact getArtifact(String ref) {
-        if (this.artifact.getRef().equals(ref)) {
-            return this.artifact;
+        Artifact result = super.getArtifact(ref);
+        if (result != null) {
+            return result;
+        } else if (artifact.getRef().equals(ref)) {
+            return artifact;
         } else {
             throw new JabatException("Artifact " + ref + " not found");
         }
+    }
+
+    @Override
+    public List<Artifact> getArtifacts() {
+        List<Artifact> artifacts = new ArrayList<Artifact>(1);
+        getArtifacts(artifacts);
+        artifacts.add(artifact);
+        return artifacts;
     }
 
     @Override

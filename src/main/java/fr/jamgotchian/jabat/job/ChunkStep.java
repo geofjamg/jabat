@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.job;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,11 +43,11 @@ public class ChunkStep extends Step {
     private final int retryLimit;
 
     ChunkStep(String id, NodeContainer container, String next,
-              Properties properties, List<Artifact> listenerArtifacts,
+              Properties properties, List<Artifact> listeners,
               Artifact reader, Artifact processor, Artifact writer,
               CheckpointPolicy checkpointPolicy, int commitInterval,
               int bufferSize, int retryLimit) {
-        super(id, container, next, properties, listenerArtifacts);
+        super(id, container, next, properties, listeners);
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
@@ -94,7 +95,10 @@ public class ChunkStep extends Step {
 
     @Override
     public Artifact getArtifact(String ref) {
-        if (reader.getRef().equals(ref)) {
+        Artifact result = super.getArtifact(ref);
+        if (result != null) {
+            return result;
+        } else if (reader.getRef().equals(ref)) {
             return reader;
         } else if (processor.getRef().equals(ref)) {
             return processor;
@@ -106,6 +110,19 @@ public class ChunkStep extends Step {
         } else {
             throw new JabatException("Artifact " + ref + " not found");
         }
+    }
+
+    @Override
+    public List<Artifact> getArtifacts() {
+        List<Artifact> artifacts = new ArrayList<Artifact>(3);
+        getArtifacts(artifacts);
+        artifacts.add(reader);
+        artifacts.add(processor);
+        artifacts.add(writer);
+        if (checkpointAlgo != null) {
+            artifacts.add(checkpointAlgo);
+        }
+        return artifacts;
     }
 
     @Override

@@ -21,35 +21,10 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Artifact implements Propertiable {
+public interface Propertiable {
 
-    private final String ref;
+    Properties getProperties();
 
-    private Properties properties = new Properties();
-
-    private Properties substitutedproperties = new Properties();
-
-    public Artifact(String ref, Properties properties) {
-        this.ref = ref;
-        this.properties = properties;
-    }
-
-    public Artifact(String ref) {
-        this(ref, new Properties());
-    }
-
-    public String getRef() {
-        return ref;
-    }
-
-    @Override
-    public Properties getProperties() {
-        return properties;
-    }
-
-    @Override
-    public Properties getSubstitutedProperties() {
-        return substitutedproperties;
-    }
-
+    Properties getSubstitutedProperties();
+    
 }

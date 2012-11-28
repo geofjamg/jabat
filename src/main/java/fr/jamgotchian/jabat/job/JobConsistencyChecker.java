@@ -20,14 +20,14 @@ package fr.jamgotchian.jabat.job;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class JobConsistencyChecker {
-    
+
     private final Job job;
 
     public JobConsistencyChecker(Job job) {
         this.job = job;
     }
 
-    private final NodeVisitor<ConsistencyReport> visitor = new NodeVisitor<ConsistencyReport>() {
+    private final NodeVisitor<ConsistencyReport> visitor = new AbstractNodeVisitor<ConsistencyReport>() {
 
         @Override
         public void visit(Job job, ConsistencyReport report) {
@@ -75,13 +75,13 @@ public class JobConsistencyChecker {
                 }
             }
         }
-        
-    }; 
-    
+
+    };
+
     public ConsistencyReport check() {
         ConsistencyReport report = new ConsistencyReport();
         visitor.visit(job, report);
         return report;
     }
-    
+
 }

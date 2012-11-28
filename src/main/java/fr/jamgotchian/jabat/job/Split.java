@@ -15,6 +15,9 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -53,6 +56,29 @@ public class Split extends AbstractNodeContainer implements NodeContainer, Chain
 
     public void setAnalyser(Artifact analyser) {
         this.analyser = analyser;
+    }
+
+    @Override
+    public Artifact getArtifact(String ref) {
+        if (collector != null && collector.getRef().equals(ref)) {
+            return collector;
+        } else if (analyser != null && analyser.getRef().equals(ref)) {
+            return analyser;
+        } else {
+            throw new JabatException("Artifact " + ref + " not found");
+        }
+    }
+
+    @Override
+    public List<Artifact> getArtifacts() {
+        List<Artifact> artifacts = new ArrayList<Artifact>();
+        if (collector != null) {
+            artifacts.add(collector);
+        }
+        if (analyser != null) {
+            artifacts.add(analyser);
+        }
+        return artifacts;
     }
 
     @Override

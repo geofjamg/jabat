@@ -59,14 +59,14 @@ class JabatCdiExtension implements Extension {
     public void init(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {
         BEAN_MANAGER = beanManager;
     }
-    
+
     public <X> void injectContext(@Observes ProcessInjectionTarget<X> pit) {
         final InjectionTarget<X> it = pit.getInjectionTarget();
         final AnnotatedType<X> at = pit.getAnnotatedType();
-        
+
         final List<Field> contextFields = new ArrayList<Field>();
         final List<Field> propertyFields = new ArrayList<Field>();
-        
+
         for (AnnotatedField<? super X> annotatedField : at.getFields()) {
             BatchContext batchContext = annotatedField.getAnnotation(BatchContext.class);
             if  (batchContext != null) {
@@ -113,7 +113,7 @@ class JabatCdiExtension implements Extension {
                             // get the bean name
                             String name = at.getAnnotation(Named.class).value();
                             Artifact artifact = JabatThreadContext.getInstance().getActiveStepContext().getNode().getArtifact(name);
-                            Properties properties = artifact.getProperties();
+                            Properties properties = artifact.getSubstitutedProperties();
                             // TODO support the name parameter of @BatchProperty
                             String value = properties.getProperty(field.getName());
                             if (value != null) {
