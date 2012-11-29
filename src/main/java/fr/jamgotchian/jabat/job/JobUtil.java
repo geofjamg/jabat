@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import javax.batch.api.parameters.PartitionPlan;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -78,6 +79,27 @@ public class JobUtil {
         substitute(node, jobParameters, node);
         for (Artifact artifact : node.getArtifacts()) {
             substitute(artifact, jobParameters, node);
+        }
+    }
+
+    public static void substitutePartitionPlan(final Step step, Properties jobParameters) {
+        PartitionPlan plan = step.getPartitionPlan();
+        if (plan != null) {
+            for (final Properties properties : plan.getPartitionProperties()) {
+                substitute(new Propertiable() {
+
+                    @Override
+                    public Properties getProperties() {
+                        return properties;
+                    }
+
+                    @Override
+                    public Properties getSubstitutedProperties() {
+                        return step.getSubstitutedProperties();
+                    }
+
+                }, jobParameters, step);
+            }
         }
     }
 
