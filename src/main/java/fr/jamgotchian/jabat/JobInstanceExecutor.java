@@ -30,9 +30,9 @@ import fr.jamgotchian.jabat.job.ChunkStep;
 import fr.jamgotchian.jabat.job.Decision;
 import fr.jamgotchian.jabat.job.Flow;
 import fr.jamgotchian.jabat.job.Job;
+import fr.jamgotchian.jabat.job.JobUtil;
 import fr.jamgotchian.jabat.job.Node;
 import fr.jamgotchian.jabat.job.NodeVisitor;
-import fr.jamgotchian.jabat.job.PropertyValueSubstitutor;
 import fr.jamgotchian.jabat.job.Split;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
@@ -79,13 +79,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
     private JabatJobExecution jobExecution;
 
-    private Properties parameters;
+    private Properties jobParameters;
 
     JobInstanceExecutor(JobManager jobManager, JabatJobInstance jobInstance,
-                        Properties parameters) {
+                        Properties jobParameters) {
         this.jobManager = jobManager;
         this.jobInstance = jobInstance;
-        this.parameters = parameters;
+        this.jobParameters = jobParameters;
     }
 
     private JobRepository getRepository() {
@@ -115,7 +115,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
 
                     // apply substitutions to job level elements
-                    new PropertyValueSubstitutor(parameters).substitute(job);
+                    JobUtil.substitute(job, jobParameters);
 
                     // store job level properties in job context
                     JabatThreadContext.getInstance().getActiveJobContext()
@@ -167,7 +167,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
 
             // apply substitutions to step level elements
-            new PropertyValueSubstitutor(parameters).substitute(step);
+            JobUtil.substitute(step, jobParameters);
 
             // store step level properties in step context
             JabatThreadContext.getInstance().getActiveStepContext()
@@ -253,7 +253,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
 
             // apply substitutions to step level elements
-            new PropertyValueSubstitutor(parameters).substitute(step);
+            JobUtil.substitute(step, jobParameters);
 
             // store step level properties in step context
             JabatThreadContext.getInstance().getActiveStepContext()

@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,19 +33,92 @@ public class JobUtil {
     private JobUtil() {
     }
 
-    public static String substitute(String value, Properties parameters, Properties properties)
-            throws IOException, RecognitionException {
+    static interface JobProperties {
+
+        String getProperty(String name);
+
+    }
+
+    private static class JobPropertiesImpl implements JobProperties {
+
+        /* current node */
+        private final Node node;
+
+        /* job parameters */
+        private final Properties parameters;
+
+        JobPropertiesImpl(Node node, Properties parameters) {
+            this.node = node;
+            this.parameters = parameters;
+        }
+
+        private String getProperty(Node node, String name) {
+            String value = node.getProperties().getProperty(name);
+            if (value != null) {
+                return JobUtil.substitute(value, parameters, new JobPropertiesImpl(node, parameters));
+            } else {
+                if (node.getContainer() != null) {
+                    return getProperty(node.getContainer(), name);
+                }
+                return null;
+            }
+        }
+
+        @Override
+        public String getProperty(String name) {
+            if (node.getContainer() != null) {
+                return getProperty(node.getContainer(), name);
+            }
+            return null;
+        }
+
+    }
+
+    public static void substitute(Node node, Properties jobParameters) {
+        substitute(node, jobParameters, node);
+        for (Artifact artifact : node.getArtifacts()) {
+            substitute(artifact, jobParameters, node);
+        }
+    }
+
+    /* for test only */
+    public static String substitute(String value, Properties jobParameters, final Properties jobProperties) {
+        return substitute(value, jobParameters, new JobProperties() {
+            @Override
+            public String getProperty(String name) {
+                return jobProperties.getProperty(name);
+            }
+        });
+    }
+
+    private static void substitute(Propertiable propertiable, Properties jobParameters, Node node) {
+        JobProperties jobProperties = new JobPropertiesImpl(node, jobParameters);
+        propertiable.getSubstitutedProperties().clear();
+        for (String name : propertiable.getProperties().stringPropertyNames()) {
+            String value = propertiable.getProperties().getProperty(name);
+            String substitutedValue = substitute(value, jobParameters, jobProperties);
+            propertiable.getSubstitutedProperties().setProperty(name, substitutedValue);
+        }
+    }
+
+    private static String substitute(String value, Properties jobParameters, JobProperties jobProperties) {
         String result = null;
-        InputStream is = new ByteArrayInputStream(value.getBytes("UTF-8"));
         try {
-            JobXmlSubstitutionLexer lexer = new JobXmlSubstitutionLexer(new ANTLRInputStream(is, "UTF-8"));
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            JobXmlSubstitutionParser parser = new JobXmlSubstitutionParser(tokens);
-            parser.parameters = parameters;
-            parser.properties = properties;
-            result = parser.attributeValue();
-        } finally {
-            is.close();
+            InputStream is = new ByteArrayInputStream(value.getBytes("UTF-8"));
+            try {
+                JobXmlSubstitutionLexer lexer = new JobXmlSubstitutionLexer(new ANTLRInputStream(is, "UTF-8"));
+                CommonTokenStream tokens = new CommonTokenStream(lexer);
+                JobXmlSubstitutionParser parser = new JobXmlSubstitutionParser(tokens);
+                parser.jobParameters = jobParameters;
+                parser.jobProperties = jobProperties;
+                result = parser.attributeValue();
+            } finally {
+                is.close();
+            }
+        } catch (IOException e) {
+            throw new JabatException(e);
+        } catch (RecognitionException e) {
+            throw new JabatException(e);
         }
         return result;
     }

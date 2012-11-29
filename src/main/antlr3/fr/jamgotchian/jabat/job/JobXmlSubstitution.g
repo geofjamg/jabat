@@ -25,8 +25,8 @@ package fr.jamgotchian.jabat.job;
 }
 
 @members {
-java.util.Properties parameters;
-java.util.Properties properties;
+java.util.Properties jobParameters;
+fr.jamgotchian.jabat.job.JobUtil.JobProperties jobProperties;
 }
 
 attributeValue returns [String value]
@@ -46,10 +46,10 @@ operatorExpression returns [String value]
     ;
 
 operator1 returns [String value] :
-    JOB_PARAMETERS OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = (parameters == null ? null : parameters.getProperty($n.value)); } CLOSE_SQUARE_BRACKET ;
+    JOB_PARAMETERS OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = (jobParameters == null ? null : jobParameters.getProperty($n.value)); } CLOSE_SQUARE_BRACKET ;
 
 operator2 returns [String value] :
-    JOB_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = (properties == null ? null : properties.getProperty($n.value)); } CLOSE_SQUARE_BRACKET ;
+    JOB_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = (jobProperties == null ? null : jobProperties.getProperty($n.value)); } CLOSE_SQUARE_BRACKET ;
 
 operator3 returns [String value] :
     SYSTEM_PROPERTIES OPEN_SQUARE_BRACKET n = singleQuotedStringLiteral { $value = System.getProperty($n.value); } CLOSE_SQUARE_BRACKET ;
