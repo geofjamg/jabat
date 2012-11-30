@@ -102,9 +102,9 @@ class JabatCdiExtension implements Extension {
                             Class<?> contextClass = field.getType();
                             field.setAccessible(true);
                             if (contextClass == JobContext.class) {
-                                field.set(instance, JabatThreadContext.getInstance().getActiveJobContext());
+                                field.set(instance, JabatThreadContext.getInstance().getJobContext());
                             } else if (contextClass == StepContext.class) {
-                                field.set(instance, JabatThreadContext.getInstance().getActiveStepContext());
+                                field.set(instance, JabatThreadContext.getInstance().getStepContext());
                             } else {
                                 throw new InternalError();
                             }
@@ -112,7 +112,7 @@ class JabatCdiExtension implements Extension {
                         for (Field field : propertyFields) {
                             // get the bean name
                             String name = at.getAnnotation(Named.class).value();
-                            Artifact artifact = JabatThreadContext.getInstance().getActiveStepContext().getNode().getArtifact(name);
+                            Artifact artifact = JabatThreadContext.getInstance().getStepContext().getNode().getArtifact(name);
                             Properties properties = artifact.getSubstitutedProperties();
                             // TODO support the name parameter of @BatchProperty
                             String value = properties.getProperty(field.getName());

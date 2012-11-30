@@ -112,13 +112,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             public void run() {
                 try {
                     // create job context
-                    JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
+                    JabatThreadContext.getInstance().createJobContext(job, jobInstance, jobExecution);
 
                     // apply substitutions to job level elements
                     JobUtil.substitute(job, jobParameters);
 
                     // store job level properties in job context
-                    JabatThreadContext.getInstance().getActiveJobContext()
+                    JabatThreadContext.getInstance().getJobContext()
                             .setProperties(job.getSubstitutedProperties());
 
                     JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
@@ -141,7 +141,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         artifactContext.release();
 
                         // destroy job context
-                        JabatThreadContext.getInstance().deactivateJobContext();
+                        JabatThreadContext.getInstance().destroyJobContext();
                     }
                 } catch (Throwable t) {
                     LOGGER.error(t.toString(), t);
@@ -164,13 +164,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
         try {
             // create step context
-            JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+            JabatThreadContext.getInstance().createStepContext(step, stepExecution);
 
             // apply substitutions to step level elements
             JobUtil.substitute(step, jobParameters);
 
             // store step level properties in step context
-            JabatThreadContext.getInstance().getActiveStepContext()
+            JabatThreadContext.getInstance().getStepContext()
                     .setProperties(step.getProperties());
 
             BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
@@ -212,14 +212,14 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 }
             } finally {
                 jobManager.getRunningBatchlets().removeAll(stepExecution.getId());
-                
+
                 artifactContext.release();
 
                 // store step context persistent area
                 // TODO
 
                 // destroy step context
-                JabatThreadContext.getInstance().deactivateStepContext();
+                JabatThreadContext.getInstance().destroyStepContext();
             }
 
             visitNextNode(step);
@@ -252,13 +252,13 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
         try {
             // create step context
-            JabatThreadContext.getInstance().activateStepContext(step, stepExecution);
+            JabatThreadContext.getInstance().createStepContext(step, stepExecution);
 
             // apply substitutions to step level elements
             JobUtil.substitute(step, jobParameters);
 
             // store step level properties in step context
-            JabatThreadContext.getInstance().getActiveStepContext()
+            JabatThreadContext.getInstance().getStepContext()
                     .setProperties(step.getProperties());
 
             ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
@@ -364,7 +364,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 // store step context persistent area
 
                 // destroy step context
-                JabatThreadContext.getInstance().deactivateStepContext();
+                JabatThreadContext.getInstance().destroyStepContext();
             }
 
             visitNextNode(step);
@@ -408,7 +408,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         getTaskManager().submit(new Runnable() {
                             @Override
                             public void run() {
-                                JabatThreadContext.getInstance().activateJobContext(job, jobInstance, jobExecution);
+                                JabatThreadContext.getInstance().createJobContext(job, jobInstance, jobExecution);
                                 try {
                                     try {
                                         flow.accept(JobInstanceExecutor.this, null);
@@ -417,7 +417,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                             collectedData.add(collector.collectSplitData());
                                         }
                                     } finally {
-                                        JabatThreadContext.getInstance().deactivateJobContext();
+                                        JabatThreadContext.getInstance().destroyJobContext();
                                     }
                                 } catch (Throwable t) {
                                     LOGGER.error(t.toString(), t);

@@ -36,55 +36,63 @@ public class JabatThreadContext {
         return INSTANCE;
     }
 
-    private final ThreadLocal<JabatJobContext<Object>> jobContext 
+    private final ThreadLocal<JabatJobContext<Object>> jobContext
             = new ThreadLocal<JabatJobContext<Object>>();
 
     private final ThreadLocal<JabatStepContext<Object, Externalizable>> stepContext
             = new ThreadLocal<JabatStepContext<Object, Externalizable>>();
 
-    private final ThreadLocal<JabatFlowContext<Object>> flowContext 
+    private final ThreadLocal<JabatFlowContext<Object>> flowContext
             = new ThreadLocal<JabatFlowContext<Object>>();
 
-    private final ThreadLocal<JabatSplitContext<Object>> splitContext 
+    private final ThreadLocal<JabatSplitContext<Object>> splitContext
             = new ThreadLocal<JabatSplitContext<Object>>();
 
-    public JabatJobContext<Object> getActiveJobContext() {
+    public JabatJobContext<Object> getJobContext() {
         return jobContext.get();
     }
 
-    public void activateJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
+    public void createJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
         jobContext.set(new JabatJobContext<Object>(job, jobInstance, jobExecution));
     }
 
-    public void deactivateJobContext() {
+    public void destroyJobContext() {
         jobContext.remove();
     }
 
-    public JabatStepContext<Object, Externalizable> getActiveStepContext() {
+    public JabatStepContext<Object, Externalizable> getStepContext() {
         return stepContext.get();
     }
 
-    public void activateStepContext(Step step, JabatStepExecution stepExecution) {
+    public void createStepContext(Step step, JabatStepExecution stepExecution) {
         stepContext.set(new JabatStepContext<Object, Externalizable>(step, stepExecution));
     }
 
-    public void deactivateStepContext() {
+    public void destroyStepContext() {
         stepContext.remove();
     }
 
-    public void activateFlowContext(Flow flow) {
+    public JabatFlowContext<Object> getFlowContext() {
+        return flowContext.get();
+    }
+
+    public void createFlowContext(Flow flow) {
         flowContext.set(new JabatFlowContext<Object>(flow));
     }
 
-    public void deactivateFlowContext() {
+    public void destroyFlowContext() {
         flowContext.remove();
     }
 
-    public void activateSplitContext(Split split) {
+    public JabatSplitContext<Object> getSplitContext() {
+        return splitContext.get();
+    }
+
+    public void createSplitContext(Split split) {
         splitContext.set(new JabatSplitContext<Object>(split));
     }
 
-    public void deactivateSplitContext() {
+    public void destroySplitContext() {
         splitContext.remove();
     }
 
