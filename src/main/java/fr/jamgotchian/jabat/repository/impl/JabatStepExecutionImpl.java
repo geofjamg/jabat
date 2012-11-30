@@ -18,7 +18,6 @@ package fr.jamgotchian.jabat.repository.impl;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.Status;
 import java.util.Date;
-import javax.batch.api.Batchlet;
 
 /**
  *
@@ -39,8 +38,6 @@ public class JabatStepExecutionImpl implements JabatStepExecution {
     private Object userPersistentData;
 
     private MetricImpl[] metrics;
-
-    private volatile Batchlet batchlet;
 
     public JabatStepExecutionImpl(long id) {
         this.id = id;
@@ -105,16 +102,6 @@ public class JabatStepExecutionImpl implements JabatStepExecution {
     @Override
     public void setMetrics(MetricImpl[] metrics) {
         this.metrics = metrics;
-    }
-
-    @Override
-    public Batchlet getBatchlet() {
-        return batchlet;
-    }
-
-    @Override
-    public void setBatchlet(Batchlet batchlet) {
-        this.batchlet = batchlet;
     }
 
 }

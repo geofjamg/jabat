@@ -182,7 +182,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 }
 
                 Batchlet artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
-                stepExecution.setBatchlet(artifact);
+                jobManager.getRunningBatchlets().put(stepExecution.getId(), artifact);
 
                 stepExecution.setStatus(Status.STARTED);
 
@@ -211,6 +211,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     l.afterStep();
                 }
             } finally {
+                jobManager.getRunningBatchlets().removeAll(stepExecution.getId());
+                
                 artifactContext.release();
 
                 // store step context persistent area

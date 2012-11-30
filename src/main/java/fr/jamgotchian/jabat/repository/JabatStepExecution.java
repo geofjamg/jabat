@@ -17,7 +17,6 @@ package fr.jamgotchian.jabat.repository;
 
 import fr.jamgotchian.jabat.repository.impl.MetricImpl;
 import java.util.Date;
-import javax.batch.api.Batchlet;
 import javax.batch.runtime.StepExecution;
 
 /**
@@ -37,9 +36,5 @@ public interface JabatStepExecution extends StepExecution {
     void setUserPersistentData(Object userPersistentData);
 
     void setMetrics(MetricImpl[] metrics);
-
-    Batchlet getBatchlet();
-
-    void setBatchlet(Batchlet batchlet);
 
 }

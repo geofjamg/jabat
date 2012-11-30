@@ -15,6 +15,9 @@
  */
 package fr.jamgotchian.jabat;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.config.Configuration;
 import fr.jamgotchian.jabat.job.Job;
@@ -26,6 +29,7 @@ import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -53,6 +57,9 @@ public class JobManager {
     private final ArtifactFactory artifactFactory;
 
     private final JobRepository repository;
+
+    private final Multimap<Long, Batchlet> runningBatchlets
+            = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
 
     public JobManager() {
         Configuration cfg = new Configuration();
@@ -87,6 +94,10 @@ public class JobManager {
 
     ArtifactFactory getArtifactFactory() {
         return artifactFactory;
+    }
+
+    Multimap<Long, Batchlet> getRunningBatchlets() {
+        return runningBatchlets;
     }
 
     public Set<String> getJobIds() {
@@ -139,14 +150,15 @@ public class JobManager {
 
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
-            // TODO only stop running check execution
-            Batchlet batchlet = stepExecution.getBatchlet();
-            if (batchlet != null) {
-                try {
-                    batchlet.stop();
-                    stepExecution.setStatus(Status.STOPPED);
-                } catch(Exception e) {
-                    LOGGER.error(e.toString(), e);
+            if (Status.STARTED.name().equals(stepExecution.getStatus())) {
+                Collection<Batchlet> batchlets = runningBatchlets.get(stepExecution.getId());
+                for (Batchlet batchlet : batchlets) {
+                    try {
+                        batchlet.stop();
+                        stepExecution.setStatus(Status.STOPPED);
+                    } catch(Throwable t) {
+                        LOGGER.error(t.toString(), t);
+                    }
                 }
             }
         }
