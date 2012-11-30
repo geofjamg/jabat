@@ -15,16 +15,17 @@
  */
 package fr.jamgotchian.jabat.task.impl;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import fr.jamgotchian.jabat.task.ResultListener;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fr.jamgotchian.jabat.task.TaskManager;
+import fr.jamgotchian.jabat.task.TaskResultListener;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *
@@ -32,33 +33,40 @@ import java.util.concurrent.TimeUnit;
  */
 public class ExecutorServiceTaskManager implements TaskManager {
 
-    private final ListeningExecutorService executor
-            = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+    private final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("JABAT-%d")
+        .build();
 
     public ExecutorServiceTaskManager() {
     }
 
     @Override
     public void submit(Runnable task) {
-        executor.submit(task);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        try {
+            executorService.submit(task);
+        } finally {
+            executorService.shutdown();
+        }
     }
 
     @Override
-    public <V> void submit(Callable<V> task, final ResultListener<V> listener) {
-        ListenableFuture<V> future = executor.submit(task);
-        Futures.addCallback(future, new FutureCallback<V>() {
-
-            @Override
-            public void onSuccess(V result) {
-                listener.onSuccess(result);
+    public <V> void submitAndWait(Collection<Callable<V>> tasks, int threads, TaskResultListener<V> listener) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(threads, threadFactory);
+        try {
+            List<Future<V>> futures = executorService.invokeAll(tasks);
+            for (Future<V> future : futures) {
+                try {
+                    V result = future.get();
+                    listener.onSuccess(result);
+                } catch (ExecutionException e) {
+                    listener.onFailure(e.getCause());
+                }
             }
-
-            @Override
-            public void onFailure(Throwable thrown) {
-                listener.onFailure(thrown);
-            }
-
-        });
+        } finally {
+            executorService.shutdown();
+        }
     }
 
     @Override
@@ -66,10 +74,7 @@ public class ExecutorServiceTaskManager implements TaskManager {
     }
 
     @Override
-    public void shutdownAndWaitForTermination() throws Exception {
-        executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
-        executor.shutdownNow();
+    public void shutdown() throws Exception {
     }
 
 }

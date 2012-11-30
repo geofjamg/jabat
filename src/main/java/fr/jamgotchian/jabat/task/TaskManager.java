@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.task;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
@@ -23,12 +24,36 @@ import java.util.concurrent.Callable;
  */
 public interface TaskManager {
 
+    /**
+     * Submit a task for an asynchronous run.
+     *
+     * @param task the task to run
+     */
     void submit(Runnable task);
 
-    <V> void submit(Callable<V> task, ResultListener<V> listener);
+    /**
+     * Submit a list of task and wait until all tasks complete.
+     *
+     * @param <V>
+     * @param tasks list of task to run
+     * @param threads number of thread
+     * @param listener listener to be notified when a task succeeds or fails
+     * @throws InterruptedException
+     */
+    <V> void submitAndWait(Collection<Callable<V>> tasks, int threads, TaskResultListener<V> listener) throws InterruptedException;
 
+    /**
+     * Initialize the task manager, should be called before submiting a task.
+     *
+     * @throws Exception
+     */
     void initialize() throws Exception;
 
-    void shutdownAndWaitForTermination() throws Exception;
+    /**
+     * Shutdown the task manager.
+     *
+     * @throws Exception
+     */
+    void shutdown() throws Exception;
 
 }

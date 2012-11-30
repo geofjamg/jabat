@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat;
 
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.config.Configuration;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.JobXmlLoader;
@@ -23,7 +24,6 @@ import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.Status;
-import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Collections;
@@ -74,7 +74,7 @@ public class JobManager {
     }
 
     public void shutdown() throws Exception {
-        taskManager.shutdownAndWaitForTermination();
+        taskManager.shutdown();
     }
 
     JobRepository getRepository() {

@@ -19,7 +19,7 @@ package fr.jamgotchian.jabat.task;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ResultListener<V> {
+public interface TaskResultListener<V> {
 
     void onSuccess(V result);
 
