@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -36,11 +37,15 @@ public class PartitionPlanImpl implements PartitionPlan {
     public PartitionPlanImpl(int partitionCount, int threadCount) {
         this.partitionCount = partitionCount;
         this.threadCount = threadCount;
+        properties = new Properties[partitionCount];
+        for (int i = 0; i < partitionCount; i++) {
+            properties[i] = new Properties();
+        }
     }
 
     @Override
     public void setPartitionCount(int count) {
-        partitionCount = count;
+        throw new JabatException("Cannot resize the number of partition");
     }
 
     @Override

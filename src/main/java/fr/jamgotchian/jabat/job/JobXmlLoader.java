@@ -154,7 +154,8 @@ public class JobXmlLoader {
         MAPPER,
         REDUCER,
         COLLECTOR,
-        ANALYSER
+        ANALYSER,
+        PLAN
     }
 
     private final JobPath path = new JobPath();
@@ -171,6 +172,7 @@ public class JobXmlLoader {
             // xml contextual information
             Deque<XmlContext> xmlContext = new ArrayDeque<XmlContext>(3);
             Deque<Object> xmlElt = new ArrayDeque<Object>(3);
+            int partition = -1;
 
             while (xmlsr.hasNext()) {
                 int eventType = xmlsr.next();
@@ -219,6 +221,11 @@ public class JobXmlLoader {
                                                                          stepElt.getProperties(),
                                                                          stepElt.getListeners(),
                                                                          artifact);
+                                batchlet.setPartitionPlan(stepElt.getPartitionPlan());
+                                batchlet.setPartitionMapper(stepElt.getPartitionMapper());
+                                batchlet.setPartitionReducer(stepElt.getPartitionReducer());
+                                batchlet.setPartitionCollector(stepElt.getPartitionCollector());
+                                batchlet.setPartitionAnalyser(stepElt.getPartitionAnalyser());
                                 container.addNode(batchlet);
                                 xmlContext.push(XmlContext.BATCHLET);
                                 xmlElt.push(batchlet);
@@ -259,21 +266,11 @@ public class JobXmlLoader {
                                                                 commitInterval,
                                                                 bufferSize,
                                                                 retryLimit);
-                                if (stepElt.getPartitionPlan() != null) {
-                                    chunk.setPartitionPlan(stepElt.getPartitionPlan());
-                                }
-                                if (stepElt.getPartitionMapper() != null) {
-                                    chunk.setPartitionMapper(stepElt.getPartitionMapper());
-                                }
-                                if (stepElt.getPartitionReducer() != null) {
-                                    chunk.setPartitionReducer(stepElt.getPartitionReducer());
-                                }
-                                if (stepElt.getPartitionCollector() != null) {
-                                    chunk.setPartitionCollector(stepElt.getPartitionCollector());
-                                }
-                                if (stepElt.getPartitionAnalyser() != null) {
-                                    chunk.setPartitionAnalyser(stepElt.getPartitionAnalyser());
-                                }
+                                chunk.setPartitionPlan(stepElt.getPartitionPlan());
+                                chunk.setPartitionMapper(stepElt.getPartitionMapper());
+                                chunk.setPartitionReducer(stepElt.getPartitionReducer());
+                                chunk.setPartitionCollector(stepElt.getPartitionCollector());
+                                chunk.setPartitionAnalyser(stepElt.getPartitionAnalyser());
                                 container.addNode(chunk);
                                 xmlContext.push(XmlContext.CHUNK);
                                 xmlElt.push(chunk);
@@ -285,6 +282,8 @@ public class JobXmlLoader {
                                 container.addNode(decision);
                                 xmlContext.push(XmlContext.DECISION);
                                 xmlElt.push(decision);
+                            } else if ("properties".equals(localName)) {
+                                partition = XmlUtil.getAttributeIntValue(xmlsr, null, "partition", -1);
                             } else if ("property".equals(localName)) {
                                 String name = xmlsr.getAttributeValue(null, "name");
                                 String value = xmlsr.getAttributeValue(null, "value");
@@ -329,6 +328,13 @@ public class JobXmlLoader {
                                     case COLLECTOR:
                                     case ANALYSER:
                                         ((Artifact) xmlElt.getFirst()).getProperties().setProperty(name, value);
+                                        break;
+                                    case PLAN:
+                                        PartitionPlan plan = ((PartitionPlan) xmlElt.getFirst());
+                                        if (partition < 0 || partition >= plan.getPartitionCount()) {
+                                            throw new JabatException("Inconsistent partition number: " + partition);
+                                        }
+                                        plan.getPartitionProperties()[partition].setProperty(name, value);
                                         break;
                                     default:
                                         throw new JabatException("Unexpected Xml context "
@@ -498,6 +504,8 @@ public class JobXmlLoader {
                                 PartitionPlanImpl plan = new PartitionPlanImpl(instances, threads);
                                 if (xmlContext.getFirst() == XmlContext.STEP) {
                                     ((StepElement) xmlElt.getFirst()).setPartitionPlan(plan);
+                                    xmlContext.push(XmlContext.PLAN);
+                                    xmlElt.push(plan);
                                 } else {
                                     throw new JabatException("Unexpected Xml context "
                                             + xmlContext.getFirst());
@@ -521,9 +529,12 @@ public class JobXmlLoader {
                                     || "collector".equals(localName)
                                     || "analyser".equals(localName)
                                     || "mapper".equals(localName)
-                                    || "reducer".equals(localName)) {
+                                    || "reducer".equals(localName)
+                                    || "plan".equals(localName)) {
                                 xmlContext.pop();
                                 xmlElt.pop();
+                            } else if ("properties".equals(localName)) {
+                                partition = -1;
                             }
                         }
                         break;

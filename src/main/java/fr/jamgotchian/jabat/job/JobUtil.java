@@ -82,27 +82,6 @@ public class JobUtil {
         }
     }
 
-    public static void substitutePartitionPlan(final Step step, Properties jobParameters) {
-        PartitionPlan plan = step.getPartitionPlan();
-        if (plan != null) {
-            for (final Properties properties : plan.getPartitionProperties()) {
-                substitute(new Propertiable() {
-
-                    @Override
-                    public Properties getProperties() {
-                        return properties;
-                    }
-
-                    @Override
-                    public Properties getSubstitutedProperties() {
-                        return step.getSubstitutedProperties();
-                    }
-
-                }, jobParameters, step);
-            }
-        }
-    }
-
     /* for test only */
     public static String substitute(String value, Properties jobParameters, final Properties jobProperties) {
         return substitute(value, jobParameters, new JobProperties() {
@@ -111,6 +90,22 @@ public class JobUtil {
                 return jobProperties.getProperty(name);
             }
         });
+    }
+
+    public static Properties substitute(final Properties properties, Properties jobParameters, Node node) {
+        final Properties substitutedProperties = new Properties();
+        substitute(new Propertiable() {
+            @Override
+            public Properties getProperties() {
+                return properties;
+            }
+
+            @Override
+            public Properties getSubstitutedProperties() {
+                return substitutedProperties;
+            }
+        }, jobParameters, node);
+        return substitutedProperties;
     }
 
     private static void substitute(Propertiable propertiable, Properties jobParameters, Node node) {
