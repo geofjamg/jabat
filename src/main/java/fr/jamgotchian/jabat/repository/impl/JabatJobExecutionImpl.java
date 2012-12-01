@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.repository.impl;
 
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
-import fr.jamgotchian.jabat.repository.Status;
+import fr.jamgotchian.jabat.repository.BatchStatus;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +30,7 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
 
     private final long id;
 
-    private volatile Status status = Status.STARTING;
+    private volatile BatchStatus status = BatchStatus.STARTING;
 
     private String exitStatus;
 
@@ -54,12 +54,12 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
     }
 
     @Override
-    public Status getStatusEnum() {
+    public BatchStatus getStatusEnum() {
         return status;
     }
 
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(BatchStatus status) {
         this.status = status;
     }
 

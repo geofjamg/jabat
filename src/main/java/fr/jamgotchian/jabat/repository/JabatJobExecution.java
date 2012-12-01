@@ -26,9 +26,9 @@ public interface JabatJobExecution extends JobExecution {
 
     long getId();
 
-    Status getStatusEnum();
+    BatchStatus getStatusEnum();
 
-    void setStatus(Status status);
+    void setStatus(BatchStatus status);
 
     List<Long> getStepExecutionIds();
 

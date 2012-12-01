@@ -40,7 +40,7 @@ import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
-import fr.jamgotchian.jabat.repository.Status;
+import fr.jamgotchian.jabat.repository.BatchStatus;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.task.TaskResultListener;
 import fr.jamgotchian.jabat.transaction.NoTransactionManager;
@@ -137,7 +137,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         }
 
                         // run the job
-                        jobExecution.setStatus(Status.STARTED);
+                        jobExecution.setStatus(BatchStatus.STARTED);
                         job.getFirstChainableNode().accept(JobInstanceExecutor.this, null);
 
                         // after job listeners
@@ -264,7 +264,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 // before step listeners
                 notifyBeforeStep(step, artifactContext);
 
-                stepExecution.setStatus(Status.STARTED);
+                stepExecution.setStatus(BatchStatus.STARTED);
 
                 if (isPartionned(step)) {
 
@@ -363,7 +363,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                             if (analyser != null) {
                                 try {
                                     analyser.analyzeCollectorData(partitionContext.getData());
-                                    analyser.analyzeStatus(Status.COMPLETED.name(), partitionContext.getExitStatus());
+                                    analyser.analyzeStatus(BatchStatus.COMPLETED.name(), partitionContext.getExitStatus());
                                 } catch (Throwable t) {
                                     LOGGER.error(t.toString(), t);
                                 }
@@ -375,7 +375,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                             // TODO stop all the other partitions
                             try {
                                 // PENDING which value for the exit status, null or the same as the batch status?
-                                analyser.analyzeStatus(Status.FAILED.name(), null);
+                                analyser.analyzeStatus(BatchStatus.FAILED.name(), null);
                             } catch (Throwable t) {
                                 LOGGER.error(t.toString(), t);
                             }
@@ -397,7 +397,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 }
 
                 // update the batch status to COMPLETED
-                stepExecution.setStatus(Status.COMPLETED);
+                stepExecution.setStatus(BatchStatus.COMPLETED);
 
                 // update the exit status of the step execution with the one stored
                 // in the step context
@@ -431,8 +431,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
             visitNextNode(step);
         } catch (Throwable t) {
-            jobExecution.setStatus(Status.FAILED);
-            stepExecution.setStatus(Status.FAILED);
+            jobExecution.setStatus(BatchStatus.FAILED);
+            stepExecution.setStatus(BatchStatus.FAILED);
             LOGGER.error(t.toString(), t);
         }
     }
@@ -480,7 +480,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 ItemWriter writer
                         = artifactContext.createItemWriter(step.getWriter().getRef());
 
-                stepExecution.setStatus(Status.STARTED);
+                stepExecution.setStatus(BatchStatus.STARTED);
 
                 // select the checkpoint algorithm
                 CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step, artifactContext);
@@ -554,8 +554,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 } // end of retry loop
 
                 // TODO what should be the status if we reach the max number of retry?
-                jobExecution.setStatus(Status.COMPLETED);
-                stepExecution.setStatus(Status.COMPLETED);
+                jobExecution.setStatus(BatchStatus.COMPLETED);
+                stepExecution.setStatus(BatchStatus.COMPLETED);
 
                 // after step listeners
                 // TODO should be called even if case of error?
@@ -571,8 +571,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
             visitNextNode(step);
         } catch(Throwable t) {
-            jobExecution.setStatus(Status.FAILED);
-            stepExecution.setStatus(Status.FAILED);
+            jobExecution.setStatus(BatchStatus.FAILED);
+            stepExecution.setStatus(BatchStatus.FAILED);
             LOGGER.error(t.toString(), t);
         }
     }

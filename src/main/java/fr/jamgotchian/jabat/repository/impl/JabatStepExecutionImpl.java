@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.repository.impl;
 
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
-import fr.jamgotchian.jabat.repository.Status;
+import fr.jamgotchian.jabat.repository.BatchStatus;
 import java.util.Date;
 
 /**
@@ -27,7 +27,7 @@ public class JabatStepExecutionImpl implements JabatStepExecution {
 
     private final long id;
 
-    private volatile Status status = Status.STARTING;
+    private volatile BatchStatus status = BatchStatus.STARTING;
 
     private final Date startTime;
 
@@ -55,12 +55,12 @@ public class JabatStepExecutionImpl implements JabatStepExecution {
     }
 
     @Override
-    public Status getStatusEnum() {
+    public BatchStatus getStatusEnum() {
         return status;
     }
 
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(BatchStatus status) {
         this.status = status;
     }
 

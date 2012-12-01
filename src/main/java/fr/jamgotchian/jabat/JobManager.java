@@ -26,7 +26,7 @@ import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
-import fr.jamgotchian.jabat.repository.Status;
+import fr.jamgotchian.jabat.repository.BatchStatus;
 import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Collection;
@@ -142,26 +142,26 @@ public class JobManager {
         // TODO check the instance is running
 
         // update job and steps status to STOPPING
-        jobExecution.setStatus(Status.STOPPING);
+        jobExecution.setStatus(BatchStatus.STOPPING);
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
-            stepExecution.setStatus(Status.STOPPING);
+            stepExecution.setStatus(BatchStatus.STOPPING);
         }
 
         for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
             JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
-            if (Status.STARTED.name().equals(stepExecution.getStatus())) {
+            if (BatchStatus.STARTED.name().equals(stepExecution.getStatus())) {
                 Collection<Batchlet> batchlets = runningBatchlets.get(stepExecution.getId());
                 for (Batchlet batchlet : batchlets) {
                     try {
                         batchlet.stop();
-                        stepExecution.setStatus(Status.STOPPED);
+                        stepExecution.setStatus(BatchStatus.STOPPED);
                     } catch(Throwable t) {
                         LOGGER.error(t.toString(), t);
                     }
                 }
             }
         }
-        jobExecution.setStatus(Status.STOPPED);
+        jobExecution.setStatus(BatchStatus.STOPPED);
     }
 }

@@ -19,7 +19,7 @@ package fr.jamgotchian.jabat.repository;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum Status {
+public enum BatchStatus {
     STARTING,
     STARTED,
     STOPPING,
