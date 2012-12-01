@@ -40,6 +40,7 @@ import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.repository.Status;
 import fr.jamgotchian.jabat.task.TaskManager;
+import fr.jamgotchian.jabat.transaction.NoTransactionManager;
 import fr.jamgotchian.jabat.util.Externalizables;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.Externalizable;
