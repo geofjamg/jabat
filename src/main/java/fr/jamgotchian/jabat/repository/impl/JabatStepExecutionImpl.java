@@ -55,6 +55,11 @@ public class JabatStepExecutionImpl implements JabatStepExecution {
     }
 
     @Override
+    public Status getStatusEnum() {
+        return status;
+    }
+
+    @Override
     public void setStatus(Status status) {
         this.status = status;
     }

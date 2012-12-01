@@ -54,6 +54,11 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
     }
 
     @Override
+    public Status getStatusEnum() {
+        return status;
+    }
+
+    @Override
     public void setStatus(Status status) {
         this.status = status;
     }

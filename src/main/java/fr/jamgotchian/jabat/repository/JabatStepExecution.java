@@ -27,6 +27,8 @@ public interface JabatStepExecution extends StepExecution {
 
     long getId();
 
+    Status getStatusEnum();
+
     void setStatus(Status status);
 
     void setEndTime(Date endTime);
