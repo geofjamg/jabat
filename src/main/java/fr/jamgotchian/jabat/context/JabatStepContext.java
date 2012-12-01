@@ -18,10 +18,8 @@ package fr.jamgotchian.jabat.context;
 import fr.jamgotchian.jabat.job.Step;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import java.io.Externalizable;
-import java.util.List;
 import java.util.Properties;
 import javax.batch.runtime.Metric;
-import javax.batch.runtime.context.FlowContext;
 import javax.batch.runtime.context.StepContext;
 
 /**
@@ -98,11 +96,6 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
 
     @Override
     public Metric[] getMetrics() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<FlowContext<T>> getBatchContexts() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -17,7 +17,7 @@ package fr.jamgotchian.jabat.context;
 
 import fr.jamgotchian.jabat.job.Node;
 import java.util.List;
-import javax.batch.runtime.context.FlowContext;
+import javax.batch.runtime.context.BatchContext;
 
 /**
  *
@@ -32,7 +32,7 @@ public abstract class JabatBatchContext<N extends Node, T> {
     protected JabatBatchContext(N node) {
         this.node = node;
     }
-    
+
     public String getId() {
         return node.getId();
     }
@@ -49,8 +49,8 @@ public abstract class JabatBatchContext<N extends Node, T> {
         this.transientUserData = data;
     }
 
-    public List<FlowContext<T>> getBatchContexts() {
+    public List<BatchContext<T>> getBatchContexts() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }

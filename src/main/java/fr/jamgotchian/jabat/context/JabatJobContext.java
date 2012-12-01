@@ -77,9 +77,4 @@ public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements Job
         this.exitStatus = exitStatus;
     }
 
-    @Override
-    public List<FlowContext<T>> getBatchContexts() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }
