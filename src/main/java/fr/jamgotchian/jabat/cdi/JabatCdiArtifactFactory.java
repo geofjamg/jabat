@@ -22,7 +22,7 @@ public class JabatCdiArtifactFactory implements ArtifactFactory {
     public Object create(String ref) throws Exception {
         Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(ref);
         if (beans.isEmpty()) {
-            throw new JabatException("Batch artifact " + ref + " not found");
+            throw new JabatException("Batch artifact '" + ref + "' not found");
         }
         return beans.iterator().next().create(null);
     }
