@@ -25,8 +25,23 @@ package fr.jamgotchian.jabat.job;
 }
 
 @members {
+String propertyName;
 java.util.Properties jobParameters;
 fr.jamgotchian.jabat.job.JobUtil.JobProperties jobProperties;
+
+@Override
+public void emitErrorMessage(String message) {
+    throw new fr.jamgotchian.jabat.util.JabatException(message);
+}
+
+public String getErrorHeader(RecognitionException e) {
+    StringBuilder builder = new StringBuilder();
+    if (propertyName != null) {
+        builder.append("property '").append(propertyName).append("' ");
+    }
+    builder.append("character ").append(e.charPositionInLine);
+    return builder.toString();
+}
 }
 
 attributeValue returns [String value]

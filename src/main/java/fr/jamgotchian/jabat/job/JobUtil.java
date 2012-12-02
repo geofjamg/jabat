@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import javax.batch.api.parameters.PartitionPlan;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -56,7 +55,7 @@ public class JobUtil {
         private String getProperty(Node node, String name) {
             String value = node.getProperties().getProperty(name);
             if (value != null) {
-                return JobUtil.substitute(value, parameters, new JobPropertiesImpl(node, parameters));
+                return JobUtil.substitute(value, parameters, new JobPropertiesImpl(node, parameters), name);
             } else {
                 if (node.getContainer() != null) {
                     return getProperty(node.getContainer(), name);
@@ -89,7 +88,7 @@ public class JobUtil {
             public String getProperty(String name) {
                 return jobProperties.getProperty(name);
             }
-        });
+        }, null);
     }
 
     public static Properties substitute(final Properties properties, Properties jobParameters, Node node) {
@@ -113,12 +112,12 @@ public class JobUtil {
         propertiable.getSubstitutedProperties().clear();
         for (String name : propertiable.getProperties().stringPropertyNames()) {
             String value = propertiable.getProperties().getProperty(name);
-            String substitutedValue = substitute(value, jobParameters, jobProperties);
+            String substitutedValue = substitute(value, jobParameters, jobProperties, name);
             propertiable.getSubstitutedProperties().setProperty(name, substitutedValue);
         }
     }
 
-    private static String substitute(String value, Properties jobParameters, JobProperties jobProperties) {
+    private static String substitute(String value, Properties jobParameters, JobProperties jobProperties, String propertyName) {
         String result = null;
         try {
             InputStream is = new ByteArrayInputStream(value.getBytes("UTF-8"));
@@ -126,6 +125,7 @@ public class JobUtil {
                 JobXmlSubstitutionLexer lexer = new JobXmlSubstitutionLexer(new ANTLRInputStream(is, "UTF-8"));
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
                 JobXmlSubstitutionParser parser = new JobXmlSubstitutionParser(tokens);
+                parser.propertyName = propertyName;
                 parser.jobParameters = jobParameters;
                 parser.jobProperties = jobProperties;
                 result = parser.attributeValue();
