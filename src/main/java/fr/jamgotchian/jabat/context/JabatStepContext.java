@@ -33,7 +33,9 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
 
     private Properties properties;
 
-    private T transientUserData;
+    private P persistentUserData;
+
+    private String exitStatus;
 
     public JabatStepContext(Step step, JabatStepExecution stepExecution) {
         super(step);
@@ -55,23 +57,13 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
     }
 
     @Override
-    public T getTransientUserData() {
-        return transientUserData;
-    }
-
-    @Override
-    public void setTransientUserData(T data) {
-        this.transientUserData = data;
-    }
-
-    @Override
     public P getPersistentUserData() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return persistentUserData;
     }
 
     @Override
     public void setPersistentUserData(P data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        persistentUserData = data;
     }
 
     @Override
@@ -81,12 +73,12 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
 
     @Override
     public String getExitStatus() {
-        return stepExecution.getExitStatus();
+        return exitStatus;
     }
 
     @Override
     public void setExitStatus(String status) {
-        stepExecution.setExitStatus(status);
+        exitStatus = status;
     }
 
     @Override
