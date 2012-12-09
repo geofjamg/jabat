@@ -27,7 +27,7 @@ import java.util.Properties;
 public class Configuration {
 
     private static final Class<?> DEFAULT_ARTIFACT_FACTORY_CLASS
-            = fr.jamgotchian.jabat.cdi.JabatCdiArtifactFactory.class;
+            = fr.jamgotchian.jabat.artifact.impl.CdiArtifactFactory.class;
 
     private static final Class<?> DEFAULT_TASK_MANAGER_CLASS
             = fr.jamgotchian.jabat.task.impl.ExecutorServiceTaskManager.class;

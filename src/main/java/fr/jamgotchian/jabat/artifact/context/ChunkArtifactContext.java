@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.artifact;
+package fr.jamgotchian.jabat.artifact.context;
 
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.artifact.annotation.CheckpointAlgorithmProxy;
 import fr.jamgotchian.jabat.artifact.annotation.ItemProcessorProxy;
 import fr.jamgotchian.jabat.artifact.annotation.ItemReaderProxy;

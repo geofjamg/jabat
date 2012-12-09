@@ -1,7 +1,6 @@
-package fr.jamgotchian.jabat.cdi;
+package fr.jamgotchian.jabat.artifact.impl;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.artifact.impl.BatchXmlArtifactFactory;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
@@ -10,7 +9,7 @@ import javax.enterprise.inject.spi.Bean;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatCdiArtifactFactory implements ArtifactFactory {
+public class CdiArtifactFactory implements ArtifactFactory {
 
     private final BatchXmlArtifactFactory batchXmlArtifactFactory
             = new BatchXmlArtifactFactory();

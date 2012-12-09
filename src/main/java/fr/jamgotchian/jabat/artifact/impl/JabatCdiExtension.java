@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.cdi;
+package fr.jamgotchian.jabat.artifact.impl;
 
 import fr.jamgotchian.jabat.context.JabatThreadContext;
 import java.util.Set;

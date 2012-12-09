@@ -16,11 +16,11 @@
 package fr.jamgotchian.jabat;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.artifact.BatchletArtifactContext;
-import fr.jamgotchian.jabat.artifact.ChunkArtifactContext;
-import fr.jamgotchian.jabat.artifact.JobArtifactContext;
-import fr.jamgotchian.jabat.artifact.SplitArtifactContext;
-import fr.jamgotchian.jabat.artifact.StepArtifactContext;
+import fr.jamgotchian.jabat.artifact.context.BatchletArtifactContext;
+import fr.jamgotchian.jabat.artifact.context.ChunkArtifactContext;
+import fr.jamgotchian.jabat.artifact.context.JobArtifactContext;
+import fr.jamgotchian.jabat.artifact.context.SplitArtifactContext;
+import fr.jamgotchian.jabat.artifact.context.StepArtifactContext;
 import fr.jamgotchian.jabat.checkpoint.ItemCheckpointAlgorithm;
 import fr.jamgotchian.jabat.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
