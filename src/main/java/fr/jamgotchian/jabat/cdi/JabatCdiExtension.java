@@ -15,23 +15,11 @@
  */
 package fr.jamgotchian.jabat.cdi;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
-import fr.jamgotchian.jabat.job.Artifact;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
 import java.util.Set;
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.BatchProperty;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.InjectionException;
-import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -47,10 +35,6 @@ import javax.inject.Named;
  */
 class JabatCdiExtension implements Extension {
 
-    private static final Set<Class<? extends javax.batch.runtime.context.BatchContext>> CONTEXT_CLASSES
-            = Collections.unmodifiableSet(Sets.newHashSet(JobContext.class,
-                                                          StepContext.class));
-
     public static BeanManager BEAN_MANAGER;
 
     JabatCdiExtension() {
@@ -64,97 +48,48 @@ class JabatCdiExtension implements Extension {
         final InjectionTarget<X> it = pit.getInjectionTarget();
         final AnnotatedType<X> at = pit.getAnnotatedType();
 
-        final List<Field> contextFields = new ArrayList<Field>();
-        final List<Field> propertyFields = new ArrayList<Field>();
+        InjectionTarget<X> wrapped = new InjectionTarget<X>() {
 
-        for (AnnotatedField<? super X> annotatedField : at.getFields()) {
-            BatchContext batchContext = annotatedField.getAnnotation(BatchContext.class);
-            if  (batchContext != null) {
-                Field field = annotatedField.getJavaMember();
-                if (CONTEXT_CLASSES.contains(field.getType())) {
-                    contextFields.add(field);
-                } else {
-                    pit.addDefinitionError( new InjectionException("Field annotated with "
-                            + BatchContext.class + " should be of type " + CONTEXT_CLASSES));
+            @Override
+            public void inject(X instance, CreationalContext<X> ctx) {
+                it.inject(instance, ctx);
+                try {
+                    // get the bean name
+                    String name = at.getAnnotation(Named.class).value();
+                    JabatThreadContext.getInstance().inject(instance, name);
+                } catch (Throwable t) {
+                    throw new InjectionException(t);
                 }
             }
-            BatchProperty batchProperty = annotatedField.getAnnotation(BatchProperty.class);
-            if (batchProperty != null) {
-                Field field = annotatedField.getJavaMember();
-                // TODO the field should not be final?
-                if (field.getType() == String.class) {
-                    propertyFields.add(field);
-                } else {
-                    pit.addDefinitionError( new InjectionException("Field annotated with "
-                            + BatchProperty.class + " should be of type " + String.class));
-                }
+
+            @Override
+            public void postConstruct(X instance) {
+                it.postConstruct(instance);
             }
-        }
 
-        if (contextFields.size() > 0 || propertyFields.size() > 0) {
-            InjectionTarget<X> wrapped = new InjectionTarget<X>() {
+            @Override
+            public void preDestroy(X instance) {
+                it.dispose(instance);
+            }
 
-                @Override
-                public void inject(X instance, CreationalContext<X> ctx) {
-                    it.inject(instance, ctx);
-                    try {
-                        for (Field field : contextFields) {
-                            Class<?> contextClass = field.getType();
-                            field.setAccessible(true);
-                            if (contextClass == JobContext.class) {
-                                field.set(instance, JabatThreadContext.getInstance().getJobContext());
-                            } else if (contextClass == StepContext.class) {
-                                field.set(instance, JabatThreadContext.getInstance().getStepContext());
-                            } else {
-                                throw new InternalError();
-                            }
-                        }
-                        for (Field field : propertyFields) {
-                            // get the bean name
-                            String name = at.getAnnotation(Named.class).value();
-                            Artifact artifact = JabatThreadContext.getInstance().getStepContext().getNode().getArtifact(name);
-                            Properties properties = artifact.getSubstitutedProperties();
-                            // TODO support the name parameter of @BatchProperty
-                            String value = properties.getProperty(field.getName());
-                            if (value != null) {
-                                field.setAccessible(true);
-                                field.set(instance, value);
-                            }
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new InjectionException(e);
-                    }
-                }
+            @Override
+            public void dispose(X instance) {
+                it.dispose(instance);
+            }
 
-                @Override
-                public void postConstruct(X instance) {
-                    it.postConstruct(instance);
-                }
+            @Override
+            public Set<InjectionPoint> getInjectionPoints() {
+                return it.getInjectionPoints();
+            }
 
-                @Override
-                public void preDestroy(X instance) {
-                    it.dispose(instance);
-                }
+            @Override
+            public X produce(CreationalContext<X> ctx) {
+                return it.produce(ctx);
+            }
 
-                @Override
-                public void dispose(X instance) {
-                    it.dispose(instance);
-                }
+        };
 
-                @Override
-                public Set<InjectionPoint> getInjectionPoints() {
-                    return it.getInjectionPoints();
-                }
-
-                @Override
-                public X produce(CreationalContext<X> ctx) {
-                    return it.produce(ctx);
-                }
-
-            };
-
-            pit.setInjectionTarget(wrapped);
-        }
+        pit.setInjectionTarget(wrapped);
     }
 
 }

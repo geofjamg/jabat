@@ -1,6 +1,7 @@
 package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.artifact.impl.BatchXmlArtifactFactory;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
@@ -11,20 +12,29 @@ import javax.enterprise.inject.spi.Bean;
  */
 public class JabatCdiArtifactFactory implements ArtifactFactory {
 
+    private final BatchXmlArtifactFactory batchXmlArtifactFactory
+            = new BatchXmlArtifactFactory();
+
     @Override
     public void initialize() throws Exception {
         if (JabatCdiExtension.BEAN_MANAGER == null) {
             throw new JabatException("CDI container not initialized");
         }
+        batchXmlArtifactFactory.initialize();
     }
 
     @Override
     public Object create(String ref) throws Exception {
+        Object instance;
         Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(ref);
         if (beans.isEmpty()) {
-            throw new JabatException("Batch artifact '" + ref + "' not found");
+            // there is no artifact annotated by @Named, search into the batch.xml
+            instance = batchXmlArtifactFactory.create(ref);
+        } else {
+            // there is an artifact annotated by @Named
+            instance = beans.iterator().next().create(null);
         }
-        return beans.iterator().next().create(null);
+        return instance;
     }
 
     @Override

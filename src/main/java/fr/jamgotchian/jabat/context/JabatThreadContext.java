@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.context;
 
+import fr.jamgotchian.jabat.job.Artifact;
 import fr.jamgotchian.jabat.job.Flow;
 import fr.jamgotchian.jabat.job.Job;
 import fr.jamgotchian.jabat.job.Split;
@@ -22,7 +23,16 @@ import fr.jamgotchian.jabat.job.Step;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.Externalizable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import javax.batch.annotation.BatchContext;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.runtime.context.FlowContext;
+import javax.batch.runtime.context.JobContext;
+import javax.batch.runtime.context.SplitContext;
+import javax.batch.runtime.context.StepContext;
 
 /**
  *
@@ -96,4 +106,62 @@ public class JabatThreadContext {
         splitContext.remove();
     }
 
+    public void inject(Object instance, String name) throws IllegalAccessException {
+        Class<?> clazz = instance.getClass();
+        for (Field field : clazz.getDeclaredFields()) {
+            // context injection
+            if (field.isAnnotationPresent(BatchContext.class)) {
+                Class<?> fieldType = field.getType();
+                Object fieldValue;
+                if (fieldType == JobContext.class) {
+                    fieldValue = jobContext.get();
+                } else if (fieldType == StepContext.class) {
+                    fieldValue = stepContext.get();
+                } else if (fieldType == SplitContext.class) {
+                    fieldValue = splitContext.get();
+                } else if (fieldType == FlowContext.class) {
+                    fieldValue = flowContext.get();
+                } else {
+                    throw new JabatException("Field annotated with "
+                            + BatchContext.class.getName()
+                            + " should have one of the following type: "
+                            + JobContext.class.getName() + ", " + StepContext.class.getName() + ", "
+                            + SplitContext.class.getName() + "or " + FlowContext.class.getName());
+                }
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                field.set(instance, fieldValue);
+            }
+            // property injection
+            BatchProperty batchProperty = field.getAnnotation(BatchProperty.class);
+            if (batchProperty != null) {
+                if (Modifier.isFinal(field.getModifiers())) {
+                    throw new JabatException("Field annotated with "
+                            + BatchProperty.class.getName() + " should not be final");
+                }
+                if (field.getType() == String.class) {
+                    // get the current artifact
+                    JabatStepContext<?, ?> context = stepContext.get();
+                    if (context == null) {
+                        throw new JabatException("Step context is not set");
+                    }
+                    Artifact artifact = context.getNode().getArtifact(name);
+                    String propertyName = batchProperty.name().isEmpty()
+                            ? field.getName() : batchProperty.name();
+                    String value = artifact.getSubstitutedProperties().getProperty(propertyName);
+                    if (value != null) {
+                        if (!field.isAccessible()) {
+                            field.setAccessible(true);
+                        }
+                        field.set(instance, value);
+                    }
+                } else {
+                    throw new JabatException("Field annotated with "
+                            + BatchProperty.class.getName() + " should be of type "
+                            + String.class.getName());
+                }
+            }
+        }
+    }
 }
