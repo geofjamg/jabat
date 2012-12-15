@@ -15,12 +15,11 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import fr.jamgotchian.jabat.jobxml.JobUtil;
 import java.util.Properties;
 import org.junit.After;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
