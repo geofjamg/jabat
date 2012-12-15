@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.job;
+package fr.jamgotchian.jabat.jobxml;
 
 import fr.jamgotchian.jabat.jobxml.JobUtil;
 import java.util.Properties;
