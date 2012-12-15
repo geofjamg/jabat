@@ -13,19 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public class Artifact implements Propertiable {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
+    private final String ref;
+
+    private Properties properties = new Properties();
+
+    private Properties substitutedproperties = new Properties();
+
+    Artifact(String ref, Properties properties) {
+        this.ref = ref;
+        this.properties = properties;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    @Override
+    public Properties getProperties() {
+        return properties;
+    }
+
+    @Override
+    public Properties getSubstitutedProperties() {
+        return substitutedproperties;
     }
 
 }

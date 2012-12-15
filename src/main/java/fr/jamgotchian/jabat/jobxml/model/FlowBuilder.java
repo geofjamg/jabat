@@ -13,44 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Node;
-import java.util.List;
-import javax.batch.runtime.context.BatchContext;
+import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class JabatBatchContext<N extends Node, T> {
+public class FlowBuilder {
 
-    protected final N node;
+    private String id;
 
-    private T transientUserData;
+    private String next;
 
-    protected JabatBatchContext(N node) {
-        this.node = node;
+    private final Properties properties = new Properties();
+
+    public FlowBuilder() {
     }
 
-    public String getId() {
-        return node.getId();
+    public FlowBuilder setId(String id) {
+        this.id = id;
+        return this;
     }
 
-    public N getNode() {
-        return node;
+    public FlowBuilder setNext(String next) {
+        this.next = next;
+        return this;
     }
 
-    public T getTransientUserData() {
-        return transientUserData;
+    public FlowBuilder setProperty(String name, String value) {
+        properties.setProperty(name, value);
+        return this;
     }
 
-    public void setTransientUserData(T data) {
-        this.transientUserData = data;
+    public Flow build() {
+        if (id == null) {
+            throw new JabatException("Flow id is not set");
+        }
+        return new Flow(id, next, properties);
     }
-
-    public List<BatchContext<T>> getBatchContexts() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.context;
 
-import fr.jamgotchian.jabat.job.Split;
+import fr.jamgotchian.jabat.jobxml.model.Split;
 import javax.batch.runtime.context.SplitContext;
 
 /**

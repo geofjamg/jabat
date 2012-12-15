@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public interface Node extends Propertiable {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
-    }
+    String getId();
 
+    NodeContainer getContainer();
+
+    Artifact getArtifact(String ref);
+
+    List<Artifact> getArtifacts();
+
+    <A> void accept(NodeVisitor<A> visitor, A arg);
 }

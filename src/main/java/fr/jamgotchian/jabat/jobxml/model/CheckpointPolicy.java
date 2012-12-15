@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
-
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+package fr.jamgotchian.jabat.jobxml.model;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
-
-    public JabatFlowContext(Flow flow) {
-        super(flow);
-    }
-
+public enum CheckpointPolicy {
+    ITEM,
+    TIME,
+    CUSTOM
 }

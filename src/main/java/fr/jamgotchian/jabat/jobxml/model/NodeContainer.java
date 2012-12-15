@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+import java.util.Collection;
 
 /**
+ * A node container is also a node itself.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public interface NodeContainer extends Node {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
-    }
+    Collection<Node> getNodes();
+
+    Node getNode(String id);
+
+    Node getFirstChainableNode();
 
 }

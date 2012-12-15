@@ -13,19 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public class ArtifactBuilder {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
+    private String ref;
+
+    private final Properties properties = new Properties();
+
+    public ArtifactBuilder() {
     }
 
+    public ArtifactBuilder setRef(String ref) {
+        this.ref = ref;
+        return this;
+    }
+
+    public ArtifactBuilder setProperty(String name, String value) {
+        properties.setProperty(name, value);
+        return this;
+    }
+
+    public Artifact build() {
+        if (ref == null) {
+            throw new JabatException("Artifact ref is not set");
+        }
+        return new Artifact(ref, properties);
+    }
 }

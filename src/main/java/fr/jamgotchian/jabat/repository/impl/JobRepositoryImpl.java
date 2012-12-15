@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.repository.impl;
 
-import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.Step;
+import fr.jamgotchian.jabat.jobxml.model.Job;
+import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;

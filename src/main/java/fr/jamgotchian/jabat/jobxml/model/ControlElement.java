@@ -13,19 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+import fr.jamgotchian.jabat.util.JabatException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public abstract class ControlElement {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
+    protected final String on;
+
+    public ControlElement(String on) {
+        if (on == null) {
+            throw new JabatException("on parameter is null");
+        }
+        this.on = on;
     }
+
+    public String getOn() {
+        return on;
+    }
+
+    public abstract ControlElementType getType();
 
 }

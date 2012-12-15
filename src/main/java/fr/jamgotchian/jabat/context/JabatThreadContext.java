@@ -15,11 +15,11 @@
  */
 package fr.jamgotchian.jabat.context;
 
-import fr.jamgotchian.jabat.job.Artifact;
-import fr.jamgotchian.jabat.job.Flow;
-import fr.jamgotchian.jabat.job.Job;
-import fr.jamgotchian.jabat.job.Split;
-import fr.jamgotchian.jabat.job.Step;
+import fr.jamgotchian.jabat.jobxml.model.Artifact;
+import fr.jamgotchian.jabat.jobxml.model.Flow;
+import fr.jamgotchian.jabat.jobxml.model.Job;
+import fr.jamgotchian.jabat.jobxml.model.Split;
+import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;

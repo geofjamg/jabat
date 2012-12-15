@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.context;
 
-import fr.jamgotchian.jabat.job.Step;
+import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import java.io.Externalizable;
 import java.util.Properties;

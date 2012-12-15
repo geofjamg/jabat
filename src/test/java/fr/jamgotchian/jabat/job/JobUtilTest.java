@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.job;
 
+import fr.jamgotchian.jabat.jobxml.JobUtil;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;

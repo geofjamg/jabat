@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
-
-import fr.jamgotchian.jabat.jobxml.model.Flow;
-import javax.batch.runtime.context.FlowContext;
+package fr.jamgotchian.jabat.jobxml.model;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public interface NodeVisitor<A> {
 
-    public JabatFlowContext(Flow flow) {
-        super(flow);
-    }
+    void visit(Job job, A arg);
+
+    void visit(BatchletStep step, A arg);
+
+    void visit(ChunkStep step, A arg);
+
+    void visit(Flow flow, A arg);
+
+    void visit(Split split, A arg);
+
+    void visit(Decision decision, A arg);
 
 }

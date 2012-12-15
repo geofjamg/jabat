@@ -13,44 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.context;
+package fr.jamgotchian.jabat.jobxml.model;
 
-import fr.jamgotchian.jabat.jobxml.model.Node;
-import java.util.List;
-import javax.batch.runtime.context.BatchContext;
+import java.util.Properties;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class JabatBatchContext<N extends Node, T> {
+abstract class AbstractNode implements Node {
 
-    protected final N node;
+    private final String id;
 
-    private T transientUserData;
+    private Properties properties;
 
-    protected JabatBatchContext(N node) {
-        this.node = node;
+    private Properties substitutedproperties = new Properties();
+
+    private NodeContainer container;
+
+    AbstractNode(String id, Properties properties) {
+        this.id = id;
+        this.properties = properties;
     }
 
+    @Override
     public String getId() {
-        return node.getId();
+        return id;
     }
 
-    public N getNode() {
-        return node;
+    @Override
+    public Properties getProperties() {
+        return properties;
     }
 
-    public T getTransientUserData() {
-        return transientUserData;
+    @Override
+    public Properties getSubstitutedProperties() {
+        return substitutedproperties;
     }
 
-    public void setTransientUserData(T data) {
-        this.transientUserData = data;
+    @Override
+    public NodeContainer getContainer() {
+        return container;
     }
 
-    public List<BatchContext<T>> getBatchContexts() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    void setContainer(NodeContainer container) {
+        this.container = container;
     }
 
 }

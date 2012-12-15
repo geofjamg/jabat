@@ -26,24 +26,16 @@ public class XmlUtil {
     private XmlUtil() {
     }
 
-    public static int getAttributeIntValue(XMLStreamReader xmlsr, String namespaceURI,
-                                           String localName, int defaultValue) {
+    public static Integer getAttributeIntegerValue(XMLStreamReader xmlsr, String namespaceURI,
+                                           String localName) {
         String value = xmlsr.getAttributeValue(namespaceURI, localName);
-        if (value != null) {
-            return Integer.valueOf(value);
-        } else {
-            return defaultValue;
-        }
+        return value != null ? Integer.valueOf(value) : null;
     }
 
     public static <E extends Enum<E>> E getAttributeEnumValue(XMLStreamReader xmlsr, String namespaceURI,
-                                                              String localName, Class<E> clazz, E defaultValue) {
+                                                              String localName, Class<E> clazz) {
         String value = xmlsr.getAttributeValue(namespaceURI, localName);
-        if (value != null) {
-            return Enum.valueOf(clazz, value.toUpperCase());
-        } else {
-            return defaultValue;
-        }
+        return value != null ? Enum.valueOf(clazz, value.toUpperCase()) : null;
     }
 
 }
