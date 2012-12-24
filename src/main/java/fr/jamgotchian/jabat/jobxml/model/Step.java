@@ -15,7 +15,6 @@
  */
 package fr.jamgotchian.jabat.jobxml.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -28,6 +27,10 @@ import javax.batch.api.parameters.PartitionPlan;
 public abstract class Step extends AbstractNode implements Chainable {
 
     private final String next;
+
+    private final int startLimit;
+
+    private final boolean allowStartIfComplete;
 
     private final PartitionPlan partitionPlan;
 
@@ -43,11 +46,14 @@ public abstract class Step extends AbstractNode implements Chainable {
 
     private final List<TerminatingElement> terminatingElements;
 
-    Step(String id, String next, Properties properties, PartitionPlan partitionPlan,
-         Artifact partitionMapper, Artifact partitionReducer, Artifact partitionCollector,
-         Artifact partitionAnalyzer, List<Artifact> listeners, List<TerminatingElement> terminatingElements) {
+    Step(String id, String next, int startLimit, boolean allowStartIfComplete,
+            Properties properties, PartitionPlan partitionPlan, Artifact partitionMapper,
+            Artifact partitionReducer, Artifact partitionCollector, Artifact partitionAnalyzer,
+            List<Artifact> listeners, List<TerminatingElement> terminatingElements) {
         super(id, properties);
         this.next = next;
+        this.startLimit = startLimit;
+        this.allowStartIfComplete = allowStartIfComplete;
         this.partitionPlan = partitionPlan;
         this.partitionMapper = partitionMapper;
         this.partitionReducer = partitionReducer;
@@ -60,6 +66,14 @@ public abstract class Step extends AbstractNode implements Chainable {
     @Override
     public String getNext() {
         return next;
+    }
+
+    public int getStartLimit() {
+        return startLimit;
+    }
+
+    public boolean isAllowStartIfComplete() {
+        return allowStartIfComplete;
     }
 
     public PartitionPlan getPartitionPlan() {

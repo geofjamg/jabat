@@ -43,24 +43,27 @@ public class ChunkStep extends Step {
 
     private final int retryLimit;
 
+    private final int skipLimit;
+
     private final ExceptionClassFilter skippableExceptionClasses;
 
     private final ExceptionClassFilter retryableExceptionClasses;
 
     private final ExceptionClassFilter noRollbackExceptionClasses;
 
-    ChunkStep(String id, String next, Properties properties,
-              PartitionPlan partitionPlan, Artifact partitionMapper, Artifact partitionReducer,
-              Artifact partitionCollector, Artifact partitionAnalyser,
-              List<Artifact> listeners, List<TerminatingElement> terminatingElements,
-              Artifact reader, Artifact processor, Artifact writer,
-              CheckpointPolicy checkpointPolicy, int commitInterval,
-              Artifact checkpointAlgo, int bufferSize, int retryLimit,
-              ExceptionClassFilter skippableExceptionClasses,
-              ExceptionClassFilter retryableExceptionClasses,
-              ExceptionClassFilter noRollbackExceptionClasses) {
-        super(id, next, properties, partitionPlan, partitionMapper, partitionReducer,
-              partitionCollector, partitionAnalyser, listeners, terminatingElements);
+    ChunkStep(String id, String next, int startLimit, boolean allowStartIfComplete,
+            Properties properties, PartitionPlan partitionPlan, Artifact partitionMapper,
+            Artifact partitionReducer, Artifact partitionCollector, Artifact partitionAnalyser,
+            List<Artifact> listeners, List<TerminatingElement> terminatingElements,
+            Artifact reader, Artifact processor, Artifact writer,
+            CheckpointPolicy checkpointPolicy, int commitInterval,
+            Artifact checkpointAlgo, int bufferSize, int retryLimit, int skipLimit,
+            ExceptionClassFilter skippableExceptionClasses,
+            ExceptionClassFilter retryableExceptionClasses,
+            ExceptionClassFilter noRollbackExceptionClasses) {
+        super(id, next, startLimit, allowStartIfComplete, properties, partitionPlan,
+                partitionMapper, partitionReducer, partitionCollector, partitionAnalyser,
+                listeners, terminatingElements);
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
@@ -69,6 +72,7 @@ public class ChunkStep extends Step {
         this.checkpointAlgo = checkpointAlgo;
         this.bufferSize = bufferSize;
         this.retryLimit = retryLimit;
+        this.skipLimit = skipLimit;
         this.skippableExceptionClasses = skippableExceptionClasses;
         this.retryableExceptionClasses = retryableExceptionClasses;
         this.noRollbackExceptionClasses = noRollbackExceptionClasses;
@@ -104,6 +108,10 @@ public class ChunkStep extends Step {
 
     public int getRetryLimit() {
         return retryLimit;
+    }
+
+    public int getSkipLimit() {
+        return skipLimit;
     }
 
     public ExceptionClassFilter getSkippableExceptionClasses() {

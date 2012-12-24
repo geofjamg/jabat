@@ -23,17 +23,21 @@ import fr.jamgotchian.jabat.jobxml.model.ChunkStepBuilder;
 import fr.jamgotchian.jabat.jobxml.model.ConsistencyReport;
 import fr.jamgotchian.jabat.jobxml.model.Decision;
 import fr.jamgotchian.jabat.jobxml.model.DecisionBuilder;
+import fr.jamgotchian.jabat.jobxml.model.EndElement;
+import fr.jamgotchian.jabat.jobxml.model.FailElement;
 import fr.jamgotchian.jabat.jobxml.model.Flow;
 import fr.jamgotchian.jabat.jobxml.model.FlowBuilder;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.jobxml.model.JobBuilder;
 import fr.jamgotchian.jabat.jobxml.model.JobConsistencyChecker;
 import fr.jamgotchian.jabat.jobxml.model.JobPath;
+import fr.jamgotchian.jabat.jobxml.model.NextElement;
 import fr.jamgotchian.jabat.jobxml.model.PartitionPlanBuilder;
 import fr.jamgotchian.jabat.jobxml.model.Split;
 import fr.jamgotchian.jabat.jobxml.model.SplitBuilder;
 import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.jobxml.model.StepBuilder;
+import fr.jamgotchian.jabat.jobxml.model.StopElement;
 import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +68,23 @@ public class JobXmlLoader {
 
     private final JobPath path = new JobPath();
 
+    private static interface ExceptionClassFilterer {
+
+        void include(Class<?> clazz);
+
+        void exclude(Class<?> clazz);
+
+    }
+
+    /**
+     * Create properties from a job xml fragment.
+     *
+     * <jsl:properties>
+     *     <jsl:property name="{property-name}" value="{property-value}"/>
+     *     <jsl:property name="{property-name}" value="{property-value}"/>
+     * </jsl:properties>
+     *
+     */
     private Properties createProperties(Element propertiesElem, Namespace ns) {
         Properties properties = new Properties();
         for (Element propertyElem : propertiesElem.getChildren("property", ns)) {
@@ -74,6 +95,15 @@ public class JobXmlLoader {
         return properties;
     }
 
+    /**
+     * Create a batch artifact from a job xml fragment.
+     *
+     * <jsl:{artifact-type} ref="{artifact-name}">
+     *     <jsl:properties>
+     *         <jsl:property name="{property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     * </jsl:{artifact-type}>
+     */
     private Artifact createArtifact(Element artifactElem, Namespace ns) {
         String ref = artifactElem.getAttributeValue("ref");
         ArtifactBuilder builder = new ArtifactBuilder();
@@ -85,6 +115,18 @@ public class JobXmlLoader {
         return builder.build();
     }
 
+    /**
+     * Create listeners from a job xml fragment.
+     *
+     * <jsl:listeners>
+     *     <jsl:listener ref="{artifact-name}">
+     *         <jsl:properties>
+     *             <jsl:property name="{property-name}" value="{property-value}"/>
+     *         </jsl:properties>
+     *     </jsl:listener>
+     * </jsl:listeners>
+     *
+     */
     private List<Artifact> createListeners(Element listenersElem, Namespace ns) {
         List<Artifact> listeners = new ArrayList<Artifact>();
         for (Element listenerElem : listenersElem.getChildren("listener", ns)) {
@@ -93,42 +135,76 @@ public class JobXmlLoader {
         return listeners;
     }
 
+    /**
+     * Create a batchlet step from a job xml fragment.
+     *
+     * <jsl:batchlet ref="{artifact-name}">
+     *     <jsl:properties>
+     *         <jsl:property name="{property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     * </jsl:batchlet>
+     *
+     */
     private BatchletStepBuilder createBatchletBuilder(Element batchletElem, Namespace ns) {
         BatchletStepBuilder builder = new BatchletStepBuilder();
         builder.setArtifact(createArtifact(batchletElem, ns));
         return builder;
     }
 
-    private static interface ExceptionClassFilterer {
-
-        void include(Class<?> clazz);
-
-        void exclude(Class<?> clazz);
-
-    }
-
+    /**
+     * Create an exception class filter from a job xml fragment.
+     *
+     * <jsl:{exception-class-filter-type}>
+     *     <include class="{class-name}"/>
+     *     <exclude class="{class-name}"/>
+     * </jsl:{exception-class-filter-type}>
+     *
+     */
     private void processExceptionClassFilter(Element exceptionClassFilterElem, Namespace ns,
                                              ExceptionClassFilterer filterer) {
         try {
-            Element includeElem = exceptionClassFilterElem.getChild("include", ns);
-            if (includeElem != null) {
-                for (Element classElem : includeElem.getChildren("class", ns)) {
-                    String className = classElem.getText();
-                    filterer.include(Class.forName(className));
-                }
+            for (Element includeElem : exceptionClassFilterElem.getChildren("include", ns)) {
+                String className = includeElem.getAttributeValue("class");
+                filterer.include(Class.forName(className));
             }
-            Element excludeElem = exceptionClassFilterElem.getChild("exclude", ns);
-            if (excludeElem != null) {
-                for (Element classElem : excludeElem.getChildren("class", ns)) {
-                    String className = classElem.getText();
-                    filterer.exclude(Class.forName(className));
-                }
+            for (Element includeElem : exceptionClassFilterElem.getChildren("exclude", ns)) {
+                String className = includeElem.getAttributeValue("class");
+                filterer.exclude(Class.forName(className));
             }
         } catch (ClassNotFoundException e) {
             throw new JabatException(e);
         }
     }
 
+    /**
+     * Create a chunk step from a job xml fragment.
+     *
+     * <jsl:chunk reader="{artifact-name}" processor="{artifact-name}" writer="{artifact-name}"
+     *            checkpoint-policy="{item|time|custom}" commit-interval="{value}"
+     *            buffer-size="{value}" skip-limit="{value}" retry-limit="{value}">
+     *     <jsl:properties>
+     *         <jsl:property name="{artifact-name:property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     *     <jsl:checkpoint-algorithm ref="{artifact-name}">
+     *         <jsl:properties>
+     *             <jsl:property name="{property-name}" value="{property-value}"/>
+     *         </jsl:properties>
+     *     </jsl:checkpoint-algorithm>
+     *     <jsl:skippable-exception-classes>
+     *         <include class="{class-name}"/>
+     *         <exclude class="{class-name}"/>
+     *     </jsl:skippable-exception-classes>
+     *     <jsl:retryable-exception-classes>
+     *         <include class="{class-name}"/>
+     *         <exclude class="{class-name}"/>
+     *     </jsl:retryable-exception-classes>
+     *     <jsl:no-rollback-exception-classes>
+     *         <include class="{class-name}"/>
+     *         <exclude class="{class-name}"/>
+     *     </jsl:no-rollback-exception-classes>
+     * </jsl:chunk>
+     *
+     */
     private ChunkStepBuilder createChunkBuilder(Element chunkElem, Namespace ns) {
         final ChunkStepBuilder builder = new ChunkStepBuilder();
 
@@ -194,6 +270,11 @@ public class JobXmlLoader {
             builder.setRetryLimit(Integer.valueOf(value));
         }
 
+        value = chunkElem.getAttributeValue("skip-limit");
+        if (value != null) {
+            builder.setSkipLimit(Integer.valueOf(value));
+        }
+
         Element checkpointAlgoElem = chunkElem.getChild("checkpoint-algorithm", ns);
         if (checkpointAlgoElem != null) {
             builder.setCheckpointAlgo(createArtifact(checkpointAlgoElem, ns));
@@ -253,6 +334,19 @@ public class JobXmlLoader {
         return builder;
     }
 
+    /**
+     * Create a partition plan from a job xml fragment.
+     *
+     * <jsl:plan instances="{value}" threads="{value}">
+     *     <jsl:properties partition="{partition-number}">
+     *         <jsl:property name="{property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     *     <jsl:properties partition="{partition-number}">
+     *         <jsl:property name="{property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     * </jsl:plan>
+     *
+     */
     private PartitionPlan createPlan(Element planElem, Namespace ns) {
         PartitionPlanBuilder builder = new PartitionPlanBuilder();
         String value = planElem.getAttributeValue("instances");
@@ -275,6 +369,23 @@ public class JobXmlLoader {
         return builder.build();
     }
 
+    /**
+     * Create a step from a job xml fragment.
+     *
+     * <jsl:step id="{step-id}" start-limit="{value}" allow-start-if-complete="{value}" next="{node-id}" >
+     *     <jsl:partition>...
+     *     </jsl:partition>
+     *     <jsl:properties>...
+     *     </jsl:properties>
+     *     <jsl:listeners>...
+     *     </jsl:listeners>
+     *     <jsl:batchlet|chunk>...
+     *     </jsl:batchlet|chunk>
+     *     <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
+     *     <jsl:end on="{exit-status}" exit-status="{exit-status}" />
+     *     <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
+     * </jsl:step>
+     */
     private Step createStep(Element stepElem, Namespace ns) {
         StepBuilder builder;
 
@@ -291,6 +402,16 @@ public class JobXmlLoader {
 
         String next = stepElem.getAttributeValue("next");
         builder.setNext(next);
+
+        String startLimit = stepElem.getAttributeValue("start-limit");
+        if (startLimit != null) {
+            builder.setStartLimit(Integer.valueOf(startLimit));
+        }
+
+        String allowStartIfComplete = stepElem.getAttributeValue("allow-start-if-complete");
+        if (allowStartIfComplete != null) {
+            builder.setAllowStartIfComplete(Boolean.valueOf(startLimit));
+        }
 
         Element partitionElem = stepElem.getChild("partition", ns);
         if (partitionElem != null) {
@@ -326,9 +447,37 @@ public class JobXmlLoader {
             builder.addListeners(createListeners(listenersElem, ns));
         }
 
+        for (Element childElem : stepElem.getChildren()) {
+            if (childElem.getNamespace().equals(ns)) {
+                if ("end".equals(childElem.getName())) {
+                    builder.addTerminatingElement(createEndElement(childElem));
+                } else if ("fail".equals(childElem.getName())) {
+                    builder.addTerminatingElement(createFailElement(childElem));
+                } else if ("stop".equals(childElem.getName())) {
+                    builder.addTerminatingElement(createStopElement(childElem));
+                }
+            }
+        }
+
         return builder.build();
     }
 
+    /**
+     * Create a flow from a job xml fragment.
+     *
+     * <jsl:flow id="{flow-id}" next="{node-id}">
+     *     <jsl:properties>...
+     *     </jsl:properties>
+     *     <jsl:listeners>...
+     *     </jsl:listeners>
+     *     <jsl:step>...
+     *     </jsl:step>
+     *     <jsl:split>...
+     *     </jsl:split>
+     *     <jsl:decision>...
+     *     </jsl:decision>
+     * </jsl:flow>
+     */
     private Flow createFlow(Element flowElem, Namespace ns) {
         FlowBuilder builder = new FlowBuilder();
 
@@ -363,6 +512,18 @@ public class JobXmlLoader {
         return builder.build();
     }
 
+    /**
+     * Create a split from a job xml fragment.
+     *
+     * <jsl:split id="{split-id}" next="{node-id}">
+     *     <jsl:properties>...
+     *     </jsl:properties>
+     *     <jsl:listeners>...
+     *     </jsl:listeners>
+     *     <jsl:flow>...
+     *     </jsl:flow>
+     * </jsl:split>
+     */
     private Split createSplit(Element splitElem, Namespace ns) {
         SplitBuilder builder = new SplitBuilder();
 
@@ -389,6 +550,65 @@ public class JobXmlLoader {
         return builder.build();
     }
 
+    /**
+     * Create a end element from a job xml fragment.
+     *
+     * <jsl:end on="{exit-status}" exit-status="{exit-status}" />
+     */
+    private EndElement createEndElement(Element endElem) {
+        String on = endElem.getAttributeValue("on");
+        String exitStatus = endElem.getAttributeValue("exit-status");
+        return new EndElement(on, exitStatus);
+    }
+
+    /**
+     * Create a fail element from a job xml fragment.
+     *
+     * <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
+     */
+    private FailElement createFailElement(Element failElem) {
+        String on = failElem.getAttributeValue("on");
+        String exitStatus = failElem.getAttributeValue("exit-status");
+        return new FailElement(on, exitStatus);
+    }
+
+    /**
+     * Create a stop element from a job xml fragment.
+     *
+     * <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
+     */
+    private StopElement createStopElement(Element stopElem) {
+        String on = stopElem.getAttributeValue("on");
+        String exitStatus = stopElem.getAttributeValue("exit-status");
+        String restart = stopElem.getAttributeValue("restart");
+        return new StopElement(on, exitStatus, restart);
+    }
+
+    /**
+     * Create a next element from a job xml fragment.
+     *
+     * <jsl:next on="{exit-status}" to="{step-id|flow-id|split-id}" />
+     */
+    private NextElement createNextElement(Element failElem) {
+        String on = failElem.getAttributeValue("on");
+        String to = failElem.getAttributeValue("to");
+        return new NextElement(on, to);
+    }
+
+    /**
+     * Create a decision from a job xml fragment.
+     *
+     * <jsl:decision id="{decision-id}" ref="{artifact-name}">
+     *     <jsl:properties>
+     *         <jsl:property name="{property-name}" value="{property-value}"/>
+     *     </jsl:properties>
+     *     <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
+     *     <jsl:end on="{exit-status}" exit-status="{exit-status}" />
+     *     <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
+     *     <jsl:next on="{exit-status}" to="{step-id|flow-id|split-id}" />
+     * </jsl:decision>
+     *
+     */
     private Decision createDecision(Element decisionElem, Namespace ns) {
         DecisionBuilder builder = new DecisionBuilder();
 
@@ -398,14 +618,51 @@ public class JobXmlLoader {
         Artifact artifact = createArtifact(decisionElem, ns);
         builder.setArtifact(artifact);
 
+        for (Element childElem : decisionElem.getChildren()) {
+            if (childElem.getNamespace().equals(ns)) {
+                if ("end".equals(childElem.getName())) {
+                    builder.addControlElement(createEndElement(childElem));
+                } else if ("fail".equals(childElem.getName())) {
+                    builder.addControlElement(createFailElement(childElem));
+                } else if ("stop".equals(childElem.getName())) {
+                    builder.addControlElement(createStopElement(childElem));
+                } else if ("next".equals(childElem.getName())) {
+                    builder.addControlElement(createNextElement(childElem));
+                }
+            }
+        }
+
         return builder.build();
     }
 
+    /**
+     * Create a job from a job xml fragment.
+     *
+     * <jsl:job id="{job-id}" restartable="{value}">
+     *     <jsl:properties>...
+     *     </jsl:properties>
+     *     <jsl:listeners>...
+     *     </jsl:listeners>
+     *     <jsl:step>...
+     *     </jsl:step>
+     *     <jsl:split>...
+     *     </jsl:split>
+     *     <jsl:flow>...
+     *     </jsl:flow>
+     *     <jsl:decision>...
+     *     </jsl:decision>
+     * </jsl:job>
+     */
     private Job createJob(Element jobElem, Namespace ns) {
         JobBuilder builder = new JobBuilder();
 
         String id = jobElem.getAttributeValue("id");
         builder.setId(id);
+
+        String value = jobElem.getAttributeValue("restartable");
+        if (value != null) {
+            builder.setRestartable(Boolean.valueOf(value));
+        }
 
         Element propertiesElem = jobElem.getChild("properties", ns);
         if (propertiesElem != null) {

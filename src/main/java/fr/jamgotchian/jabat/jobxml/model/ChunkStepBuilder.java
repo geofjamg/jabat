@@ -35,6 +35,8 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
 
     private int retryLimit = -1;
 
+    private int skipLimit = -1;
+
     private Artifact reader;
 
     private Artifact processor;
@@ -96,7 +98,7 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
 
     public ChunkStepBuilder setBufferSize(int bufferSize) {
         if (bufferSize < 1) {
-            throw new JabatException("Chunk buffer size should be greater than 0");
+            throw new JabatException("Chunk buffer size is expected to be greater than 0");
         }
         this.bufferSize = bufferSize;
         return this;
@@ -104,9 +106,17 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
 
     public ChunkStepBuilder setRetryLimit(int retryLimit) {
         if (retryLimit < 0) {
-            throw new JabatException("Chunk retry limit should be greater or equal than 0");
+            throw new JabatException("Chunk retry limit is expected to be greater or equal than 0");
         }
         this.retryLimit = retryLimit;
+        return this;
+    }
+
+    public ChunkStepBuilder setSkipLimit(int skipLimit) {
+        if (skipLimit < 0) {
+            throw new JabatException("Chunk skip limit is expected to be greater or equal than 0");
+        }
+        this.skipLimit = skipLimit;
         return this;
     }
 
@@ -174,7 +184,7 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
         }
         CheckpointPolicy policy = getCheckpointPolicy();
         if (policy == CheckpointPolicy.CUSTOM && checkpointAlgo == null) {
-            throw new JabatException("A checkpoint algorithm artifact should be specified for a custom checkpoint policy");
+            throw new JabatException("A checkpoint algorithm artifact is expected for a custom checkpoint policy");
         }
         ExceptionClassFilter skippableExceptionClasses =
                 new ExceptionClassFilter(includedSkippableExceptionClasses,
@@ -185,12 +195,13 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
         ExceptionClassFilter noRollbackExceptionClasses
                 = new ExceptionClassFilter(includedNoRollbackExceptionClasses,
                                            excludedNoRollbackExceptionClasses);
-        ChunkStep chunk = new ChunkStep(id, next, properties, partitionPlan, partitionMapper,
+        ChunkStep chunk = new ChunkStep(id, next, startLimit, allowStartIfComplete,
+                                        properties, partitionPlan, partitionMapper,
                                         partitionReducer, partitionCollector, partitionAnalyser,
                                         listeners, terminatingElements,
                                         reader, processor, writer,
                                         policy, commitInterval,
-                                        checkpointAlgo, getBufferSize(), retryLimit,
+                                        checkpointAlgo, getBufferSize(), retryLimit, skipLimit,
                                         skippableExceptionClasses, retryableExceptionClasses,
                                         noRollbackExceptionClasses);
         return chunk;

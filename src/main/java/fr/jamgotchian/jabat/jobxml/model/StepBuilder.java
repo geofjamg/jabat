@@ -31,6 +31,10 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
 
     protected String next;
 
+    protected int startLimit = 0;
+
+    protected boolean allowStartIfComplete = false;
+
     protected Properties properties = new Properties();
 
     protected List<Artifact> listeners = new ArrayList<Artifact>();
@@ -60,6 +64,16 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
 
     public B setNext(String next) {
         this.next = next;
+        return getBuilder();
+    }
+
+    public B setStartLimit(int startLimit) {
+        this.startLimit = startLimit;
+        return getBuilder();
+    }
+
+    public B setAllowStartIfComplete(boolean allowStartIfComplete) {
+        this.allowStartIfComplete = allowStartIfComplete;
         return getBuilder();
     }
 
@@ -116,6 +130,9 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
     protected void check() {
         if (id == null) {
             throw new JabatException("Chunk id is not set");
+        }
+        if (startLimit < 0) {
+            throw new JabatException("Start limit is expected to be greater or equal to zero");
         }
     }
 

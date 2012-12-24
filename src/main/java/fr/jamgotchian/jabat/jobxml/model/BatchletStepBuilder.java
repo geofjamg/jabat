@@ -44,8 +44,9 @@ public class BatchletStepBuilder extends StepBuilder<BatchletStepBuilder, Batchl
         if (artifact == null) {
             throw new JabatException("Batchlet artifact is not set");
         }
-        return new BatchletStep(id, next, properties, partitionPlan, partitionMapper,
-                                partitionReducer, partitionCollector, partitionAnalyser,
+        return new BatchletStep(id, next, startLimit, allowStartIfComplete, properties,
+                                partitionPlan, partitionMapper, partitionReducer,
+                                partitionCollector, partitionAnalyser,
                                 listeners, terminatingElements, artifact);
     }
 }
