@@ -15,21 +15,30 @@
  */
 package fr.jamgotchian.jabat.jobxml.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class TerminatingElement extends ControlElement {
+public class ExceptionClassFilter {
 
-    private final String exitStatus;
+    private final Set<Class<?>> includedClasses;
 
-    protected TerminatingElement(String on, String exitStatus) {
-        super(on);
-        this.exitStatus = exitStatus;
+    private final Set<Class<?>> excludedClasses;
+
+    ExceptionClassFilter(Set<Class<?>> includedClasses, Set<Class<?>> excludedClasses) {
+        this.includedClasses = includedClasses;
+        this.excludedClasses = excludedClasses;
     }
 
-    public String getExitStatus() {
-        return exitStatus;
+    public Set<Class<?>> getIncludedClasses() {
+        return includedClasses;
+    }
+
+    public Set<Class<?>> getExcludedClasses() {
+        return excludedClasses;
     }
 
 }

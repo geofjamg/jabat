@@ -16,100 +16,20 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import javax.batch.api.parameters.PartitionPlan;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletStepBuilder {
-
-    private String id;
-
-    private String next;
-
-    private Properties properties = new Properties();
-
-    private List<Artifact> listeners = new ArrayList<Artifact>();
-
-    private PartitionPlan partitionPlan;
-
-    private Artifact partitionMapper;
-
-    private Artifact partitionReducer;
-
-    private Artifact partitionCollector;
-
-    private Artifact partitionAnalyser;
+public class BatchletStepBuilder extends StepBuilder<BatchletStepBuilder, BatchletStep> {
 
     private Artifact artifact;
 
     public BatchletStepBuilder() {
     }
 
-    public BatchletStepBuilder setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    public BatchletStepBuilder setNext(String next) {
-        this.next = next;
-        return this;
-    }
-
-    public BatchletStepBuilder setProperty(String name, String value) {
-        properties.setProperty(name, value);
-        return this;
-    }
-
-    public BatchletStepBuilder setProperties(Properties properties) {
-        if (properties == null) {
-            this.properties = new Properties();
-        } else {
-            this.properties = properties;
-        }
-        return this;
-    }
-
-    public BatchletStepBuilder addListener(Artifact listener) {
-        listeners.add(listener);
-        return this;
-    }
-
-    public BatchletStepBuilder setListeners(List<Artifact> listeners) {
-        if (listeners == null) {
-            this.listeners = new ArrayList<Artifact>();
-        } else {
-            this.listeners = listeners;
-        }
-        return this;
-    }
-
-    public BatchletStepBuilder setPartitionPlan(PartitionPlan partitionPlan) {
-        this.partitionPlan = partitionPlan;
-        return this;
-    }
-
-    public BatchletStepBuilder setPartitionMapper(Artifact partitionMapper) {
-        this.partitionMapper = partitionMapper;
-        return this;
-    }
-
-    public BatchletStepBuilder setPartitionReducer(Artifact partitionReducer) {
-        this.partitionReducer = partitionReducer;
-        return this;
-    }
-
-    public BatchletStepBuilder setPartitionCollector(Artifact partitionCollector) {
-        this.partitionCollector = partitionCollector;
-        return this;
-    }
-
-    public BatchletStepBuilder setPartitionAnalyser(Artifact partitionAnalyser) {
-        this.partitionAnalyser = partitionAnalyser;
+    @Override
+    protected BatchletStepBuilder getBuilder() {
         return this;
     }
 
@@ -118,15 +38,14 @@ public class BatchletStepBuilder {
         return this;
     }
 
+    @Override
     public BatchletStep build() {
-        if (id == null) {
-            throw new JabatException("Batchlet id is not set");
-        }
+        check();
         if (artifact == null) {
             throw new JabatException("Batchlet artifact is not set");
         }
         return new BatchletStep(id, next, properties, partitionPlan, partitionMapper,
                                 partitionReducer, partitionCollector, partitionAnalyser,
-                                listeners, artifact);
+                                listeners, terminatingElements, artifact);
     }
 }

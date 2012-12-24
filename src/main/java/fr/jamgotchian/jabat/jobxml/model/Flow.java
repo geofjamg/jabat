@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -28,39 +29,22 @@ public class Flow extends AbstractNodeContainer implements Chainable {
 
     private final String next;
 
-    Flow(String id, String next, Properties properties) {
-        super(id, properties);
+    private final List<Artifact> listeners;
+
+    Flow(String id, Properties properties, Collection<? extends AbstractNode> nodes,
+            String next, List<Artifact> listeners) {
+        super(id, properties, nodes);
         this.next = next;
-    }
-
-    public Flow addBatchlet(BatchletStep step) {
-        addNode(step);
-        return this;
-    }
-
-    public Flow addChunk(ChunkStep step) {
-        addNode(step);
-        return this;
-    }
-
-    public Flow addFlow(Flow flow) {
-        addNode(flow);
-        return this;
-    }
-
-    public Flow addSplit(Split split) {
-        addNode(split);
-        return this;
-    }
-
-    public Flow addDecision(Decision decision) {
-        addNode(decision);
-        return this;
+        this.listeners = Collections.unmodifiableList(listeners);
     }
 
     @Override
     public String getNext() {
         return next;
+    }
+
+    public List<Artifact> getListeners() {
+        return listeners;
     }
 
     @Override

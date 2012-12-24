@@ -43,22 +43,35 @@ public class ChunkStep extends Step {
 
     private final int retryLimit;
 
+    private final ExceptionClassFilter skippableExceptionClasses;
+
+    private final ExceptionClassFilter retryableExceptionClasses;
+
+    private final ExceptionClassFilter noRollbackExceptionClasses;
+
     ChunkStep(String id, String next, Properties properties,
               PartitionPlan partitionPlan, Artifact partitionMapper, Artifact partitionReducer,
               Artifact partitionCollector, Artifact partitionAnalyser,
-              List<Artifact> listeners,
+              List<Artifact> listeners, List<TerminatingElement> terminatingElements,
               Artifact reader, Artifact processor, Artifact writer,
               CheckpointPolicy checkpointPolicy, int commitInterval,
-              int bufferSize, int retryLimit) {
+              Artifact checkpointAlgo, int bufferSize, int retryLimit,
+              ExceptionClassFilter skippableExceptionClasses,
+              ExceptionClassFilter retryableExceptionClasses,
+              ExceptionClassFilter noRollbackExceptionClasses) {
         super(id, next, properties, partitionPlan, partitionMapper, partitionReducer,
-              partitionCollector, partitionAnalyser, listeners);
+              partitionCollector, partitionAnalyser, listeners, terminatingElements);
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
         this.checkpointPolicy = checkpointPolicy;
         this.commitInterval = commitInterval;
+        this.checkpointAlgo = checkpointAlgo;
         this.bufferSize = bufferSize;
         this.retryLimit = retryLimit;
+        this.skippableExceptionClasses = skippableExceptionClasses;
+        this.retryableExceptionClasses = retryableExceptionClasses;
+        this.noRollbackExceptionClasses = noRollbackExceptionClasses;
     }
 
     public Artifact getReader() {
@@ -85,16 +98,24 @@ public class ChunkStep extends Step {
         return checkpointAlgo;
     }
 
-    public void setCheckpointAlgo(Artifact checkpointAlgo) {
-        this.checkpointAlgo = checkpointAlgo;
-    }
-
     public int getBufferSize() {
         return bufferSize;
     }
 
     public int getRetryLimit() {
         return retryLimit;
+    }
+
+    public ExceptionClassFilter getSkippableExceptionClasses() {
+        return skippableExceptionClasses;
+    }
+
+    public ExceptionClassFilter getRetryableExceptionClasses() {
+        return retryableExceptionClasses;
+    }
+
+    public ExceptionClassFilter getNoRollbackExceptionClasses() {
+        return noRollbackExceptionClasses;
     }
 
     @Override

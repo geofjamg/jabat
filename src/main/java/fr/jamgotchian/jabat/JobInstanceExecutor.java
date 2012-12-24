@@ -62,8 +62,6 @@ import javax.batch.api.PartitionAnalyzer;
 import javax.batch.api.PartitionCollector;
 import javax.batch.api.PartitionMapper;
 import javax.batch.api.PartitionReducer;
-import javax.batch.api.SplitAnalyzer;
-import javax.batch.api.SplitCollector;
 import javax.batch.api.StepListener;
 import javax.batch.api.parameters.PartitionPlan;
 import javax.batch.spi.TransactionManagerSPI;
@@ -211,8 +209,8 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
     }
 
     private static PartitionAnalyzer createPartitionAnalyser(Step step, StepArtifactContext artifactContext) throws Exception {
-        if (step.getPartitionAnalyser() != null) {
-            String ref = step.getPartitionAnalyser().getRef();
+        if (step.getPartitionAnalyzer() != null) {
+            String ref = step.getPartitionAnalyzer().getRef();
             return artifactContext.createPartitionAnalyser(ref);
         }
         return null;
@@ -598,10 +596,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
                 SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
                 try {
-                    final List<Externalizable> collectedData = new ArrayList<Externalizable>();
-                    final SplitCollector collector = split.getCollector() != null
-                            ? artifactContext.createSplitCollector(split.getCollector().getRef())
-                            : null;
                     // for each flow
                     for (Node node : nodes) {
                         final Flow flow = (Flow) node;
@@ -614,10 +608,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                 try {
                                     try {
                                         flow.accept(JobInstanceExecutor.this, null);
-                                        // collect data
-                                        if (collector != null) {
-                                            collectedData.add(collector.collectSplitData());
-                                        }
                                     } finally {
                                         JabatThreadContext.getInstance().destroyJobContext();
                                     }
@@ -626,17 +616,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                 }
                             }
                         });
-                    }
-                    if (split.getAnalyser() != null) {
-                        SplitAnalyzer analyser
-                                = artifactContext.createSplitAnalyser(split.getAnalyser().getRef());
-                        for (Externalizable data : collectedData) {
-                            // analyse data
-                            analyser.analyzeCollectorData(data);
-
-                            // analyse status
-                            analyser.analyzeStatus(null, null);
-                        }
                     }
                 } finally {
                     artifactContext.release();

@@ -34,28 +34,25 @@ public class PartitionPlanImpl implements PartitionPlan {
 
     private Properties[] properties;
 
-    public PartitionPlanImpl(int partitionCount, int threadCount) {
+    public PartitionPlanImpl(int partitionCount, int threadCount, Properties[] properties) {
         this.partitionCount = partitionCount;
         this.threadCount = threadCount;
-        properties = new Properties[partitionCount];
-        for (int i = 0; i < partitionCount; i++) {
-            properties[i] = new Properties();
-        }
+        this.properties = properties;
     }
 
     @Override
     public void setPartitionCount(int count) {
-        throw new JabatException("Cannot resize the number of partition");
+        throw new JabatException("Immutable partition plan");
     }
 
     @Override
     public void setThreadCount(int count) {
-        threadCount = count;
+        throw new JabatException("Immutable partition plan");
     }
 
     @Override
     public void setPartitionProperties(Properties[] props) {
-        properties = props;
+        throw new JabatException("Immutable partition plan");
     }
 
     @Override
@@ -75,12 +72,16 @@ public class PartitionPlanImpl implements PartitionPlan {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        out.writeInt(partitionCount);
+        out.writeInt(threadCount);
+        out.writeObject(properties);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        partitionCount = in.readInt();
+        threadCount = in.readInt();
+        properties = (Properties[]) in.readObject();
     }
 
 }

@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -28,43 +29,17 @@ public class Job extends AbstractNodeContainer {
 
     private final List<Artifact> listeners;
 
-    Job(String id, Properties properties, List<Artifact> listeners) {
-        super(id, properties);
-        this.listeners = listeners;
-    }
+    private final boolean restartable;
 
-    public Job addBatchlet(BatchletStep step) {
-        addNode(step);
-        return this;
-    }
-
-    public Job addChunk(ChunkStep step) {
-        addNode(step);
-        return this;
-    }
-
-    public Job addFlow(Flow flow) {
-        addNode(flow);
-        return this;
-    }
-
-    public Job addSplit(Split split) {
-        addNode(split);
-        return this;
-    }
-
-    public Job addDecision(Decision decision) {
-        addNode(decision);
-        return this;
-    }
-
-    public Job addListener(Artifact listener) {
-        listeners.add(listener);
-        return this;
+    Job(String id, Properties properties, Collection<AbstractNode> nodes,
+            List<Artifact> listeners, boolean restartable) {
+        super(id, properties, nodes);
+        this.listeners = Collections.unmodifiableList(listeners);
+        this.restartable = restartable;
     }
 
     public List<Artifact> getListeners() {
-        return Collections.unmodifiableList(listeners);
+        return listeners;
     }
 
     @Override
@@ -79,7 +54,11 @@ public class Job extends AbstractNodeContainer {
 
     @Override
     public List<Artifact> getArtifacts() {
-        return Collections.unmodifiableList(listeners);
+        return listeners;
+    }
+
+    public boolean isRestartable() {
+        return restartable;
     }
 
     @Override

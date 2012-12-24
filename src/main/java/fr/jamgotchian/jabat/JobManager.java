@@ -20,8 +20,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.config.Configuration;
-import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.jobxml.JobXmlLoader;
+import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.repository.BatchStatus;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
@@ -113,7 +113,7 @@ public class JobManager {
     }
 
     public long start(String id, Properties parameters) throws NoSuchJobException, JobStartException {
-        Job job = loader.load(id, parameters);
+        Job job = loader.load(id);
 
         if (job.getFirstChainableNode() == null) {
             throw new JobStartException("The job " + id + " does not contain any step, flow or split");

@@ -30,15 +30,24 @@ public class JobBuilder {
 
     private final Properties properties = new Properties();
 
+    private final List<AbstractNode> nodes = new ArrayList<AbstractNode>();
+
     private final List<Artifact> listeners = new ArrayList<Artifact>();
+
+    private boolean restartable = false;
 
     public JobBuilder setId(String id) {
         this.id = id;
         return this;
     }
 
-    public JobBuilder setProperty(String name, String value) {
+    public JobBuilder addProperty(String name, String value) {
         properties.setProperty(name, value);
+        return this;
+    }
+
+    public JobBuilder addProperties(Properties properties) {
+        this.properties.putAll(properties);
         return this;
     }
 
@@ -47,10 +56,43 @@ public class JobBuilder {
         return this;
     }
 
+    public JobBuilder addListeners(List<Artifact> listeners) {
+        this.listeners.addAll(listeners);
+        return this;
+    }
+
+    public JobBuilder setRestartable(boolean restartable) {
+        this.restartable = restartable;
+        return this;
+    }
+
+    public JobBuilder addStep(Step step) {
+        nodes.add(step);
+        return this;
+    }
+
+
+    public JobBuilder addFlow(Flow flow) {
+        nodes.add(flow);
+        return this;
+    }
+
+    public JobBuilder addSplit(Split split) {
+        nodes.add(split);
+        return this;
+    }
+
+    public JobBuilder addDecision(Decision decision) {
+        nodes.add(decision);
+        return this;
+    }
+
     public Job build() {
         if (id == null) {
             throw new JabatException("Job id is not set");
         }
-        return new Job(id, properties, listeners);
+        JobCheckUtil.checkIdUnicity(nodes);
+        JobCheckUtil.checkNotAssociated(nodes);
+        return new Job(id, properties, nodes, listeners, restartable);
     }
 }

@@ -16,7 +16,8 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,18 +29,13 @@ public class Split extends AbstractNodeContainer implements Chainable {
 
     private final String next;
 
-    private Artifact collector;
+    private final List<Artifact> listeners;
 
-    private Artifact analyser;
-
-    Split(String id, String next, Properties properties) {
-        super(id, properties);
+    Split(String id, Properties properties, Collection<? extends AbstractNode> nodes,
+            String next, List<Artifact> listeners) {
+        super(id, properties, nodes);
         this.next = next;
-    }
-
-    public Split addFlow(Flow flow) {
-        addNode(flow);
-        return this;
+        this.listeners = Collections.unmodifiableList(listeners);
     }
 
     @Override
@@ -47,43 +43,18 @@ public class Split extends AbstractNodeContainer implements Chainable {
         return next;
     }
 
-    public Artifact getCollector() {
-        return collector;
-    }
-
-    public void setCollector(Artifact collector) {
-        this.collector = collector;
-    }
-
-    public Artifact getAnalyser() {
-        return analyser;
-    }
-
-    public void setAnalyser(Artifact analyser) {
-        this.analyser = analyser;
+    public List<Artifact> getListeners() {
+        return listeners;
     }
 
     @Override
     public Artifact getArtifact(String ref) {
-        if (collector != null && collector.getRef().equals(ref)) {
-            return collector;
-        } else if (analyser != null && analyser.getRef().equals(ref)) {
-            return analyser;
-        } else {
-            throw new JabatException("Artifact " + ref + " not found");
-        }
+        throw new JabatException("Artifact " + ref + " not found");
     }
 
     @Override
     public List<Artifact> getArtifacts() {
-        List<Artifact> artifacts = new ArrayList<Artifact>();
-        if (collector != null) {
-            artifacts.add(collector);
-        }
-        if (analyser != null) {
-            artifacts.add(analyser);
-        }
-        return artifacts;
+        return Collections.emptyList();
     }
 
     @Override

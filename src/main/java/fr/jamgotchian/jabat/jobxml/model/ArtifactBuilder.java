@@ -36,14 +36,22 @@ public class ArtifactBuilder {
         return this;
     }
 
-    public ArtifactBuilder setProperty(String name, String value) {
+    public ArtifactBuilder addProperty(String name, String value) {
         properties.setProperty(name, value);
+        return this;
+    }
+
+    public ArtifactBuilder addProperties(Properties properties) {
+        this.properties.putAll(properties);
         return this;
     }
 
     public Artifact build() {
         if (ref == null) {
             throw new JabatException("Artifact ref is not set");
+        }
+        if (ref.isEmpty()) {
+            throw new JabatException("Artifact ref is an empty string");
         }
         return new Artifact(ref, properties);
     }

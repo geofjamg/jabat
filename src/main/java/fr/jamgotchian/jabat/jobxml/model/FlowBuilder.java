@@ -16,6 +16,8 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -30,6 +32,10 @@ public class FlowBuilder {
 
     private final Properties properties = new Properties();
 
+    private final List<Artifact> listeners = new ArrayList<Artifact>();
+
+    private final List<AbstractNode> nodes = new ArrayList<AbstractNode>();
+
     public FlowBuilder() {
     }
 
@@ -43,8 +49,38 @@ public class FlowBuilder {
         return this;
     }
 
-    public FlowBuilder setProperty(String name, String value) {
+    public FlowBuilder addProperty(String name, String value) {
         properties.setProperty(name, value);
+        return this;
+    }
+
+    public FlowBuilder addProperties(Properties properties) {
+        this.properties.putAll(properties);
+        return this;
+    }
+
+    public FlowBuilder addListener(Artifact listener) {
+        listeners.add(listener);
+        return this;
+    }
+
+    public FlowBuilder addListeners(List<Artifact> listeners) {
+        this.listeners.addAll(listeners);
+        return this;
+    }
+
+    public FlowBuilder addStep(Step step) {
+        nodes.add(step);
+        return this;
+    }
+
+    public FlowBuilder addSplit(Split split) {
+        nodes.add(split);
+        return this;
+    }
+
+    public FlowBuilder addDecision(Decision decision) {
+        nodes.add(decision);
         return this;
     }
 
@@ -52,6 +88,8 @@ public class FlowBuilder {
         if (id == null) {
             throw new JabatException("Flow id is not set");
         }
-        return new Flow(id, next, properties);
+        JobCheckUtil.checkIdUnicity(nodes);
+        JobCheckUtil.checkNotAssociated(nodes);
+        return new Flow(id, properties, nodes, next, listeners);
     }
 }

@@ -31,6 +31,7 @@ public class JobConsistencyChecker {
 
         @Override
         public void visit(Job job, ConsistencyReport report) {
+            // TODO check job contains at least one step
             for (Node n : job.getNodes()) {
                 n.accept(visitor, report);
             }

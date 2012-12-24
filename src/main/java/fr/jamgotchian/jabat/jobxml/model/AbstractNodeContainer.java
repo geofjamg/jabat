@@ -29,13 +29,12 @@ abstract class AbstractNodeContainer extends AbstractNode implements NodeContain
 
     protected final Map<String, Node> nodes = new LinkedHashMap<String, Node>();
 
-    AbstractNodeContainer(String id, Properties properties) {
+    AbstractNodeContainer(String id, Properties properties, Collection<? extends AbstractNode> nodes) {
         super(id, properties);
-    }
-
-    void addNode(AbstractNode node) {
-        nodes.put(node.getId(), node);
-        node.setContainer(this);
+        for (AbstractNode n : nodes) {
+            this.nodes.put(n.getId(), n);
+            n.setContainer(this);
+        }
     }
 
     @Override

@@ -16,38 +16,20 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import javax.batch.api.parameters.PartitionPlan;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ChunkStepBuilder {
-
-    private String id;
-
-    private String next;
-
-    private Properties properties = new Properties();
-
-    private List<Artifact> listeners = new ArrayList<Artifact>();
-
-    private PartitionPlan partitionPlan;
-
-    private Artifact partitionMapper;
-
-    private Artifact partitionReducer;
-
-    private Artifact partitionCollector;
-
-    private Artifact partitionAnalyser;
+public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
 
     private CheckpointPolicy checkpointPolicy;
 
     private int commitInterval = 10;
+
+    private Artifact checkpointAlgo;
 
     private Integer bufferSize;
 
@@ -59,69 +41,23 @@ public class ChunkStepBuilder {
 
     private Artifact writer;
 
+    private final Set<Class<?>> includedSkippableExceptionClasses = new HashSet<Class<?>>();
+
+    private final Set<Class<?>> excludedSkippableExceptionClasses = new HashSet<Class<?>>();
+
+    private final Set<Class<?>> includedRetryableExceptionClasses = new HashSet<Class<?>>();
+
+    private final Set<Class<?>> excludedRetryableExceptionClasses = new HashSet<Class<?>>();
+
+    private final Set<Class<?>> includedNoRollbackExceptionClasses = new HashSet<Class<?>>();
+
+    private final Set<Class<?>> excludedNoRollbackExceptionClasses = new HashSet<Class<?>>();
+
     public ChunkStepBuilder() {
     }
 
-    public ChunkStepBuilder setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    public ChunkStepBuilder setNext(String next) {
-        this.next = next;
-        return this;
-    }
-
-    public ChunkStepBuilder setProperty(String name, String value) {
-        properties.setProperty(name, value);
-        return this;
-    }
-
-    public ChunkStepBuilder setProperties(Properties properties) {
-        if (properties == null) {
-            this.properties = new Properties();
-        } else {
-            this.properties = properties;
-        }
-        return this;
-    }
-
-    public ChunkStepBuilder addListener(Artifact listener) {
-        listeners.add(listener);
-        return this;
-    }
-
-    public ChunkStepBuilder setListeners(List<Artifact> listeners) {
-        if (listeners == null) {
-            this.listeners = new ArrayList<Artifact>();
-        } else {
-            this.listeners = listeners;
-        }
-        return this;
-    }
-
-    public ChunkStepBuilder setPartitionPlan(PartitionPlan partitionPlan) {
-        this.partitionPlan = partitionPlan;
-        return this;
-    }
-
-    public ChunkStepBuilder setPartitionMapper(Artifact partitionMapper) {
-        this.partitionMapper = partitionMapper;
-        return this;
-    }
-
-    public ChunkStepBuilder setPartitionReducer(Artifact partitionReducer) {
-        this.partitionReducer = partitionReducer;
-        return this;
-    }
-
-    public ChunkStepBuilder setPartitionCollector(Artifact partitionCollector) {
-        this.partitionCollector = partitionCollector;
-        return this;
-    }
-
-    public ChunkStepBuilder setPartitionAnalyser(Artifact partitionAnalyser) {
-        this.partitionAnalyser = partitionAnalyser;
+    @Override
+    protected ChunkStepBuilder getBuilder() {
         return this;
     }
 
@@ -150,6 +86,11 @@ public class ChunkStepBuilder {
             throw new JabatException("Chunk commit interval should be greater than 0");
         }
         this.commitInterval = commitInterval;
+        return this;
+    }
+
+    public ChunkStepBuilder setCheckpointAlgo(Artifact checkpointAlgo) {
+        this.checkpointAlgo = checkpointAlgo;
         return this;
     }
 
@@ -189,10 +130,39 @@ public class ChunkStepBuilder {
         }
     }
 
+    public ChunkStepBuilder includeSkippableException(Class<?> clazz) {
+        this.includedSkippableExceptionClasses.add(clazz);
+        return this;
+    }
+
+    public ChunkStepBuilder excludeSkippableException(Class<?> clazz) {
+        this.excludedSkippableExceptionClasses.add(clazz);
+        return this;
+    }
+
+    public ChunkStepBuilder includeRetryableException(Class<?> clazz) {
+        this.includedRetryableExceptionClasses.add(clazz);
+        return this;
+    }
+
+    public ChunkStepBuilder excludeRetryableException(Class<?> clazz) {
+        this.excludedRetryableExceptionClasses.add(clazz);
+        return this;
+    }
+
+    public ChunkStepBuilder includeNoRollbackException(Class<?> clazz) {
+        this.includedNoRollbackExceptionClasses.add(clazz);
+        return this;
+    }
+
+    public ChunkStepBuilder excludeNoRollbackException(Class<?> clazz) {
+        this.excludedNoRollbackExceptionClasses.add(clazz);
+        return this;
+    }
+
+    @Override
     public ChunkStep build() {
-        if (id == null) {
-            throw new JabatException("Chunk id is not set");
-        }
+        check();
         if (reader == null) {
             throw new JabatException("Chunk reader artifact is not set");
         }
@@ -202,11 +172,27 @@ public class ChunkStepBuilder {
         if (writer == null) {
             throw new JabatException("Chunk writer artifact is not set");
         }
+        CheckpointPolicy policy = getCheckpointPolicy();
+        if (policy == CheckpointPolicy.CUSTOM && checkpointAlgo == null) {
+            throw new JabatException("A checkpoint algorithm artifact should be specified for a custom checkpoint policy");
+        }
+        ExceptionClassFilter skippableExceptionClasses =
+                new ExceptionClassFilter(includedSkippableExceptionClasses,
+                                         excludedSkippableExceptionClasses);
+        ExceptionClassFilter retryableExceptionClasses
+                = new ExceptionClassFilter(includedRetryableExceptionClasses,
+                                           excludedRetryableExceptionClasses);
+        ExceptionClassFilter noRollbackExceptionClasses
+                = new ExceptionClassFilter(includedNoRollbackExceptionClasses,
+                                           excludedNoRollbackExceptionClasses);
         ChunkStep chunk = new ChunkStep(id, next, properties, partitionPlan, partitionMapper,
                                         partitionReducer, partitionCollector, partitionAnalyser,
-                                        listeners, reader, processor, writer,
-                                        getCheckpointPolicy(), commitInterval,
-                                        getBufferSize(), retryLimit);
+                                        listeners, terminatingElements,
+                                        reader, processor, writer,
+                                        policy, commitInterval,
+                                        checkpointAlgo, getBufferSize(), retryLimit,
+                                        skippableExceptionClasses, retryableExceptionClasses,
+                                        noRollbackExceptionClasses);
         return chunk;
     }
 }

@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import javax.batch.api.parameters.PartitionPlan;
@@ -36,23 +37,24 @@ public abstract class Step extends AbstractNode implements Chainable {
 
     private final Artifact partitionCollector;
 
-    private final Artifact partitionAnalyser;
+    private final Artifact partitionAnalyzer;
 
     private final List<Artifact> listeners;
 
-    private final List<TerminatingElement> terminatingElements = new ArrayList<TerminatingElement>();
+    private final List<TerminatingElement> terminatingElements;
 
     Step(String id, String next, Properties properties, PartitionPlan partitionPlan,
          Artifact partitionMapper, Artifact partitionReducer, Artifact partitionCollector,
-         Artifact partitionAnalyser, List<Artifact> listeners) {
+         Artifact partitionAnalyzer, List<Artifact> listeners, List<TerminatingElement> terminatingElements) {
         super(id, properties);
         this.next = next;
         this.partitionPlan = partitionPlan;
         this.partitionMapper = partitionMapper;
         this.partitionReducer = partitionReducer;
         this.partitionCollector = partitionCollector;
-        this.partitionAnalyser = partitionAnalyser;
-        this.listeners = listeners;
+        this.partitionAnalyzer = partitionAnalyzer;
+        this.listeners = Collections.unmodifiableList(listeners);
+        this.terminatingElements = Collections.unmodifiableList(terminatingElements);
     }
 
     @Override
@@ -76,8 +78,8 @@ public abstract class Step extends AbstractNode implements Chainable {
         return partitionCollector;
     }
 
-    public Artifact getPartitionAnalyser() {
-        return partitionAnalyser;
+    public Artifact getPartitionAnalyzer() {
+        return partitionAnalyzer;
     }
 
     public List<Artifact> getListeners() {
@@ -103,9 +105,9 @@ public abstract class Step extends AbstractNode implements Chainable {
         } else if (partitionCollector != null
                 && partitionCollector.getRef().equals(ref)) {
             return partitionCollector;
-        } else if (partitionAnalyser != null
-                && partitionAnalyser.getRef().equals(ref)) {
-            return partitionAnalyser;
+        } else if (partitionAnalyzer != null
+                && partitionAnalyzer.getRef().equals(ref)) {
+            return partitionAnalyzer;
         } else {
             for (Artifact listener : listeners) {
                 if (listener.getRef().equals(ref)) {
@@ -126,8 +128,8 @@ public abstract class Step extends AbstractNode implements Chainable {
         if (partitionCollector != null) {
             artifacts.add(partitionCollector);
         }
-        if (partitionAnalyser != null) {
-            artifacts.add(partitionAnalyser);
+        if (partitionAnalyzer != null) {
+            artifacts.add(partitionAnalyzer);
         }
         artifacts.addAll(listeners);
     }

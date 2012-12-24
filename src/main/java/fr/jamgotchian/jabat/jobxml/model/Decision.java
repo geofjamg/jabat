@@ -29,11 +29,12 @@ public class Decision extends AbstractNode {
 
     private final Artifact artifact;
 
-    private final List<ControlElement> controlElements = new ArrayList<ControlElement>();
+    private final List<ControlElement> controlElements;
 
-    Decision(String id, Properties properties, Artifact artifact) {
+    Decision(String id, Properties properties, Artifact artifact, List<ControlElement> controlElements) {
         super(id, properties);
         this.artifact = artifact;
+        this.controlElements = Collections.unmodifiableList(controlElements);
     }
 
     public Artifact getArtifact() {

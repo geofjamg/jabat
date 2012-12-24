@@ -15,27 +15,29 @@
  */
 package fr.jamgotchian.jabat.util;
 
-import javax.xml.stream.XMLStreamReader;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class XmlUtil {
+public class SimpleErrorHandler implements ErrorHandler {
 
-    private XmlUtil() {
+    @Override
+    public void warning(SAXParseException exception) throws SAXException {
+        throw exception;
     }
 
-    public static Integer getAttributeIntegerValue(XMLStreamReader xmlsr, String namespaceURI,
-                                           String localName) {
-        String value = xmlsr.getAttributeValue(namespaceURI, localName);
-        return value != null ? Integer.valueOf(value) : null;
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+        throw exception;
     }
 
-    public static <E extends Enum<E>> E getAttributeEnumValue(XMLStreamReader xmlsr, String namespaceURI,
-                                                              String localName, Class<E> clazz) {
-        String value = xmlsr.getAttributeValue(namespaceURI, localName);
-        return value != null ? Enum.valueOf(clazz, value.toUpperCase()) : null;
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+        throw exception;
     }
 
 }

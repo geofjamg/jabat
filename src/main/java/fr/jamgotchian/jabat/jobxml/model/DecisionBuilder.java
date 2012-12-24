@@ -16,6 +16,8 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -29,6 +31,8 @@ public class DecisionBuilder {
     private Properties properties = new Properties();
 
     private Artifact artifact;
+
+    private final List<ControlElement> controlElements = new ArrayList<ControlElement>();
 
     public DecisionBuilder() {
     }
@@ -48,6 +52,11 @@ public class DecisionBuilder {
         return this;
     }
 
+    public DecisionBuilder addControlElement(ControlElement controlElement) {
+        controlElements.add(controlElement);
+        return this;
+    }
+
     public Decision build() {
         if (id == null) {
             throw new JabatException("Decision id is not set");
@@ -55,6 +64,6 @@ public class DecisionBuilder {
         if (artifact == null) {
             throw new JabatException("Decision artifact is not set");
         }
-        return new Decision(id, properties, artifact);
+        return new Decision(id, properties, artifact, controlElements);
     }
 }

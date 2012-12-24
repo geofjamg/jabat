@@ -16,6 +16,8 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -30,6 +32,10 @@ public class SplitBuilder {
 
     private final Properties properties = new Properties();
 
+    private final List<Artifact> listeners = new ArrayList<Artifact>();
+
+    private final List<Flow> flows = new ArrayList<Flow>();
+
     public SplitBuilder() {
     }
 
@@ -43,8 +49,28 @@ public class SplitBuilder {
         return this;
     }
 
-    public SplitBuilder setProperty(String name, String value) {
+    public SplitBuilder addProperty(String name, String value) {
         properties.setProperty(name, value);
+        return this;
+    }
+
+    public SplitBuilder addProperties(Properties properties) {
+        this.properties.putAll(properties);
+        return this;
+    }
+
+    public SplitBuilder addListener(Artifact listener) {
+        listeners.add(listener);
+        return this;
+    }
+
+    public SplitBuilder addListeners(List<Artifact> listeners) {
+        this.listeners.addAll(listeners);
+        return this;
+    }
+
+    public SplitBuilder addFlow(Flow flow) {
+        flows.add(flow);
         return this;
     }
 
@@ -52,6 +78,11 @@ public class SplitBuilder {
         if (id == null) {
             throw new JabatException("Split id is not set");
         }
-        return new Split(id, next, properties);
+        if (flows.size() < 2) {
+            throw new JabatException("A Split is supposed to contain at least 2 flows");
+        }
+        JobCheckUtil.checkIdUnicity(flows);
+        JobCheckUtil.checkNotAssociated(flows);
+        return new Split(id, properties, flows, next, listeners);
     }
 }
