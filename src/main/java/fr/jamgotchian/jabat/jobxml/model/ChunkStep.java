@@ -78,6 +78,11 @@ public class ChunkStep extends Step {
         this.noRollbackExceptionClasses = noRollbackExceptionClasses;
     }
 
+    @Override
+    public NodeType getType() {
+        return NodeType.CHUNK_STEP;
+    }
+
     public Artifact getReader() {
         return reader;
     }

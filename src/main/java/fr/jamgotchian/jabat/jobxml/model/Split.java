@@ -39,6 +39,11 @@ public class Split extends AbstractNodeContainer implements Chainable {
     }
 
     @Override
+    public NodeType getType() {
+        return NodeType.SPLIT;
+    }
+
+    @Override
     public String getNext() {
         return next;
     }

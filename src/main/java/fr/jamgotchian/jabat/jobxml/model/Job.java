@@ -38,6 +38,11 @@ public class Job extends AbstractNodeContainer {
         this.restartable = restartable;
     }
 
+    @Override
+    public NodeType getType() {
+        return NodeType.JOB;
+    }
+
     public List<Artifact> getListeners() {
         return listeners;
     }

@@ -39,6 +39,11 @@ public class Flow extends AbstractNodeContainer implements Chainable {
     }
 
     @Override
+    public NodeType getType() {
+        return NodeType.FLOW;
+    }
+
+    @Override
     public String getNext() {
         return next;
     }

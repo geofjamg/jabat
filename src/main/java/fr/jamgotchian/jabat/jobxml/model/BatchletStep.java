@@ -40,6 +40,11 @@ public class BatchletStep extends Step {
         this.artifact = artifact;
     }
 
+    @Override
+    public NodeType getType() {
+        return NodeType.BATCHLET_STEP;
+    }
+
     public Artifact getArtifact() {
         return artifact;
     }

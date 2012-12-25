@@ -15,23 +15,15 @@
  */
 package fr.jamgotchian.jabat.jobxml.model;
 
-import java.util.List;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Node extends Propertiable {
-
-    String getId();
-
-    NodeType getType();
-
-    NodeContainer getContainer();
-
-    Artifact getArtifact(String ref);
-
-    List<Artifact> getArtifacts();
-
-    <A> void accept(NodeVisitor<A> visitor, A arg);
+public enum NodeType {
+    JOB,
+    BATCHLET_STEP,
+    CHUNK_STEP,
+    SPLIT,
+    FLOW,
+    DECISION
 }

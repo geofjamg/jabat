@@ -36,6 +36,11 @@ public class Decision extends AbstractNode {
         this.controlElements = Collections.unmodifiableList(controlElements);
     }
 
+    @Override
+    public NodeType getType() {
+        return NodeType.DECISION;
+    }
+
     public Artifact getArtifact() {
         return artifact;
     }
