@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobXmlLoader {
+public class JobXmlLoader implements JobXmlConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
@@ -702,7 +702,7 @@ public class JobXmlLoader {
             Document document = builder.build(file);
 
             Element root = document.getRootElement();
-            Namespace ns = Namespace.getNamespace("jsl", "http://batch.jsr352/jsl");
+            Namespace ns = Namespace.getNamespace(NS_PREFIX, NS_URI);
             if ("job".equals(root.getName())) {
                 Job job2 = createJob(root, ns);
                 if (job2.getId().equals(jobId)) {
