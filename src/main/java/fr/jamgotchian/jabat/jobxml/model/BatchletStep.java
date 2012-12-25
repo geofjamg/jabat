@@ -52,7 +52,7 @@ public class BatchletStep extends Step {
         } else if (artifact.getRef().equals(ref)) {
             return artifact;
         } else {
-            throw new JabatException("Artifact " + ref + " not found");
+            throw new JabatException("Artifact '" + ref + "' not found");
         }
     }
 

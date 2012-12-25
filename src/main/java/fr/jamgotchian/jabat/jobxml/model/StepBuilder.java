@@ -35,9 +35,9 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
 
     protected boolean allowStartIfComplete = false;
 
-    protected Properties properties = new Properties();
+    protected final Properties properties = new Properties();
 
-    protected List<Artifact> listeners = new ArrayList<Artifact>();
+    protected final List<Artifact> listeners = new ArrayList<Artifact>();
 
     protected PartitionPlan partitionPlan;
 

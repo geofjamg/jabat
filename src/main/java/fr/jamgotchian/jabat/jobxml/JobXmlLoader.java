@@ -30,7 +30,6 @@ import fr.jamgotchian.jabat.jobxml.model.FlowBuilder;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.jobxml.model.JobBuilder;
 import fr.jamgotchian.jabat.jobxml.model.JobConsistencyChecker;
-import fr.jamgotchian.jabat.jobxml.model.JobPath;
 import fr.jamgotchian.jabat.jobxml.model.NextElement;
 import fr.jamgotchian.jabat.jobxml.model.PartitionPlanBuilder;
 import fr.jamgotchian.jabat.jobxml.model.Split;

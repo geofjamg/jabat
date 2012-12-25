@@ -25,9 +25,9 @@ abstract class AbstractNode implements Node {
 
     private final String id;
 
-    private Properties properties;
+    private final Properties properties;
 
-    private Properties substitutedproperties = new Properties();
+    private final Properties substitutedproperties = new Properties();
 
     private NodeContainer container;
 

@@ -15,7 +15,6 @@
  */
 package fr.jamgotchian.jabat.jobxml.model;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**

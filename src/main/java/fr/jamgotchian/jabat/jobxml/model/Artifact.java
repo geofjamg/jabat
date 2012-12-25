@@ -25,9 +25,9 @@ public class Artifact implements Propertiable {
 
     private final String ref;
 
-    private Properties properties = new Properties();
+    private final Properties properties;
 
-    private Properties substitutedproperties = new Properties();
+    private final Properties substitutedproperties = new Properties();
 
     Artifact(String ref, Properties properties) {
         this.ref = ref;

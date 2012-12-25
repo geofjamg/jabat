@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.jobxml.model;
 
 import fr.jamgotchian.jabat.util.JabatException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -46,7 +45,7 @@ public class Decision extends AbstractNode {
         if (artifact.getRef().equals(ref)) {
             return artifact;
         } else {
-            throw new JabatException("Artifact " + ref + " not found");
+            throw new JabatException("Artifact '" + ref + "' not found");
         }
     }
 

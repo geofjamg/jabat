@@ -49,7 +49,7 @@ public class Split extends AbstractNodeContainer implements Chainable {
 
     @Override
     public Artifact getArtifact(String ref) {
-        throw new JabatException("Artifact " + ref + " not found");
+        throw new JabatException("Artifact '" + ref + "' not found");
     }
 
     @Override

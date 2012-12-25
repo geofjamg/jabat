@@ -141,7 +141,7 @@ public class ChunkStep extends Step {
                 && checkpointAlgo.getRef().equals(ref)) {
             return checkpointAlgo;
         } else {
-            throw new JabatException("Artifact " + ref + " not found");
+            throw new JabatException("Artifact '" + ref + "' not found");
         }
     }
 

@@ -49,7 +49,7 @@ public class Job extends AbstractNodeContainer {
                 return listener;
             }
         }
-        throw new JabatException("Artifact " + ref + " not found");
+        throw new JabatException("Artifact '" + ref + "' not found");
     }
 
     @Override
