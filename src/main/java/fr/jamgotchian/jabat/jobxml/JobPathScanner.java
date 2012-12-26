@@ -15,14 +15,15 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import java.io.File;
+import com.google.common.base.Predicate;
+import java.io.InputStream;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobPath {
+public interface JobPathScanner {
 
-    File[] getDirectories();
+   InputStream scan(Predicate<InputStream> predicate);
 
 }

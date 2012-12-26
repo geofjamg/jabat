@@ -15,14 +15,11 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import java.io.File;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobPath {
-
-    File[] getDirectories();
-
+public enum TopLevelElementType {
+    JOB,
+    STEP
 }

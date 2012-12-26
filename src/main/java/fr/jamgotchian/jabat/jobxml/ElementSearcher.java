@@ -15,14 +15,14 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import java.io.File;
+import java.io.InputStream;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobPath {
+public interface ElementSearcher {
 
-    File[] getDirectories();
+    InputStream search(TopLevelElementType type, String id);
 
 }

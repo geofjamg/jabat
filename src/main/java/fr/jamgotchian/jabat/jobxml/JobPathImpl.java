@@ -15,14 +15,23 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
+import fr.jamgotchian.jabat.util.JabatException;
 import java.io.File;
+import java.net.URISyntaxException;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobPath {
+public class JobPathImpl implements JobPath {
 
-    File[] getDirectories();
+    @Override
+    public File[] getDirectories() {
+        try {
+            return new File[] { new File(getClass().getResource("/META-INF").toURI()) };
+        } catch (URISyntaxException e) {
+            throw new JabatException(e);
+        }
+    }
 
 }

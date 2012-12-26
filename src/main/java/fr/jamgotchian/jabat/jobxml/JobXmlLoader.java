@@ -39,8 +39,8 @@ import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.jobxml.model.StepBuilder;
 import fr.jamgotchian.jabat.jobxml.model.StopElement;
 import fr.jamgotchian.jabat.util.JabatException;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -66,7 +66,7 @@ public class JobXmlLoader implements JobXmlConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private final JobPath path = new JobPath();
+    private final ElementSearcher searcher = new ElementSearcherImpl();
 
     private static interface ExceptionClassFilterer {
 
@@ -711,23 +711,25 @@ public class JobXmlLoader implements JobXmlConstants {
         return builder.build();
     }
 
-    private Job loadFile(File file, String jobId) {
-        Job job = null;
+    private Job load(InputStream is) {
         try {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             Schema schema = schemaFactory.newSchema(getClass().getResource("/jobXML.xsd"));
 
             SAXBuilder builder = new SAXBuilder(new XMLReaderSchemaFactory(schema));
-            Document document = builder.build(file);
+            Document document = builder.build(is);
 
             Element root = document.getRootElement();
             Namespace ns = Namespace.getNamespace(NS_PREFIX, NS_URI);
-            if ("job".equals(root.getName())) {
-                Job job2 = createJob(root, ns);
-                if (job2.getId().equals(jobId)) {
-                    job = job2;
-                }
-            }
+
+            Job job = createJob(root, ns);
+
+            // check job consistency
+            ConsistencyReport report = new JobConsistencyChecker(job).check();
+
+            LOGGER.debug("Loaded job '{}'", job.getId());
+
+            return job;
         } catch (IOException e) {
             throw new JabatException(e);
         } catch (JDOMException e) {
@@ -735,29 +737,22 @@ public class JobXmlLoader implements JobXmlConstants {
         } catch (SAXException e) {
             throw new JabatException(e);
         }
-
-        // check job consistency
-        if (job != null) {
-            ConsistencyReport report = new JobConsistencyChecker(job).check();
-        }
-
-        LOGGER.debug("Load job xml {} file {}", jobId, file);
-
-        return job;
     }
 
     public Job load(String id) throws NoSuchJobException {
-        for (File file : path.findJobXml()) {
+        InputStream is = searcher.search(TopLevelElementType.JOB, id);
+        if (is == null) {
+            throw new NoSuchJobException("Job '" + id + "' not found");
+        }
+        try {
+            return load(is);
+        } finally {
             try {
-                Job job = loadFile(file, id);
-                if (job != null) {
-                    return job;
-                }
-            } catch (JabatException e) {
+                is.close();
+            } catch (IOException e) {
                 LOGGER.error(e.toString(), e);
             }
         }
-        throw new NoSuchJobException("Job " + id + " not found");
     }
 
 }
