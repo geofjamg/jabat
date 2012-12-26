@@ -47,6 +47,6 @@ public class BatchletStepBuilder extends StepBuilder<BatchletStepBuilder, Batchl
         return new BatchletStep(id, next, startLimit, allowStartIfComplete, properties,
                                 partitionPlan, partitionMapper, partitionReducer,
                                 partitionCollector, partitionAnalyser,
-                                listeners, terminatingElements, artifact);
+                                listeners, controlElements, artifact);
     }
 }

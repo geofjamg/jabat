@@ -49,8 +49,8 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
 
     protected Artifact partitionAnalyser;
 
-    protected final List<TerminatingElement> terminatingElements
-            = new ArrayList<TerminatingElement>();
+    protected final List<ControlElement> controlElements
+            = new ArrayList<ControlElement>();
 
     protected StepBuilder() {
     }
@@ -122,8 +122,8 @@ public abstract class StepBuilder<B extends StepBuilder, S extends Step> {
         return getBuilder();
     }
 
-    public B addTerminatingElement(TerminatingElement terminatingElement) {
-        terminatingElements.add(terminatingElement);
+    public B addControlElement(ControlElement controlElement) {
+        controlElements.add(controlElement);
         return getBuilder();
     }
 

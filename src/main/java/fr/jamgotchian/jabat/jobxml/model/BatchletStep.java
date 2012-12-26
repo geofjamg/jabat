@@ -32,11 +32,11 @@ public class BatchletStep extends Step {
     BatchletStep(String id, String next, int startLimit, boolean allowStartIfComplete,
              Properties properties, PartitionPlan partitionPlan, Artifact partitionMapper,
              Artifact partitionReducer, Artifact partitionCollector, Artifact partitionAnalyser,
-             List<Artifact> listeners, List<TerminatingElement> terminatingElements,
+             List<Artifact> listeners, List<ControlElement> controlElements,
              Artifact artifact) {
         super(id, next, startLimit, allowStartIfComplete, properties, partitionPlan,
                 partitionMapper, partitionReducer, partitionCollector, partitionAnalyser,
-                listeners, terminatingElements);
+                listeners, controlElements);
         this.artifact = artifact;
     }
 

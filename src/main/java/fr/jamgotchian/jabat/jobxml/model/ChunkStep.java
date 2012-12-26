@@ -54,7 +54,7 @@ public class ChunkStep extends Step {
     ChunkStep(String id, String next, int startLimit, boolean allowStartIfComplete,
             Properties properties, PartitionPlan partitionPlan, Artifact partitionMapper,
             Artifact partitionReducer, Artifact partitionCollector, Artifact partitionAnalyser,
-            List<Artifact> listeners, List<TerminatingElement> terminatingElements,
+            List<Artifact> listeners, List<ControlElement> controlElements,
             Artifact reader, Artifact processor, Artifact writer,
             CheckpointPolicy checkpointPolicy, int commitInterval,
             Artifact checkpointAlgo, int bufferSize, int retryLimit, int skipLimit,
@@ -63,7 +63,7 @@ public class ChunkStep extends Step {
             ExceptionClassFilter noRollbackExceptionClasses) {
         super(id, next, startLimit, allowStartIfComplete, properties, partitionPlan,
                 partitionMapper, partitionReducer, partitionCollector, partitionAnalyser,
-                listeners, terminatingElements);
+                listeners, controlElements);
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;

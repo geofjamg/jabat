@@ -198,7 +198,7 @@ public class ChunkStepBuilder extends StepBuilder<ChunkStepBuilder, ChunkStep> {
         ChunkStep chunk = new ChunkStep(id, next, startLimit, allowStartIfComplete,
                                         properties, partitionPlan, partitionMapper,
                                         partitionReducer, partitionCollector, partitionAnalyser,
-                                        listeners, terminatingElements,
+                                        listeners, controlElements,
                                         reader, processor, writer,
                                         policy, commitInterval,
                                         checkpointAlgo, getBufferSize(), retryLimit, skipLimit,

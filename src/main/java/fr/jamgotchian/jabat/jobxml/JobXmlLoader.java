@@ -21,6 +21,7 @@ import fr.jamgotchian.jabat.jobxml.model.BatchletStepBuilder;
 import fr.jamgotchian.jabat.jobxml.model.CheckpointPolicy;
 import fr.jamgotchian.jabat.jobxml.model.ChunkStepBuilder;
 import fr.jamgotchian.jabat.jobxml.model.ConsistencyReport;
+import fr.jamgotchian.jabat.jobxml.model.ControlElement;
 import fr.jamgotchian.jabat.jobxml.model.Decision;
 import fr.jamgotchian.jabat.jobxml.model.DecisionBuilder;
 import fr.jamgotchian.jabat.jobxml.model.EndElement;
@@ -73,6 +74,11 @@ public class JobXmlLoader implements JobXmlConstants {
 
         void exclude(Class<?> clazz);
 
+    }
+
+    private static interface ControlElementAdder {
+
+        void addControlElement(ControlElement controlElement);
     }
 
     /**
@@ -380,13 +386,14 @@ public class JobXmlLoader implements JobXmlConstants {
      *     </jsl:listeners>
      *     <jsl:batchlet|chunk>...
      *     </jsl:batchlet|chunk>
-     *     <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
-     *     <jsl:end on="{exit-status}" exit-status="{exit-status}" />
-     *     <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
+     *     <jsl:fail ... />
+     *     <jsl:end ... />
+     *     <jsl:stop ... />
+     *     <jsl:next ... />
      * </jsl:step>
      */
     private Step createStep(Element stepElem, Namespace ns) {
-        StepBuilder builder;
+        final StepBuilder builder;
 
         Element batchletElem = stepElem.getChild("batchlet", ns);
         if (batchletElem != null) {
@@ -446,17 +453,12 @@ public class JobXmlLoader implements JobXmlConstants {
             builder.addListeners(createListeners(listenersElem, ns));
         }
 
-        for (Element childElem : stepElem.getChildren()) {
-            if (childElem.getNamespace().equals(ns)) {
-                if ("end".equals(childElem.getName())) {
-                    builder.addTerminatingElement(createEndElement(childElem));
-                } else if ("fail".equals(childElem.getName())) {
-                    builder.addTerminatingElement(createFailElement(childElem));
-                } else if ("stop".equals(childElem.getName())) {
-                    builder.addTerminatingElement(createStopElement(childElem));
-                }
+        processControlElements(stepElem, ns, new ControlElementAdder() {
+            @Override
+            public void addControlElement(ControlElement controlElement) {
+                builder.addControlElement(controlElement);
             }
-        }
+        });
 
         return builder.build();
     }
@@ -595,21 +597,45 @@ public class JobXmlLoader implements JobXmlConstants {
     }
 
     /**
+     * Create control elements from a job xml fragment.
+     *
+     * <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
+     * <jsl:end on="{exit-status}" exit-status="{exit-status}" />
+     * <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
+     * <jsl:next on="{exit-status}" to="{step-id|flow-id|split-id}" />
+     */
+    private void processControlElements(Element elem, Namespace ns, ControlElementAdder adder) {
+        for (Element childElem : elem.getChildren()) {
+            if (childElem.getNamespace().equals(ns)) {
+                if ("end".equals(childElem.getName())) {
+                    adder.addControlElement(createEndElement(childElem));
+                } else if ("fail".equals(childElem.getName())) {
+                    adder.addControlElement(createFailElement(childElem));
+                } else if ("stop".equals(childElem.getName())) {
+                    adder.addControlElement(createStopElement(childElem));
+                } else if ("next".equals(childElem.getName())) {
+                    adder.addControlElement(createNextElement(childElem));
+                }
+            }
+        }
+    }
+
+    /**
      * Create a decision from a job xml fragment.
      *
      * <jsl:decision id="{decision-id}" ref="{artifact-name}">
      *     <jsl:properties>
      *         <jsl:property name="{property-name}" value="{property-value}"/>
      *     </jsl:properties>
-     *     <jsl:fail on="{exit-status}" exit-status="{exit-status}" />
-     *     <jsl:end on="{exit-status}" exit-status="{exit-status}" />
-     *     <jsl:stop on="{exit-status}" exit-status="{exit-status} restart="{step-id|flow-id|split-id}" />
-     *     <jsl:next on="{exit-status}" to="{step-id|flow-id|split-id}" />
+     *     <jsl:fail ... />
+     *     <jsl:end ... />
+     *     <jsl:stop ... />
+     *     <jsl:next ... />
      * </jsl:decision>
      *
      */
     private Decision createDecision(Element decisionElem, Namespace ns) {
-        DecisionBuilder builder = new DecisionBuilder();
+        final DecisionBuilder builder = new DecisionBuilder();
 
         String id = decisionElem.getAttributeValue("id");
         builder.setId(id);
@@ -617,19 +643,12 @@ public class JobXmlLoader implements JobXmlConstants {
         Artifact artifact = createArtifact(decisionElem, ns);
         builder.setArtifact(artifact);
 
-        for (Element childElem : decisionElem.getChildren()) {
-            if (childElem.getNamespace().equals(ns)) {
-                if ("end".equals(childElem.getName())) {
-                    builder.addControlElement(createEndElement(childElem));
-                } else if ("fail".equals(childElem.getName())) {
-                    builder.addControlElement(createFailElement(childElem));
-                } else if ("stop".equals(childElem.getName())) {
-                    builder.addControlElement(createStopElement(childElem));
-                } else if ("next".equals(childElem.getName())) {
-                    builder.addControlElement(createNextElement(childElem));
-                }
+        processControlElements(decisionElem, ns, new ControlElementAdder() {
+            @Override
+            public void addControlElement(ControlElement controlElement) {
+                builder.addControlElement(controlElement);
             }
-        }
+        });
 
         return builder.build();
     }

@@ -44,12 +44,12 @@ public abstract class Step extends AbstractNode implements Chainable {
 
     private final List<Artifact> listeners;
 
-    private final List<TerminatingElement> terminatingElements;
+    private final List<ControlElement> controlElements;
 
     Step(String id, String next, int startLimit, boolean allowStartIfComplete,
             Properties properties, PartitionPlan partitionPlan, Artifact partitionMapper,
             Artifact partitionReducer, Artifact partitionCollector, Artifact partitionAnalyzer,
-            List<Artifact> listeners, List<TerminatingElement> terminatingElements) {
+            List<Artifact> listeners, List<ControlElement> controlElements) {
         super(id, properties);
         this.next = next;
         this.startLimit = startLimit;
@@ -60,7 +60,7 @@ public abstract class Step extends AbstractNode implements Chainable {
         this.partitionCollector = partitionCollector;
         this.partitionAnalyzer = partitionAnalyzer;
         this.listeners = Collections.unmodifiableList(listeners);
-        this.terminatingElements = Collections.unmodifiableList(terminatingElements);
+        this.controlElements = Collections.unmodifiableList(controlElements);
     }
 
     @Override
@@ -100,12 +100,12 @@ public abstract class Step extends AbstractNode implements Chainable {
         return listeners;
     }
 
-    public void addTerminatingElement(TerminatingElement ctrlElt) {
-        terminatingElements.add(ctrlElt);
+    public void addControlElement(TerminatingElement controlElement) {
+        controlElements.add(controlElement);
     }
 
-    public List<TerminatingElement> getTerminatingElements() {
-        return terminatingElements;
+    public List<ControlElement> getControlElements() {
+        return controlElements;
     }
 
     @Override

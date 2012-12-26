@@ -181,7 +181,7 @@ public class XMLizer implements JobXmlConstants {
     }
 
     private void writeStepAfter(Step step, XMLStreamWriter sw) throws XMLStreamException {
-        writeControlElements(step.getTerminatingElements(), sw);
+        writeControlElements(step.getControlElements(), sw);
         sw.writeEndElement();
     }
 
