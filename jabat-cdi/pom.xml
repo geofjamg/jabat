@@ -9,27 +9,31 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jabat-runtime</artifactId>
+    <artifactId>jabat-cdi</artifactId>
     <packaging>jar</packaging>
 
-    <name>Jabat Runtime</name>
+    <name>Jabat CDI</name>
 
     <dependencies>
         <dependency>
+            <groupId>javax.batch</groupId>
+            <artifactId>jsr352-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.batch</groupId>
-            <artifactId>jsr352-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jabat-jobxml</artifactId>
+            <artifactId>jabat-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

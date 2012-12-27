@@ -1,6 +1,7 @@
-package fr.jamgotchian.jabat.artifact.impl;
+package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.artifact.impl.BatchXmlArtifactFactory;
 import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
