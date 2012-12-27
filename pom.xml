@@ -31,6 +31,7 @@
 
     <modules>
         <module>jabat-runtime</module>
+        <module>jabat-jobxml</module>
     </modules>
 
     <dependencyManagement>
@@ -49,6 +50,11 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>3.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>r05</version>
             </dependency>
             <dependency>
                 <groupId>org.jdom</groupId>
