@@ -66,7 +66,7 @@ public class JobXmlLoader implements JobXmlConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private final NodeSearcher searcher = new NodeSearcherImpl();
+    private final TopLevelNodeSearcher searcher = new TopLevelNodeSearcherImpl();
 
     private static interface ExceptionClassFilterer {
 

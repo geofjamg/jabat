@@ -27,15 +27,15 @@ import javax.xml.stream.events.XMLEvent;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NodeSearcherImpl implements NodeSearcher {
+public class TopLevelNodeSearcherImpl implements TopLevelNodeSearcher {
 
     private final JobPathScanner scanner;
 
-    public NodeSearcherImpl(JobPathScanner scanner) {
+    public TopLevelNodeSearcherImpl(JobPathScanner scanner) {
         this.scanner = scanner;
     }
 
-    public NodeSearcherImpl() {
+    public TopLevelNodeSearcherImpl() {
         this(new JobPathScannerImpl());
     }
 

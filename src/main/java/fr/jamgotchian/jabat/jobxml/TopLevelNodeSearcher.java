@@ -21,7 +21,7 @@ import java.io.InputStream;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface NodeSearcher {
+public interface TopLevelNodeSearcher {
 
     InputStream search(TopLevelNodeType type, String id);
 
