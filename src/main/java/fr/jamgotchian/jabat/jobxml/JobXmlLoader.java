@@ -66,7 +66,7 @@ public class JobXmlLoader implements JobXmlConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
 
-    private final ElementSearcher searcher = new ElementSearcherImpl();
+    private final NodeSearcher searcher = new NodeSearcherImpl();
 
     private static interface ExceptionClassFilterer {
 
@@ -740,7 +740,7 @@ public class JobXmlLoader implements JobXmlConstants {
     }
 
     public Job load(String id) throws NoSuchJobException {
-        InputStream is = searcher.search(TopLevelElementType.JOB, id);
+        InputStream is = searcher.search(TopLevelNodeType.JOB, id);
         if (is == null) {
             throw new NoSuchJobException("Job '" + id + "' not found");
         }

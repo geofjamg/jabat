@@ -15,11 +15,14 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
+import java.io.InputStream;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum TopLevelElementType {
-    JOB,
-    STEP
+public interface NodeSearcher {
+
+    InputStream search(TopLevelNodeType type, String id);
+
 }

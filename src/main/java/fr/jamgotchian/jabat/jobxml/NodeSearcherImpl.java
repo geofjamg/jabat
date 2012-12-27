@@ -27,20 +27,20 @@ import javax.xml.stream.events.XMLEvent;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ElementSearcherImpl implements ElementSearcher {
+public class NodeSearcherImpl implements NodeSearcher {
 
     private final JobPathScanner scanner;
 
-    public ElementSearcherImpl(JobPathScanner scanner) {
+    public NodeSearcherImpl(JobPathScanner scanner) {
         this.scanner = scanner;
     }
 
-    public ElementSearcherImpl() {
+    public NodeSearcherImpl() {
         this(new JobPathScannerImpl());
     }
 
     @Override
-    public InputStream search(final TopLevelElementType type, final String id) {
+    public InputStream search(final TopLevelNodeType type, final String id) {
         if (type == null) {
             throw new IllegalArgumentException("type is null");
         }
