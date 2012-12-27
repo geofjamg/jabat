@@ -65,7 +65,7 @@ public class MethodUtil {
                 if (predicate.apply(m)) {
                     return m;
                 } else {
-                    throw new JabatException("Bad signature for " + annotationClass.getName()
+                    throw new JabatRuntimeException("Bad signature for " + annotationClass.getName()
                             + " annotated method of class " + clazz.getName());
                 }
             }
@@ -73,7 +73,7 @@ public class MethodUtil {
         if (optional) {
             return null;
         } else {
-            throw new JabatException("Cannot find " + annotationClass.getName()
+            throw new JabatRuntimeException("Cannot find " + annotationClass.getName()
                     + " annotated method");
         }
     }

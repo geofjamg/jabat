@@ -17,7 +17,7 @@ package fr.jamgotchian.jabat.artifact.impl;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.context.JabatThreadContext;
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +62,7 @@ public class BatchXmlArtifactFactory implements ArtifactFactory {
                                     Class<?> clazz = Class.forName(className);
                                     classes.put(id, clazz);
                                 } catch (ClassNotFoundException e) {
-                                    throw new JabatException("Batch artifact class '"
+                                    throw new JabatRuntimeException("Batch artifact class '"
                                             + className + "' not found");
                                 }
                             }
@@ -83,7 +83,7 @@ public class BatchXmlArtifactFactory implements ArtifactFactory {
     public Object create(String ref) throws Exception {
         Class<?> clazz = classes.get(ref);
         if (clazz == null) {
-            throw new JabatException("Batch artifact '" + ref + "' not found");
+            throw new JabatRuntimeException("Batch artifact '" + ref + "' not found");
         }
         Object instance = clazz.newInstance();
         JabatThreadContext.getInstance().inject(instance, ref);

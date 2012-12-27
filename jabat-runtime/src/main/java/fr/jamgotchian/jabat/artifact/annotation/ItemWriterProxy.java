@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.artifact.annotation;
 
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -45,7 +45,7 @@ public class ItemWriterProxy extends ResourceProxy implements ItemWriter<Object>
         Type expectedType = annotatedClass.getItemType();
         for (Object item : items) {
             if (item.getClass() != expectedType) {
-                throw new JabatException("Bad item type " + item.getClass()
+                throw new JabatRuntimeException("Bad item type " + item.getClass()
                         + ", expected " + expectedType);
             }
         }

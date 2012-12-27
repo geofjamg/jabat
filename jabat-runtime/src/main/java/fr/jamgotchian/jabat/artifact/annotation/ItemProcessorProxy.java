@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.artifact.annotation;
 
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.lang.reflect.InvocationTargetException;
 import javax.batch.api.ItemProcessor;
 
@@ -38,7 +38,7 @@ public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
     public Object processItem(Object item) throws Exception {
         Class<?> expectedType = annotatedClass.getItemType();
         if (item.getClass() != expectedType) {
-            throw new JabatException("Bad item type " + item.getClass()
+            throw new JabatRuntimeException("Bad item type " + item.getClass()
                     + ", expected " + expectedType);
         }
         try {

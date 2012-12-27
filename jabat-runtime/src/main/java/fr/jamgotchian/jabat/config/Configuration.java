@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.config;
 
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -60,9 +60,9 @@ public class Configuration {
                     jobRepositoryClass = Class.forName(jobRepositoryClassName);
                 }
             } catch (IOException e) {
-                throw new JabatException(e);
+                throw new JabatRuntimeException(e);
             } catch (ClassNotFoundException e) {
-                throw new JabatException(e);
+                throw new JabatRuntimeException(e);
             }
         }
     }

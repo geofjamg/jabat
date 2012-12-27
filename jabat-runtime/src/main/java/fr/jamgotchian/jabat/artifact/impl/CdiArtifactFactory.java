@@ -1,7 +1,7 @@
 package fr.jamgotchian.jabat.artifact.impl;
 
 import fr.jamgotchian.jabat.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
 
@@ -17,7 +17,7 @@ public class CdiArtifactFactory implements ArtifactFactory {
     @Override
     public void initialize() throws Exception {
         if (JabatCdiExtension.BEAN_MANAGER == null) {
-            throw new JabatException("CDI container not initialized");
+            throw new JabatRuntimeException("CDI container not initialized");
         }
         batchXmlArtifactFactory.initialize();
     }

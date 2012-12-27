@@ -23,7 +23,7 @@ import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.io.Externalizable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -122,7 +122,7 @@ public class JabatThreadContext {
                 } else if (fieldType == FlowContext.class) {
                     fieldValue = flowContext.get();
                 } else {
-                    throw new JabatException("Field annotated with "
+                    throw new JabatRuntimeException("Field annotated with "
                             + BatchContext.class.getName()
                             + " should have one of the following type: "
                             + JobContext.class.getName() + ", " + StepContext.class.getName() + ", "
@@ -137,14 +137,14 @@ public class JabatThreadContext {
             BatchProperty batchProperty = field.getAnnotation(BatchProperty.class);
             if (batchProperty != null) {
                 if (Modifier.isFinal(field.getModifiers())) {
-                    throw new JabatException("Field annotated with "
+                    throw new JabatRuntimeException("Field annotated with "
                             + BatchProperty.class.getName() + " should not be final");
                 }
                 if (field.getType() == String.class) {
                     // get the current artifact
                     JabatStepContext<?, ?> context = stepContext.get();
                     if (context == null) {
-                        throw new JabatException("Step context is not set");
+                        throw new JabatRuntimeException("Step context is not set");
                     }
                     Artifact artifact = context.getNode().getArtifact(name);
                     String propertyName = batchProperty.name().isEmpty()
@@ -157,7 +157,7 @@ public class JabatThreadContext {
                         field.set(instance, value);
                     }
                 } else {
-                    throw new JabatException("Field annotated with "
+                    throw new JabatRuntimeException("Field annotated with "
                             + BatchProperty.class.getName() + " should be of type "
                             + String.class.getName());
                 }

@@ -28,7 +28,7 @@ import fr.jamgotchian.jabat.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.repository.JobRepository;
 import fr.jamgotchian.jabat.task.TaskManager;
-import fr.jamgotchian.jabat.util.JabatException;
+import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +71,7 @@ public class JobManager {
             artifactFactory = (ArtifactFactory) artifactFactoryClass.newInstance();
             repository = (JobRepository) jobRepositoryClass.newInstance();
         } catch(ReflectiveOperationException e) {
-            throw new JabatException(e);
+            throw new JabatRuntimeException(e);
         }
     }
 

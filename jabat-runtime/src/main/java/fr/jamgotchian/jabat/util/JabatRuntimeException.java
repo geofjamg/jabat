@@ -19,16 +19,16 @@ package fr.jamgotchian.jabat.util;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatException extends RuntimeException {
+public class JabatRuntimeException extends RuntimeException {
 
-    public JabatException() {
+    public JabatRuntimeException() {
     }
 
-    public JabatException(Throwable cause) {
+    public JabatRuntimeException(Throwable cause) {
         super(cause);
     }
 
-    public JabatException(String msg) {
+    public JabatRuntimeException(String msg) {
         super(msg);
     }
 }
