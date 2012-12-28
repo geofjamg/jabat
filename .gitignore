@@ -1,3 +1,4 @@
 /jabat-runtime/target/
 /jabat-jobxml/target/
 /jabat-cdi/target/
+/jabat-jboss-subsystem/target/
