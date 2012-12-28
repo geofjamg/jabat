@@ -62,7 +62,13 @@ public class JobManager {
             = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
 
     public JobManager() {
-        Configuration cfg = new Configuration();
+        this(new Configuration());
+    }
+
+    public JobManager(Configuration cfg) {
+        if (cfg == null) {
+            throw new IllegalArgumentException("configuration is null");
+        }
         Class<?> taskManagerClass = cfg.getTaskManagerClass();
         Class<?> artifactFactoryClass = cfg.getArtifactFactoryClass();
         Class<?> jobRepositoryClass = cfg.getJobRepositoryClass();
