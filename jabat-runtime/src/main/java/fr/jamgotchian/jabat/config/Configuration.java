@@ -15,6 +15,9 @@
  */
 package fr.jamgotchian.jabat.config;
 
+import fr.jamgotchian.jabat.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.repository.JobRepository;
+import fr.jamgotchian.jabat.task.TaskManager;
 import fr.jamgotchian.jabat.util.JabatRuntimeException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,20 +29,20 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    private static final Class<?> DEFAULT_ARTIFACT_FACTORY_CLASS
+    private static final Class<? extends ArtifactFactory> DEFAULT_ARTIFACT_FACTORY_CLASS
             = fr.jamgotchian.jabat.artifact.impl.BatchXmlArtifactFactory.class;
 
-    private static final Class<?> DEFAULT_TASK_MANAGER_CLASS
+    private static final Class<? extends TaskManager> DEFAULT_TASK_MANAGER_CLASS
             = fr.jamgotchian.jabat.task.impl.ExecutorServiceTaskManager.class;
 
-    private static final Class<?> DEFAULT_JOB_REPOSITORY_CLASS
+    private static final Class<? extends JobRepository> DEFAULT_JOB_REPOSITORY_CLASS
             = fr.jamgotchian.jabat.repository.impl.JobRepositoryImpl.class;
 
-    private Class<?> artifactFactoryClass;
+    private Class<? extends ArtifactFactory> artifactFactoryClass;
 
-    private Class<?> taskManagerClass;
+    private Class<? extends TaskManager> taskManagerClass;
 
-    private Class<?> jobRepositoryClass;
+    private Class<? extends JobRepository> jobRepositoryClass;
 
     public Configuration() {
         InputStream is = getClass().getResourceAsStream("/jabat.properties");
@@ -49,15 +52,15 @@ public class Configuration {
                 props.load(is);
                 String artifactFactoryClassName = props.getProperty("jabat.artifactFactory");
                 if (artifactFactoryClassName !=  null) {
-                    artifactFactoryClass = Class.forName(artifactFactoryClassName);
+                    artifactFactoryClass = Class.forName(artifactFactoryClassName).asSubclass(ArtifactFactory.class);
                 }
                 String taskManagerClassName = props.getProperty("jabat.taskManager");
                 if (taskManagerClassName != null) {
-                    taskManagerClass = Class.forName(taskManagerClassName);
+                    taskManagerClass = Class.forName(taskManagerClassName).asSubclass(TaskManager.class);
                 }
                 String jobRepositoryClassName = props.getProperty("jabat.jobRepository");
                 if (jobRepositoryClassName != null) {
-                    jobRepositoryClass = Class.forName(jobRepositoryClassName);
+                    jobRepositoryClass = Class.forName(jobRepositoryClassName).asSubclass(JobRepository.class);
                 }
             } catch (IOException e) {
                 throw new JabatRuntimeException(e);
@@ -67,7 +70,7 @@ public class Configuration {
         }
     }
 
-    public Class<?> getArtifactFactoryClass() {
+    public Class<? extends ArtifactFactory> getArtifactFactoryClass() {
         if (artifactFactoryClass == null) {
             return DEFAULT_ARTIFACT_FACTORY_CLASS;
         } else {
@@ -75,11 +78,11 @@ public class Configuration {
         }
     }
 
-    public void setArtifactFactoryClass(Class<?> artifactFactoryClass) {
+    public void setArtifactFactoryClass(Class<? extends ArtifactFactory> artifactFactoryClass) {
         this.artifactFactoryClass = artifactFactoryClass;
     }
 
-    public Class<?> getTaskManagerClass() {
+    public Class<? extends TaskManager> getTaskManagerClass() {
         if (taskManagerClass == null) {
             return DEFAULT_TASK_MANAGER_CLASS;
         } else {
@@ -87,11 +90,11 @@ public class Configuration {
         }
     }
 
-    public void setTaskManagerClass(Class<?> taskManagerClass) {
+    public void setTaskManagerClass(Class<? extends TaskManager> taskManagerClass) {
         this.taskManagerClass = taskManagerClass;
     }
 
-    public Class<?> getJobRepositoryClass() {
+    public Class<? extends JobRepository> getJobRepositoryClass() {
         if (jobRepositoryClass == null) {
             return DEFAULT_JOB_REPOSITORY_CLASS;
         } else {
@@ -99,7 +102,7 @@ public class Configuration {
         }
     }
 
-    public void setJobRepositoryClass(Class<?> jobRepositoryClass) {
+    public void setJobRepositoryClass(Class<? extends JobRepository> jobRepositoryClass) {
         this.jobRepositoryClass = jobRepositoryClass;
     }
 
