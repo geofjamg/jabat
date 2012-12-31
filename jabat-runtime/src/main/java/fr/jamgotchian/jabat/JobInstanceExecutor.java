@@ -64,7 +64,7 @@ import javax.batch.api.PartitionMapper;
 import javax.batch.api.PartitionReducer;
 import javax.batch.api.StepListener;
 import javax.batch.api.parameters.PartitionPlan;
-import javax.batch.spi.TransactionManagerSPI;
+import javax.batch.runtime.spi.TransactionManagerSPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

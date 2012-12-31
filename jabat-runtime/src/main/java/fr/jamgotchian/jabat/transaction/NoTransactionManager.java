@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.transaction;
 
-import javax.batch.spi.TransactionManagerSPI;
+import javax.batch.runtime.spi.TransactionManagerSPI;
 
 /**
  *
