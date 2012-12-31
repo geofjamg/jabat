@@ -16,7 +16,10 @@
 package fr.jamgotchian.jabat.jboss.extension;
 
 import org.jboss.as.controller.SimpleResourceDefinition;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 
 /**
  *
@@ -29,20 +32,19 @@ public class JabatSubsystemDefinition extends SimpleResourceDefinition {
     private JabatSubsystemDefinition() {
         super(JabatSubsystemExtension.SUBSYSTEM_PATH,
                 JabatSubsystemExtension.getResourceDescriptionResolver(null),
-                //We always need to add an 'add' operation
                 JabatSubsystemAdd.INSTANCE,
-                //Every resource that is added, normally needs a remove operation
                 JabatSubsystemRemove.INSTANCE);
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        //you can register aditional operations here
+        resourceRegistration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE,
+                GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        //you can register attributes here
     }
+
 }
