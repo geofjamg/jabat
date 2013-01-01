@@ -30,7 +30,7 @@ import java.util.Properties;
 public class Configuration {
 
     private static final Class<? extends ArtifactFactory> DEFAULT_ARTIFACT_FACTORY_CLASS
-            = fr.jamgotchian.jabat.runtime.artifact.impl.BatchXmlArtifactFactory.class;
+            = fr.jamgotchian.jabat.runtime.artifact.BatchXmlArtifactFactory.class;
 
     private static final Class<? extends TaskManager> DEFAULT_TASK_MANAGER_CLASS
             = fr.jamgotchian.jabat.runtime.task.impl.ExecutorServiceTaskManager.class;

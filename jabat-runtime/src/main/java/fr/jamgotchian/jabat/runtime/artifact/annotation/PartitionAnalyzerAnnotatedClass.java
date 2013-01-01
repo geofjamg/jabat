@@ -28,13 +28,13 @@ import javax.batch.annotation.AnalyzeStatus;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class AnalyserAnnotatedClass {
+public class PartitionAnalyzerAnnotatedClass {
 
     private final Method analyseCollectorDataMethod;
 
     private final Method analyseStatusMethod;
 
-    public AnalyserAnnotatedClass(Class<?> clazz) {
+    public PartitionAnalyzerAnnotatedClass(Class<?> clazz) {
         analyseCollectorDataMethod = findAnnotatedMethod(clazz, AnalyzeCollectorData.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.impl;
+package fr.jamgotchian.jabat.runtime.artifact;
 
-import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.io.InputStream;

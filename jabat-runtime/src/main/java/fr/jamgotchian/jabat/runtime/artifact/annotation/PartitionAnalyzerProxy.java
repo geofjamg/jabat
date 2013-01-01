@@ -23,15 +23,15 @@ import javax.batch.api.PartitionAnalyzer;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionAnalyserProxy implements PartitionAnalyzer {
+public class PartitionAnalyzerProxy implements PartitionAnalyzer {
 
     private final Object object;
 
-    private final AnalyserAnnotatedClass annotatedClass;
+    private final PartitionAnalyzerAnnotatedClass annotatedClass;
 
-    public PartitionAnalyserProxy(Object object) {
+    public PartitionAnalyzerProxy(Object object) {
         this.object = object;
-        annotatedClass = new AnalyserAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionAnalyzerAnnotatedClass(object.getClass());
     }
 
     @Override

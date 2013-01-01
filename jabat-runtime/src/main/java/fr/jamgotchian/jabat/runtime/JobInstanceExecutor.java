@@ -16,11 +16,6 @@
 package fr.jamgotchian.jabat.runtime;
 
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.runtime.artifact.context.BatchletArtifactContext;
-import fr.jamgotchian.jabat.runtime.artifact.context.ChunkArtifactContext;
-import fr.jamgotchian.jabat.runtime.artifact.context.JobArtifactContext;
-import fr.jamgotchian.jabat.runtime.artifact.context.SplitArtifactContext;
-import fr.jamgotchian.jabat.runtime.artifact.context.StepArtifactContext;
 import fr.jamgotchian.jabat.runtime.checkpoint.ItemCheckpointAlgorithm;
 import fr.jamgotchian.jabat.runtime.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
@@ -36,6 +31,7 @@ import fr.jamgotchian.jabat.jobxml.model.Node;
 import fr.jamgotchian.jabat.jobxml.model.NodeVisitor;
 import fr.jamgotchian.jabat.jobxml.model.Split;
 import fr.jamgotchian.jabat.jobxml.model.Step;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactContainer;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
@@ -126,11 +122,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     JabatThreadContext.getInstance().getJobContext()
                             .setProperties(job.getSubstitutedProperties());
 
-                    JobArtifactContext artifactContext = new JobArtifactContext(getArtifactFactory());
+                    ArtifactContainer container = new ArtifactContainer(getArtifactFactory());
                     try {
                         // before job listeners
                         for (Artifact a : job.getListeners()) {
-                            JobListener l = artifactContext.createJobListener(a.getRef());
+                            JobListener l = container.create(a.getRef(), JobListener.class);
                             l.beforeJob();
                         }
 
@@ -139,11 +135,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         job.getFirstChainableNode().accept(JobInstanceExecutor.this, null);
 
                         // after job listeners
-                        for (JobListener l : artifactContext.getJobListeners()) {
+                        for (JobListener l : container.get(JobListener.class)) {
                             l.afterJob();
                         }
                     } finally {
-                        artifactContext.release();
+                        container.release();
 
                         // destroy job context
                         JabatThreadContext.getInstance().destroyJobContext();
@@ -163,15 +159,15 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         }
     }
 
-    private static void notifyBeforeStep(Step step, StepArtifactContext artifactContext) throws Exception {
+    private static void notifyBeforeStep(Step step, ArtifactContainer container) throws Exception {
         for (Artifact a : step.getListeners()) {
-            StepListener l = artifactContext.createStepListener(a.getRef());
+            StepListener l = container.create(a.getRef(), StepListener.class);
             l.beforeStep();
         }
     }
 
-    private static void notifyAfterStep(Step step, StepArtifactContext artifactContext) throws Exception {
-        for (StepListener l : artifactContext.getStepListeners()) {
+    private static void notifyAfterStep(Step step, ArtifactContainer container) throws Exception {
+        for (StepListener l : container.get(StepListener.class)) {
             l.afterStep();
         }
     }
@@ -180,11 +176,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         return step.getPartitionPlan() != null || step.getPartitionMapper() != null;
     }
 
-    private static PartitionPlan createPartitionPlan(Step step, StepArtifactContext artifactContext) throws Exception {
+    private static PartitionPlan createPartitionPlan(Step step, ArtifactContainer container) throws Exception {
         if (step.getPartitionMapper() != null) {
             // dynamic defintion of the partition plan though an artifact
             String ref = step.getPartitionMapper().getRef();
-            PartitionMapper mapper = artifactContext.createPartitionMapper(ref);
+            PartitionMapper mapper = container.create(ref, PartitionMapper.class);
             return mapper.mapPartitions();
         } else {
             // static defintion of the partition plan
@@ -192,26 +188,26 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         }
     }
 
-    private static PartitionReducer createPartitionReducer(Step step, StepArtifactContext artifactContext) throws Exception {
+    private static PartitionReducer createPartitionReducer(Step step, ArtifactContainer container) throws Exception {
         if (step.getPartitionReducer() != null) {
             String ref = step.getPartitionReducer().getRef();
-            return artifactContext.createPartitionReducer(ref);
+            return container.create(ref, PartitionReducer.class);
         }
         return null;
     }
 
-    private static PartitionCollector createPartitionCollector(Step step, StepArtifactContext artifactContext) throws Exception {
+    private static PartitionCollector createPartitionCollector(Step step, ArtifactContainer container) throws Exception {
         if (step.getPartitionCollector() != null) {
             String ref= step.getPartitionCollector().getRef();
-            return artifactContext.createPartitionCollector(ref);
+            return container.create(ref, PartitionCollector.class);
         }
         return null;
     }
 
-    private static PartitionAnalyzer createPartitionAnalyser(Step step, StepArtifactContext artifactContext) throws Exception {
+    private static PartitionAnalyzer createPartitionAnalyser(Step step, ArtifactContainer container) throws Exception {
         if (step.getPartitionAnalyzer() != null) {
             String ref = step.getPartitionAnalyzer().getRef();
-            return artifactContext.createPartitionAnalyser(ref);
+            return container.create(ref, PartitionAnalyzer.class);
         }
         return null;
     }
@@ -257,17 +253,17 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             // store step level properties in step context
             JabatThreadContext.getInstance().getStepContext().setProperties(step.getProperties());
 
-            final BatchletArtifactContext artifactContext = new BatchletArtifactContext(getArtifactFactory());
+            final ArtifactContainer container = new ArtifactContainer(getArtifactFactory());
             try {
                 // before step listeners
-                notifyBeforeStep(step, artifactContext);
+                notifyBeforeStep(step, container);
 
                 stepExecution.setStatus(BatchStatus.STARTED);
 
                 if (isPartionned(step)) {
 
                     // create partition reducer
-                    PartitionReducer reducer = createPartitionReducer(step, artifactContext);
+                    PartitionReducer reducer = createPartitionReducer(step, container);
 
                     // begin partitioned step
                     if (reducer != null) {
@@ -275,7 +271,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     }
 
                     // create partition plan
-                    final PartitionPlan plan = createPartitionPlan(step, artifactContext);
+                    final PartitionPlan plan = createPartitionPlan(step, container);
 
                     // prepare a task for each parttion
                     List<Callable<PartitionContext>> tasks = new ArrayList<Callable<PartitionContext>>();
@@ -307,7 +303,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                         JabatThreadContext.getInstance().getStepContext().setProperties(properties);
 
                                         try {
-                                            Batchlet artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
+                                            Batchlet artifact = container.create(step.getArtifact().getRef(), Batchlet.class);
                                             jobManager.getRunningBatchlets().put(stepExecution.getId(), artifact);
 
                                             // processing
@@ -320,7 +316,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                                             partitionContext.setExitStatus(exitStatus);
 
                                             // create partition collector
-                                            PartitionCollector collector = createPartitionCollector(step, artifactContext);
+                                            PartitionCollector collector = createPartitionCollector(step, container);
 
                                             // collect data
                                             if (collector != null) {
@@ -349,7 +345,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         });
                     }
 
-                    final PartitionAnalyzer analyser = createPartitionAnalyser(step, artifactContext);
+                    final PartitionAnalyzer analyser = createPartitionAnalyser(step, container);
 
                     // run partitions on a thread pool, wait for all partitions to
                     // end and call the analyser each time a partition ends
@@ -381,7 +377,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                     });
 
                 } else {
-                    Batchlet artifact = artifactContext.createBatchlet(step.getArtifact().getRef());
+                    Batchlet artifact = container.create(step.getArtifact().getRef(), Batchlet.class);
                     jobManager.getRunningBatchlets().put(stepExecution.getId(), artifact);
 
                     // processing
@@ -414,11 +410,11 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
                 // after step listeners
                 // TODO should be called even in case of error?
-                notifyAfterStep(step, artifactContext);
+                notifyAfterStep(step, container);
             } finally {
                 jobManager.getRunningBatchlets().removeAll(stepExecution.getId());
 
-                artifactContext.release();
+                container.release();
 
                 // store step context persistent area
                 // TODO
@@ -435,7 +431,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
         }
     }
 
-    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step, ChunkArtifactContext artifactContext) throws Exception {
+    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step, ArtifactContainer container) throws Exception {
         switch (step.getCheckpointPolicy()) {
             case ITEM:
                 return new ItemCheckpointAlgorithm(step.getCommitInterval());
@@ -444,7 +440,7 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             case CUSTOM:
                 {
                     String ref = step.getCheckpointAlgo().getRef();
-                    return artifactContext.createCheckpointAlgorithm(ref);
+                    return container.create(ref, CheckpointAlgorithm.class);
                 }
             default:
                 throw new InternalError();
@@ -466,22 +462,22 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
             JabatThreadContext.getInstance().getStepContext()
                     .setProperties(step.getProperties());
 
-            ChunkArtifactContext artifactContext = new ChunkArtifactContext(getArtifactFactory());
+            ArtifactContainer container = new ArtifactContainer(getArtifactFactory());
             try {
                 // before step listeners
-                notifyBeforeStep(step, artifactContext);
+                notifyBeforeStep(step, container);
 
                 ItemReader reader
-                        = artifactContext.createItemReader(step.getReader().getRef());
+                        = container.create(step.getReader().getRef(), ItemReader.class);
                 ItemProcessor processor
-                        = artifactContext.createItemProcessor(step.getProcessor().getRef());
+                        = container.create(step.getProcessor().getRef(), ItemProcessor.class);
                 ItemWriter writer
-                        = artifactContext.createItemWriter(step.getWriter().getRef());
+                        = container.create(step.getWriter().getRef(), ItemWriter.class);
 
                 stepExecution.setStatus(BatchStatus.STARTED);
 
                 // select the checkpoint algorithm
-                CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step, artifactContext);
+                CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step, container);
 
                 TransactionManagerSPI transaction = new NoTransactionManager();
 
@@ -557,9 +553,9 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
 
                 // after step listeners
                 // TODO should be called even if case of error?
-                notifyAfterStep(step, artifactContext);
+                notifyAfterStep(step, container);
             } finally {
-                artifactContext.release();
+                container.release();
 
                 // store step context persistent area
 
@@ -594,7 +590,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                 // create split context
                 // TODO
 
-                SplitArtifactContext artifactContext = new SplitArtifactContext(getArtifactFactory());
                 try {
                     // for each flow
                     for (Node node : nodes) {
@@ -618,8 +613,6 @@ class JobInstanceExecutor implements NodeVisitor<Void> {
                         });
                     }
                 } finally {
-                    artifactContext.release();
-
                     // destroy split context
                     // TODO
                 }
