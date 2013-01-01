@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.jboss.extension;
+package fr.jamgotchian.jabat.jbossas.extension;
 
 import org.jboss.as.controller.SimpleResourceDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;

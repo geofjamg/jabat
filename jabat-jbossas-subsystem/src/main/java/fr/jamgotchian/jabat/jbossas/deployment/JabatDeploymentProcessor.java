@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.jboss.deployment;
+package fr.jamgotchian.jabat.jbossas.deployment;
 
-import fr.jamgotchian.jabat.jboss.extension.JabatService;
+import fr.jamgotchian.jabat.jbossas.extension.JabatService;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
