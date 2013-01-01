@@ -48,7 +48,7 @@ limitations under the License.
         <module>jabat-runtime</module>
         <module>jabat-jobxml</module>
         <module>jabat-cdi</module>
-        <module>jabat-jboss-subsystem</module>
+        <module>jabat-jbossas-subsystem</module>
   </modules>
 
     <dependencyManagement>
