@@ -15,11 +15,14 @@
  */
 package fr.jamgotchian.jabat.jboss.extension;
 
+import fr.jamgotchian.jabat.jboss.deployment.JabatDeploymentProcessor;
 import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -55,14 +58,23 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
+
         JabatService service = new JabatService();
-        ServiceName name = ServiceName.JBOSS.append("jabat");
         ServiceController<JabatService> controller = context.getServiceTarget()
-                .addService(name, service)
+                .addService(JabatService.NAME, service)
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
                 .install();
         newControllers.add(controller);
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            @Override
+            public void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(JabatDeploymentProcessor.PHASE,
+                        JabatDeploymentProcessor.PRIORITY, new JabatDeploymentProcessor());
+
+            }
+        }, OperationContext.Stage.RUNTIME);
     }
 
 }

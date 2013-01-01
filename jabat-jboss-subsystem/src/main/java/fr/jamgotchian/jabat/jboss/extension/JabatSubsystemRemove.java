@@ -38,7 +38,6 @@ class JabatSubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ServiceName name = ServiceName.JBOSS.append("jabat");
-        context.removeService(name);
+        context.removeService(JabatService.NAME);
     }
 }

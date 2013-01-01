@@ -16,8 +16,10 @@
 package fr.jamgotchian.jabat.jboss.extension;
 
 import fr.jamgotchian.jabat.JobManager;
+import fr.jamgotchian.jabat.config.Configuration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -30,15 +32,27 @@ public class JabatService implements Service<JabatService> {
 
     private final Logger LOGGER = Logger.getLogger(JabatService.class);
 
-    private final JobManager jobManager = new JobManager();
+    public static final ServiceName NAME = ServiceName.JBOSS.append("jabat");
+
+    private final Configuration config = new Configuration();
+
+    private final JobManager jobManager = new JobManager(config);
+
+    public Configuration getConfig() {
+        return config;
+    }
+
+    public JobManager getJobManager() {
+        return jobManager;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
         LOGGER.info("Start Jabat service");
         try {
             jobManager.initialize();
-        } catch (Exception e) {
-            throw new StartException(e);
+        } catch (Throwable t) {
+            throw new StartException(t);
         }
     }
 
@@ -47,8 +61,8 @@ public class JabatService implements Service<JabatService> {
         LOGGER.info("Stop Jabat service");
         try {
             jobManager.shutdown();
-        } catch (Exception e) {
-            LOGGER.error(e.toString(), e);
+        } catch (Throwable t) {
+            LOGGER.error(t.toString(), t);
         }
     }
 
