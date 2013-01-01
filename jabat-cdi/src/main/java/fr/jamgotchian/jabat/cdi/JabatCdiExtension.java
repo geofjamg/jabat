@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.cdi;
 
-import fr.jamgotchian.jabat.context.JabatThreadContext;
+import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
 import java.util.Set;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;

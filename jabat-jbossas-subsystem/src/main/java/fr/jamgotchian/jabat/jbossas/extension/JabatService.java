@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.jbossas.extension;
 
-import fr.jamgotchian.jabat.JobManager;
-import fr.jamgotchian.jabat.config.Configuration;
+import fr.jamgotchian.jabat.runtime.JobManager;
+import fr.jamgotchian.jabat.runtime.config.Configuration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
