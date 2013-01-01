@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.runtime.config;
 
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
 import fr.jamgotchian.jabat.runtime.task.TaskManager;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;

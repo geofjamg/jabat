@@ -1,6 +1,6 @@
 package fr.jamgotchian.jabat.cdi;
 
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.artifact.impl.BatchXmlArtifactFactory;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.Set;

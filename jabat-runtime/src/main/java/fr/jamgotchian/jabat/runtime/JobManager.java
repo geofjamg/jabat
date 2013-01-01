@@ -18,7 +18,7 @@ package fr.jamgotchian.jabat.runtime;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.config.Configuration;
 import fr.jamgotchian.jabat.jobxml.JobXmlLoader;
 import fr.jamgotchian.jabat.jobxml.model.Job;

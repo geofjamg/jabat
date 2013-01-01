@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.runtime;
 
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.artifact.context.BatchletArtifactContext;
 import fr.jamgotchian.jabat.runtime.artifact.context.ChunkArtifactContext;
 import fr.jamgotchian.jabat.runtime.artifact.context.JobArtifactContext;

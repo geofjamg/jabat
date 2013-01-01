@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.runtime.artifact.impl;
 
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.io.InputStream;

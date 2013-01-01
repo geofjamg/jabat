@@ -1,4 +1,4 @@
-package fr.jamgotchian.jabat.runtime;
+package fr.jamgotchian.jabat.runtime.artifact;
 
 public interface ArtifactFactory {
 

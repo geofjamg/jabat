@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.runtime.artifact.context;
 
-import fr.jamgotchian.jabat.runtime.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.artifact.annotation.BatchletProxy;
 import javax.batch.api.Batchlet;
 
