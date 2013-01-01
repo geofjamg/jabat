@@ -52,6 +52,8 @@ public class JobManager {
 
     private final JobXmlLoader loader = new JobXmlLoader();
 
+    private final Configuration config;
+
     private final TaskManager taskManager;
 
     private final ArtifactFactory artifactFactory;
@@ -65,17 +67,15 @@ public class JobManager {
         this(new Configuration());
     }
 
-    public JobManager(Configuration cfg) {
-        if (cfg == null) {
+    public JobManager(Configuration config) {
+        if (config == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        Class<?> taskManagerClass = cfg.getTaskManagerClass();
-        Class<?> artifactFactoryClass = cfg.getArtifactFactoryClass();
-        Class<?> jobRepositoryClass = cfg.getJobRepositoryClass();
+        this.config = config;
         try {
-            taskManager = (TaskManager) taskManagerClass.newInstance();
-            artifactFactory = (ArtifactFactory) artifactFactoryClass.newInstance();
-            repository = (JobRepository) jobRepositoryClass.newInstance();
+            taskManager = this.config.getTaskManagerClass().newInstance();
+            artifactFactory = this.config.getArtifactFactoryClass().newInstance();
+            repository = this.config.getJobRepositoryClass().newInstance();
         } catch(ReflectiveOperationException e) {
             throw new JabatRuntimeException(e);
         }
