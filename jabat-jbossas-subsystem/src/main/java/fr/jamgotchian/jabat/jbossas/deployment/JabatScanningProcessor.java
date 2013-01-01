@@ -33,12 +33,13 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.vfs.VirtualFile;
 
 /**
+ * Deployment processor that detects batch jobs.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatDeploymentProcessor implements DeploymentUnitProcessor {
+public class JabatScanningProcessor implements DeploymentUnitProcessor {
 
-    private final Logger LOGGER = Logger.getLogger(JabatDeploymentProcessor.class);
+    private final Logger LOGGER = Logger.getLogger(JabatScanningProcessor.class);
 
     public static final Phase PHASE = Phase.DEPENDENCIES;
 
@@ -52,6 +53,7 @@ public class JabatDeploymentProcessor implements DeploymentUnitProcessor {
         ResourceRoot root = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         JabatService service = getJabatService(phaseContext.getServiceRegistry());
         if (service != null) {
+            // batch.xml is a marker for deployment containing xml jobs
             VirtualFile batchXml = root.getRoot().getChild("META-INF/batch.xml");
             try {
                 batchXmlUrls.put(name, batchXml.asFileURL());

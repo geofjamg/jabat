@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.extension;
 
-import fr.jamgotchian.jabat.jbossas.deployment.JabatDeploymentProcessor;
+import fr.jamgotchian.jabat.jbossas.deployment.JabatScanningProcessor;
 import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -69,8 +69,8 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(JabatDeploymentProcessor.PHASE,
-                        JabatDeploymentProcessor.PRIORITY, new JabatDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(JabatScanningProcessor.PHASE,
+                        JabatScanningProcessor.PRIORITY, new JabatScanningProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
