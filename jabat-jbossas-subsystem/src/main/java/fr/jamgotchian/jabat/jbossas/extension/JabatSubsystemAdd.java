@@ -27,7 +27,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Handler responsible for adding the subsystem resource to the model.
@@ -72,7 +71,6 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(JabatDeploymentProcessor.PHASE,
                         JabatDeploymentProcessor.PRIORITY, new JabatDeploymentProcessor());
-
             }
         }, OperationContext.Stage.RUNTIME);
     }
