@@ -33,11 +33,11 @@ import javax.inject.Named;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class JabatCdiExtension implements Extension {
+public class JabatCdiExtension implements Extension {
 
     public static BeanManager BEAN_MANAGER;
 
-    JabatCdiExtension() {
+    public JabatCdiExtension() {
     }
 
     public void init(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {

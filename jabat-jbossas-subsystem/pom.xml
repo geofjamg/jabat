@@ -89,6 +89,11 @@ limitations under the License.
                 <artifactId>jboss-as-server</artifactId>
                 <version>${version.jboss.as}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-weld</artifactId>
+                <version>${version.jboss.as}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -102,6 +107,10 @@ limitations under the License.
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-weld</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -109,6 +118,11 @@ limitations under the License.
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jabat-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jabat-cdi</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
