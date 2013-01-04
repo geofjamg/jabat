@@ -37,10 +37,6 @@ public class JabatCdiIntegrationProcessor implements DeploymentUnitProcessor {
 
     private final Logger LOGGER = Logger.getLogger(JabatCdiIntegrationProcessor.class);
 
-    public static final Phase PHASE = Phase.POST_MODULE;
-
-    public static final int PRIORITY = 0x4000;
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

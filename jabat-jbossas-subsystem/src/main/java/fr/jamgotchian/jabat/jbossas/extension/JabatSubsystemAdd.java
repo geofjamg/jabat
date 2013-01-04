@@ -15,8 +15,9 @@
  */
 package fr.jamgotchian.jabat.jbossas.extension;
 
+import fr.jamgotchian.jabat.jbossas.deployment.BatchXmlProcessor;
 import fr.jamgotchian.jabat.jbossas.deployment.JabatCdiIntegrationProcessor;
-import fr.jamgotchian.jabat.jbossas.deployment.JabatScanningProcessor;
+import fr.jamgotchian.jabat.jbossas.deployment.JabatDependencyProcessor;
 import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -24,6 +25,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -70,10 +72,9 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(JabatScanningProcessor.PHASE,
-                        JabatScanningProcessor.PRIORITY, new JabatScanningProcessor());
-                processorTarget.addDeploymentProcessor(JabatCdiIntegrationProcessor.PHASE,
-                        JabatCdiIntegrationProcessor.PRIORITY, new JabatCdiIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, 0x4000, new BatchXmlProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, 0x4001, new JabatDependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, 0x4002, new JabatCdiIntegrationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
