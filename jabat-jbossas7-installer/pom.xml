@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2012 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>jabat</artifactId>
+        <groupId>fr.jamgotchian.jabat</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>fr.jamgotchian.jabat</groupId>
+    <artifactId>jabat-jbossas7-installer</artifactId>
+
+    <name>Jabat JBoss AS7 installer</name>
+    <packaging>pom</packaging>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/modules</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeArtifactIds>jsr352-api,jabat-runtime,jabat-jobxml,jabat-cdi,jabat-jbossas-subsystem,jdom2</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <inherited>false</inherited>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>build-dist</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <property name="modules.dir" value="target/modules" />
+                                <delete dir="${modules.dir}" />
+
+                                <copy todir="${modules.dir}/fr/jamgotchian/jabat/main">
+                                    <fileset dir="target/dependency/lib">
+                                        <include name="jabat-runtime-${project.version}.jar" />
+                                        <include name="jabat-jobxml-${project.version}.jar" />
+                                        <include name="jabat-cdi-${project.version}.jar" />
+                                        <include name="jabat-jbossas-subsystem-${project.version}.jar" />
+                                        <include name="jdom2-${jdom2.version}*.jar" />
+                                    </fileset>
+                                    <fileset dir="target/classes/fr/jamgotchian/jabat/main">
+                                        <include name="module.xml" />
+                                    </fileset>
+                                </copy>
+
+                                <copy todir="${modules.dir}/javax/batch/api/main">
+                                    <fileset dir="target/dependency/lib">
+                                        <include name="jsr352-api-${jsr352-api.version}.jar" />
+                                    </fileset>
+                                    <fileset dir="target/classes/javax/batch/api/main">
+                                        <include name="module.xml" />
+                                    </fileset>
+                                </copy>
+
+                                <echo>Modules have been created in the ${modules.dir} directory. Copy to your JBoss AS 7 installation.</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.batch</groupId>
+            <artifactId>jsr352-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jabat-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jabat-cdi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jabat-jbossas-subsystem</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

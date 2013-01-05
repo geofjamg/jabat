@@ -16,22 +16,26 @@ limitations under the License.
 -->
 <module xmlns="urn:jboss:module:1.0" name="fr.jamgotchian.jabat">
     <resources>
-        <resource-root path="${project.build.finalName}.jar"/>
+        <resource-root path="jabat-jbossas-subsystem-${project.version}.jar"/>
         <resource-root path="jabat-jobxml-${project.version}.jar"/>
         <resource-root path="jabat-runtime-${project.version}.jar"/>
-        <resource-root path="jdom2-2.0.4.jar"/>
+        <resource-root path="jabat-cdi-${project.version}.jar"/>
+        <resource-root path="jdom2-${jdom2.version}.jar"/>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
         <module name="javax.batch.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.weld"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.jboss.weld.spi"/>
         <module name="com.google.guava"/>
         <module name="org.slf4j"/>
     </dependencies>
