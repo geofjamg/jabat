@@ -1,5 +1,5 @@
 /jabat-runtime/target/
 /jabat-jobxml/target/
 /jabat-cdi/target/
-/jabat-jbossas-subsystem/target/
+/jabat-jbossas7-subsystem/target/
 /jabat-jbossas7-installer/target/

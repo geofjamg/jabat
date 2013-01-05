@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <module xmlns="urn:jboss:module:1.0" name="fr.jamgotchian.jabat">
     <resources>
-        <resource-root path="jabat-jbossas-subsystem-${project.version}.jar"/>
+        <resource-root path="jabat-jbossas7-subsystem-${project.version}.jar"/>
         <resource-root path="jabat-jobxml-${project.version}.jar"/>
         <resource-root path="jabat-runtime-${project.version}.jar"/>
         <resource-root path="jabat-cdi-${project.version}.jar"/>

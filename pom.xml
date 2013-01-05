@@ -50,7 +50,7 @@ limitations under the License.
         <module>jabat-runtime</module>
         <module>jabat-jobxml</module>
         <module>jabat-cdi</module>
-        <module>jabat-jbossas-subsystem</module>
+        <module>jabat-jbossas7-subsystem</module>
         <module>jabat-jbossas7-installer</module>
     </modules>
 

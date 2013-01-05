@@ -23,9 +23,9 @@ limitations under the License.
     </parent>
 
     <groupId>fr.jamgotchian.jabat</groupId>
-    <artifactId>jabat-jbossas-subsystem</artifactId>
+    <artifactId>jabat-jbossas7-subsystem</artifactId>
 
-    <name>Jabat JBoss AS Subsystem</name>
+    <name>Jabat JBoss AS7 Subsystem</name>
     <packaging>jar</packaging>
 
     <properties>
