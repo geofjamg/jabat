@@ -52,6 +52,7 @@ limitations under the License.
         <module>jabat-cdi</module>
         <module>jabat-jbossas7-subsystem</module>
         <module>jabat-jbossas7-installer</module>
+        <module>jabat-api</module>
     </modules>
 
     <dependencyManagement>
