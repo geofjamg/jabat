@@ -28,7 +28,7 @@ limitations under the License.
     <artifactId>jabat-cdi</artifactId>
     <packaging>jar</packaging>
 
-    <name>Jabat CDI</name>
+    <name>Jabat CDI Integration</name>
 
     <dependencies>
         <dependency>
