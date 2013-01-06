@@ -90,20 +90,8 @@ public class JobManager {
         taskManager.shutdown();
     }
 
-    JobRepository getRepository() {
+    public JobRepository getRepository() {
         return repository;
-    }
-
-    TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    ArtifactFactory getArtifactFactory() {
-        return artifactFactory;
-    }
-
-    Multimap<Long, Batchlet> getRunningBatchlets() {
-        return runningBatchlets;
     }
 
     public Set<String> getJobIds() {
@@ -131,7 +119,8 @@ public class JobManager {
         JabatJobInstance jobInstance = repository.createJobInstance(job);
 
         // start the execution
-        job.accept(new JobInstanceExecutor(this, jobInstance, parameters), null);
+        JobExecutionContext context = new JobExecutionContext(taskManager, artifactFactory, repository, runningBatchlets);
+        new JobExecutor(job, parameters, jobInstance).execute(context);
 
         return jobInstance.getInstanceId();
     }
