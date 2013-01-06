@@ -38,14 +38,15 @@ public class JabatCdiExtension implements Extension {
     public JabatCdiExtension() {
     }
 
-    public void init(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {
+    public void setBeanManager(@Observes BeforeBeanDiscovery bbd, BeanManager beanManager) {
         BEAN_MANAGER = beanManager;
     }
 
-    public <X> void injectContext(@Observes ProcessInjectionTarget<X> pit) {
+    public <X> void processBatchArtifact(@Observes ProcessInjectionTarget<X> pit) {
         final InjectionTarget<X> it = pit.getInjectionTarget();
         final AnnotatedType<X> at = pit.getAnnotatedType();
 
+        // TODO check the type is a batch artifact
         if (at.isAnnotationPresent(Named.class)) {
             InjectionTarget<X> wrapped = new ForwardingInjectionTarget<X>(it) {
 

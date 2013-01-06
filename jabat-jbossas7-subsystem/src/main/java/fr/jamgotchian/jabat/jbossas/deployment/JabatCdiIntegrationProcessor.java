@@ -15,14 +15,12 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
-import fr.jamgotchian.jabat.cdi.JabatCdiExtension;
 import java.util.List;
 import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.logging.Logger;
@@ -45,13 +43,13 @@ public class JabatCdiIntegrationProcessor implements DeploymentUnitProcessor {
             final List<Metadata<Extension>> extensions = parent.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
             boolean found = false;
             for (Metadata<Extension> extension : extensions) {
-                if (extension.getValue() instanceof JabatCdiExtension) {
+                if (extension.getValue() instanceof JabatJavaEECdiExtension) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                final JabatCdiExtension ext = new JabatCdiExtension();
+                final JabatJavaEECdiExtension ext = new JabatJavaEECdiExtension();
                 Metadata<Extension> metadata = new Metadata<Extension>() {
                     @Override
                     public Extension getValue() {
@@ -60,7 +58,7 @@ public class JabatCdiIntegrationProcessor implements DeploymentUnitProcessor {
 
                     @Override
                     public String getLocation() {
-                        return JabatCdiExtension.class.getName();
+                        return JabatJavaEECdiExtension.class.getName();
                     }
                 };
                 parent.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);

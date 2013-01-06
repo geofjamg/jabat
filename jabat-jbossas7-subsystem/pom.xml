@@ -80,5 +80,10 @@ limitations under the License.
             <artifactId>jabat-cdi</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jabat-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
