@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
-import fr.jamgotchian.jabat.jbossas.extension.JabatService;
+import fr.jamgotchian.jabat.jbossas.extension.JobContainerService;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -39,6 +39,7 @@ import org.jboss.vfs.VirtualFile;
 public class BatchXmlProcessor implements DeploymentUnitProcessor {
 
     private final Logger LOGGER = Logger.getLogger(BatchXmlProcessor.class);
+
     private Map<String, URL> batchXmlUrls = new HashMap<String, URL>();
 
     @Override
@@ -48,7 +49,7 @@ public class BatchXmlProcessor implements DeploymentUnitProcessor {
         // batch.xml is a marker for deployment containing xml jobs
         VirtualFile batchXml = root.getRoot().getChild("META-INF/batch.xml");
         if (batchXml.exists() && batchXml.isFile()) {
-            JabatService service = getJabatService(phaseContext.getServiceRegistry());
+            JobContainerService service = getJobContainerService(phaseContext.getServiceRegistry());
             if (service != null) {
                 try {
                     batchXmlUrls.put(deploymentUnit.getName(), batchXml.asFileURL());
@@ -63,16 +64,16 @@ public class BatchXmlProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         String name = context.getName();
-        JabatService service = getJabatService(context.getServiceRegistry());
+        JobContainerService service = getJobContainerService(context.getServiceRegistry());
         if (service != null) {
             batchXmlUrls.remove(name);
         }
     }
 
-    private JabatService getJabatService(ServiceRegistry registry) {
-        ServiceController<?> container = registry.getService(JabatService.NAME);
-        if (container != null) {
-            JabatService service = (JabatService) container.getValue();
+    private JobContainerService getJobContainerService(ServiceRegistry registry) {
+        ServiceController<?> controller = registry.getService(JobContainerService.NAME);
+        if (controller != null) {
+            JobContainerService service = (JobContainerService) controller.getValue();
             return service;
         }
         return null;

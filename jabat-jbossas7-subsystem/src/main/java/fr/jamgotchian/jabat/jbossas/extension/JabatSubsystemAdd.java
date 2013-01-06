@@ -61,9 +61,9 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
-        JabatService service = new JabatService();
-        ServiceController<JabatService> controller = context.getServiceTarget()
-                .addService(JabatService.NAME, service)
+        JobContainerService service = new JobContainerService();
+        ServiceController<JobContainerService> controller = context.getServiceTarget()
+                .addService(JobContainerService.NAME, service)
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
                 .install();

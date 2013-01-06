@@ -46,9 +46,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobManager {
+public class JobContainer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobContainer.class);
 
     private final JobXmlLoader loader = new JobXmlLoader();
 
@@ -63,11 +63,11 @@ public class JobManager {
     private final Multimap<Long, Batchlet> runningBatchlets
             = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
 
-    public JobManager() {
+    public JobContainer() {
         this(new Configuration());
     }
 
-    public JobManager(Configuration config) {
+    public JobContainer(Configuration config) {
         if (config == null) {
             throw new IllegalArgumentException("configuration is null");
         }

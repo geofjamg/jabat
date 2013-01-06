@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.extension;
 
-import fr.jamgotchian.jabat.runtime.JobManager;
+import fr.jamgotchian.jabat.runtime.JobContainer;
 import fr.jamgotchian.jabat.runtime.config.Configuration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -28,29 +28,30 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatService implements Service<JabatService> {
+public class JobContainerService implements Service<JobContainerService> {
 
-    private final Logger LOGGER = Logger.getLogger(JabatService.class);
+    private final Logger LOGGER = Logger.getLogger(JobContainerService.class);
 
-    public static final ServiceName NAME = ServiceName.JBOSS.append("jabat");
+    public static final ServiceName NAME = ServiceName.JBOSS.append("jabat").append("jobContainer");
 
     private final Configuration config = new Configuration();
 
-    private final JobManager jobManager = new JobManager(config);
+    private JobContainer jobContainer;
 
     public Configuration getConfig() {
         return config;
     }
 
-    public JobManager getJobManager() {
-        return jobManager;
+    public JobContainer getJobContainer() {
+        return jobContainer;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         LOGGER.info("Start Jabat service");
         try {
-            jobManager.initialize();
+            jobContainer = new JobContainer(config);
+            jobContainer.initialize();
         } catch (Throwable t) {
             throw new StartException(t);
         }
@@ -60,14 +61,14 @@ public class JabatService implements Service<JabatService> {
     public void stop(StopContext context) {
         LOGGER.info("Stop Jabat service");
         try {
-            jobManager.shutdown();
+            jobContainer.shutdown();
         } catch (Throwable t) {
             LOGGER.error(t.toString(), t);
         }
     }
 
     @Override
-    public JabatService getValue() throws IllegalStateException, IllegalArgumentException {
+    public JobContainerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

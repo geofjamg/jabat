@@ -37,25 +37,25 @@ import javax.batch.runtime.StepExecution;
  */
 public class JabatJobOperator implements JobOperator {
 
-    private final JobManager manager;
+    private final JobContainer container;
 
-    public JabatJobOperator(JobManager manager) {
-        this.manager = manager;
+    public JabatJobOperator(JobContainer container) {
+        this.container = container;
     }
 
     @Override
     public Set<String> getJobNames() {
-        return manager.getJobIds();
+        return container.getJobIds();
     }
 
     @Override
     public long getJobInstanceCount(String jobName) throws NoSuchJobException {
-        return manager.getJobInstanceIds(jobName).size();
+        return container.getJobInstanceIds(jobName).size();
     }
 
     @Override
     public List<Long> getJobInstanceIds(String jobName, int start, int count) throws NoSuchJobException {
-        return manager.getJobInstanceIds(jobName);
+        return container.getJobInstanceIds(jobName);
     }
 
     @Override
@@ -65,17 +65,17 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public List<Long> getExecutions(long instanceId) throws NoSuchJobInstanceException {
-        return Collections.unmodifiableList(manager.getRepository().getJobInstance(instanceId).getExecutionIds());
+        return Collections.unmodifiableList(container.getRepository().getJobInstance(instanceId).getExecutionIds());
     }
 
     @Override
     public Properties getParameters(long executionId) throws NoSuchJobExecutionException {
-        return manager.getRepository().getJobExecution(executionId).getJobParameters();
+        return container.getRepository().getJobExecution(executionId).getJobParameters();
     }
 
     @Override
     public Long start(String job, Properties jobParameters) throws NoSuchJobException, JobStartException {
-        return manager.start(job, jobParameters);
+        return container.start(job, jobParameters);
     }
 
     @Override
@@ -85,12 +85,12 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public void stop(long instanceId) throws NoSuchJobInstanceException, JobExecutionNotRunningException {
-        manager.stop(instanceId);
+        container.stop(instanceId);
     }
 
     @Override
     public JobInstance getJobInstance(long instanceId) throws NoSuchJobInstanceException {
-        return manager.getRepository().getJobInstance(instanceId);
+        return container.getRepository().getJobInstance(instanceId);
     }
 
     @Override
@@ -100,12 +100,12 @@ public class JabatJobOperator implements JobOperator {
 
     @Override
     public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException {
-        return manager.getRepository().getJobExecution(executionId);
+        return container.getRepository().getJobExecution(executionId);
     }
 
     @Override
     public StepExecution getStepExecution(long jobExecutionId, long stepExecutionId) {
-        return manager.getRepository().getStepExecution(stepExecutionId);
+        return container.getRepository().getStepExecution(stepExecutionId);
     }
 
 }

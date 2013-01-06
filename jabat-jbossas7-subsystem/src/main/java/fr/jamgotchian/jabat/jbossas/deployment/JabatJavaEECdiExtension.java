@@ -18,9 +18,9 @@ package fr.jamgotchian.jabat.jbossas.deployment;
 import fr.jamgotchian.jabat.api.annotation.BatchRuntime;
 import fr.jamgotchian.jabat.cdi.ForwardingInjectionTarget;
 import fr.jamgotchian.jabat.cdi.JabatCdiExtension;
-import fr.jamgotchian.jabat.jbossas.extension.JabatService;
+import fr.jamgotchian.jabat.jbossas.extension.JobContainerService;
 import fr.jamgotchian.jabat.runtime.JabatJobOperator;
-import fr.jamgotchian.jabat.runtime.JobManager;
+import fr.jamgotchian.jabat.runtime.JobContainer;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -66,11 +66,12 @@ public class JabatJavaEECdiExtension extends JabatCdiExtension {
                     it.inject(instance, ctx);
                     try {
 
-                        JobManager jobManager = ((JabatService) getCurrentServiceContainer()
-                                .getService(JabatService.NAME).getService()).getValue().getJobManager();
+                        JobContainerService service = (JobContainerService) getCurrentServiceContainer()
+                                .getService(JobContainerService.NAME).getService();
+                        JobContainer jobContainer = service.getValue().getJobContainer();
 
                         for (Field field : fieldsToInject) {
-                            field.set(instance, new JabatJobOperator(jobManager));
+                            field.set(instance, new JabatJobOperator(jobContainer));
                         }
                     } catch (Throwable t) {
                         throw new InjectionException(t);
