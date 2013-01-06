@@ -48,7 +48,7 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        LOGGER.info("Start Jabat service");
+        LOGGER.info("Start Jabat job manager service");
         try {
             jobContainer = new JobContainer(config);
             jobContainer.initialize();
@@ -59,7 +59,7 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void stop(StopContext context) {
-        LOGGER.info("Stop Jabat service");
+        LOGGER.info("Stop Jabat job manager service");
         try {
             jobContainer.shutdown();
         } catch (Throwable t) {
