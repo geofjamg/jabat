@@ -16,7 +16,6 @@
 package fr.jamgotchian.jabat.cdi;
 
 import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
-import java.util.Set;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.InjectionException;
@@ -24,7 +23,6 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.inject.Named;
@@ -48,48 +46,24 @@ public class JabatCdiExtension implements Extension {
         final InjectionTarget<X> it = pit.getInjectionTarget();
         final AnnotatedType<X> at = pit.getAnnotatedType();
 
-        InjectionTarget<X> wrapped = new InjectionTarget<X>() {
+        if (at.isAnnotationPresent(Named.class)) {
+            InjectionTarget<X> wrapped = new ForwardingInjectionTarget<X>(it) {
 
-            @Override
-            public void inject(X instance, CreationalContext<X> ctx) {
-                it.inject(instance, ctx);
-                try {
-                    // get the bean name
-                    String name = at.getAnnotation(Named.class).value();
-                    JabatThreadContext.getInstance().inject(instance, name);
-                } catch (Throwable t) {
-                    throw new InjectionException(t);
+                @Override
+                public void inject(X instance, CreationalContext<X> ctx) {
+                    it.inject(instance, ctx);
+                    try {
+                        // get the bean name
+                        String name = at.getAnnotation(Named.class).value();
+                        JabatThreadContext.getInstance().inject(instance, name);
+                    } catch (Throwable t) {
+                        throw new InjectionException(t);
+                    }
                 }
-            }
+            };
 
-            @Override
-            public void postConstruct(X instance) {
-                it.postConstruct(instance);
-            }
-
-            @Override
-            public void preDestroy(X instance) {
-                it.dispose(instance);
-            }
-
-            @Override
-            public void dispose(X instance) {
-                it.dispose(instance);
-            }
-
-            @Override
-            public Set<InjectionPoint> getInjectionPoints() {
-                return it.getInjectionPoints();
-            }
-
-            @Override
-            public X produce(CreationalContext<X> ctx) {
-                return it.produce(ctx);
-            }
-
-        };
-
-        pit.setInjectionTarget(wrapped);
+            pit.setInjectionTarget(wrapped);
+        }
     }
 
 }
