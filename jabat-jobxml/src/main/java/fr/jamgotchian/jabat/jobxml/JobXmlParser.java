@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.batch.api.parameters.PartitionPlan;
-import javax.batch.runtime.NoSuchJobException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.jdom2.Document;
@@ -62,11 +61,9 @@ import org.xml.sax.SAXException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobXmlLoader implements JobXmlConstants {
+public class JobXmlParser implements JobXmlConstants {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlLoader.class);
-
-    private final TopLevelNodeSearcher searcher = new TopLevelNodeSearcherImpl();
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobXmlParser.class);
 
     private static interface ExceptionClassFilterer {
 
@@ -711,7 +708,7 @@ public class JobXmlLoader implements JobXmlConstants {
         return builder.build();
     }
 
-    private Job load(InputStream is) {
+    public Job parseJob(InputStream is) {
         try {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             Schema schema = schemaFactory.newSchema(getClass().getResource("/jobXML.xsd"));
@@ -736,22 +733,6 @@ public class JobXmlLoader implements JobXmlConstants {
             throw new JobXmlException(e);
         } catch (SAXException e) {
             throw new JobXmlException(e);
-        }
-    }
-
-    public Job load(String id) throws NoSuchJobException {
-        InputStream is = searcher.search(TopLevelNodeType.JOB, id);
-        if (is == null) {
-            throw new NoSuchJobException("Job '" + id + "' not found");
-        }
-        try {
-            return load(is);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
         }
     }
 

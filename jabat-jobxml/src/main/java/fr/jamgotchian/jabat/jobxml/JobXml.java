@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
+ * Copyright 2013 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,16 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import fr.jamgotchian.jabat.jobxml.util.JobXmlException;
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobPathImpl implements JobPath {
+public interface JobXml {
 
-    @Override
-    public File[] getDirectories() {
-        try {
-            return new File[] { new File(getClass().getResource("/META-INF").toURI()) };
-        } catch (URISyntaxException e) {
-            throw new JobXmlException(e);
-        }
-    }
+    InputStream getInputStream();
+
+    TopLevelNodeType getTopLevelNodeType();
 
 }

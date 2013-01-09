@@ -63,7 +63,7 @@ limitations under the License.
                         <configuration>
                             <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
                             <overWriteSnapshots>true</overWriteSnapshots>
-                            <includeArtifactIds>jsr352-api,jabat-runtime,jabat-jobxml,jabat-cdi,jabat-api,jabat-jbossas7-subsystem,jdom2</includeArtifactIds>
+                            <includeArtifactIds>jsr352-api,jabat-runtime,jabat-jobxml,jabat-cdi,jabat-api,jabat-jbossas7-subsystem,jdom2,antlr-runtime</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -93,6 +93,7 @@ limitations under the License.
                                         <include name="jabat-api-${project.version}.jar" />
                                         <include name="jabat-jbossas7-subsystem-${project.version}.jar" />
                                         <include name="jdom2-${jdom2.version}*.jar" />
+                                        <include name="antlr-runtime-${antlr.version}.jar" />
                                     </fileset>
                                     <fileset dir="target/classes/fr/jamgotchian/jabat/main">
                                         <include name="module.xml" />

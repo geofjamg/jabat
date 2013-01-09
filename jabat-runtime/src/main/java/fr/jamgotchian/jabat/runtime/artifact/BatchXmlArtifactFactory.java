@@ -29,17 +29,22 @@ public class BatchXmlArtifactFactory implements ArtifactFactory {
 
     @Override
     public void initialize() {
-        InputStream is = getClass().getResourceAsStream("/META-INF/batch.xml");
-        if (is != null) {
+    }
+
+    private BatchXml getBatchXml() {
+        if (batchXml == null) {
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("META-INF/batch.xml");
+            if (is == null) {
+                throw new JabatRuntimeException("batch.xml not found");
+            }
             batchXml = new BatchXmlParser().parse(is);
-        } else {
-            batchXml = new BatchXml();
         }
+        return batchXml;
     }
 
     @Override
     public Object create(String name) {
-        Class<?> clazz = batchXml.getArtifactClass(name);
+        Class<?> clazz = getBatchXml().getArtifactClass(name);
         if (clazz == null) {
             throw new JabatRuntimeException("Batch artifact '" + name + "' not found");
         }

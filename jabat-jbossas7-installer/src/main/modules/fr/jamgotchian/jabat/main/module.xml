@@ -22,6 +22,7 @@ limitations under the License.
         <resource-root path="jabat-cdi-${project.version}.jar"/>
         <resource-root path="jabat-api-${project.version}.jar"/>
         <resource-root path="jdom2-${jdom2.version}.jar"/>
+        <resource-root path="antlr-runtime-${antlr.version}.jar"/>
     </resources>
 
     <dependencies>

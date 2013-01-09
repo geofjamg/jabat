@@ -29,6 +29,7 @@ limitations under the License.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.license>apache20</netbeans.hint.license>
         <jdom2.version>2.0.4</jdom2.version>
+        <antlr.version>3.4</antlr.version>
         <jsr352-api.version>1.0-SNAPSHOT</jsr352-api.version>
     </properties>
 
@@ -71,7 +72,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr</artifactId>
-                <version>3.4</version>
+                <version>${antlr.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>

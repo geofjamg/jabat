@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
+ * Copyright 2013 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package fr.jamgotchian.jabat.jobxml;
 
-import java.io.File;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface JobPath {
+public interface JobXmlLocator {
 
-    File[] getDirectories();
+    JobXml locate(String jobName);
 
 }

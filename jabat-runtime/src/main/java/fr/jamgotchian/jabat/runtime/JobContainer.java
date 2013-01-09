@@ -18,7 +18,10 @@ package fr.jamgotchian.jabat.runtime;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import fr.jamgotchian.jabat.jobxml.JobXmlLoader;
+import fr.jamgotchian.jabat.jobxml.JobXml;
+import fr.jamgotchian.jabat.jobxml.JobXmlLocator;
+import fr.jamgotchian.jabat.jobxml.JobXmlParser;
+import fr.jamgotchian.jabat.jobxml.MetaInfJobXmlLocator;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.config.Configuration;
@@ -50,7 +53,9 @@ public class JobContainer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobContainer.class);
 
-    private final JobXmlLoader loader = new JobXmlLoader();
+    private final JobXmlLocator locator = new MetaInfJobXmlLocator();
+
+    private final JobXmlParser parser = new JobXmlParser();
 
     private final Configuration config;
 
@@ -107,7 +112,12 @@ public class JobContainer {
     }
 
     public long start(String id, Properties parameters) throws NoSuchJobException, JobStartException {
-        Job job = loader.load(id);
+        JobXml jobXml = locator.locate(id);
+        if (jobXml == null) {
+            throw new NoSuchJobException("Job " + id + " not found");
+        }
+
+        Job job = parser.parseJob(jobXml.getInputStream());
 
         if (job.getFirstChainableNode() == null) {
             throw new JobStartException("The job " + id + " does not contain any step, flow or split");

@@ -24,6 +24,10 @@ public class JobXmlException extends RuntimeException {
     public JobXmlException() {
     }
 
+    public JobXmlException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public JobXmlException(Throwable cause) {
         super(cause);
     }
