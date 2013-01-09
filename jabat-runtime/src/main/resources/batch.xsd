@@ -23,7 +23,7 @@ limitations under the License.
             <xs:sequence>
                 <xs:element name="batch-artifact" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
-                        <xs:attribute name="id" type="xs:string" use="required"/>
+                        <xs:attribute name="name" type="xs:string" use="required"/>
                         <xs:attribute name="class" type="xs:string" use="required"/>
                     </xs:complexType>
                 </xs:element>

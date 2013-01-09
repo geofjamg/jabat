@@ -16,7 +16,7 @@ public class CdiArtifactFactory implements ArtifactFactory {
             = new BatchXmlArtifactFactory();
 
     @Override
-    public void initialize() throws Exception {
+    public void initialize() {
         if (JabatCdiExtension.BEAN_MANAGER == null) {
             throw new JabatRuntimeException("CDI container not initialized");
         }
@@ -24,12 +24,12 @@ public class CdiArtifactFactory implements ArtifactFactory {
     }
 
     @Override
-    public Object create(String ref) throws Exception {
+    public Object create(String name) {
         Object instance;
-        Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(ref);
+        Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(name);
         if (beans.isEmpty()) {
             // there is no artifact annotated by @Named, search into the batch.xml
-            instance = batchXmlArtifactFactory.create(ref);
+            instance = batchXmlArtifactFactory.create(name);
         } else {
             // there is an artifact annotated by @Named
             instance = beans.iterator().next().create(null);
@@ -38,7 +38,7 @@ public class CdiArtifactFactory implements ArtifactFactory {
     }
 
     @Override
-    public void destroy(Object instance) throws Exception {
+    public void destroy(Object instance) {
         // TODO
     }
 
