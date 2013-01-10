@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
-import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.PartitionAnalyzer;
+import javax.batch.api.StepListener;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionAnalyzerProxy implements PartitionAnalyzer {
+public class StepListenerProxy implements StepListener {
 
     private final Object object;
 
-    private final PartitionAnalyzerAnnotatedClass annotatedClass;
+    private final StepListenerAnnotatedClass annotatedClass;
 
-    public PartitionAnalyzerProxy(Object object) {
+    public StepListenerProxy(Object object) {
         this.object = object;
-        annotatedClass = new PartitionAnalyzerAnnotatedClass(object.getClass());
+        annotatedClass = new StepListenerAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void analyzeCollectorData(Externalizable data) throws Exception {
+    public void beforeStep() throws Exception {
         try {
-            if (annotatedClass.getAnalyseCollectorDataMethod() != null) {
-                annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
+            if (annotatedClass.getBeforeStepMethod() != null) {
+                annotatedClass.getBeforeStepMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -50,10 +49,10 @@ public class PartitionAnalyzerProxy implements PartitionAnalyzer {
     }
 
     @Override
-    public void analyzeStatus(String batchStatus, String exitStatus) throws Exception {
+    public void afterStep() throws Exception {
         try {
-            if (annotatedClass.getAnalyseStatusMethod() != null) {
-                annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
+            if (annotatedClass.getAfterStepMethod() != null) {
+                annotatedClass.getAfterStepMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {

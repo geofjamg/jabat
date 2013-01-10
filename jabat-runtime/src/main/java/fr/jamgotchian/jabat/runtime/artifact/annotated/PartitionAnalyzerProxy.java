@@ -13,41 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
+import javax.batch.api.PartitionAnalyzer;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-abstract class ResourceProxy {
+public class PartitionAnalyzerProxy implements PartitionAnalyzer {
 
-    protected final Object object;
+    private final Object object;
 
-    protected ResourceProxy(Object object) {
+    private final PartitionAnalyzerAnnotatedClass annotatedClass;
+
+    public PartitionAnalyzerProxy(Object object) {
         this.object = object;
+        annotatedClass = new PartitionAnalyzerAnnotatedClass(object.getClass());
     }
 
-    protected abstract ResourceAnnotatedClass getAnnotatedClass();
-
-    public void open(Externalizable checkpoint) throws Exception {
+    @Override
+    public void analyzeCollectorData(Externalizable data) throws Exception {
         try {
-            getAnnotatedClass().getOpenMethod().invoke(object, checkpoint);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    public void close() throws Exception {
-        try {
-            if (getAnnotatedClass().getCloseMethod() != null) {
-                getAnnotatedClass().getCloseMethod().invoke(object);
+            if (annotatedClass.getAnalyseCollectorDataMethod() != null) {
+                annotatedClass.getAnalyseCollectorDataMethod().invoke(object, data);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -58,9 +49,12 @@ abstract class ResourceProxy {
         }
     }
 
-    public Externalizable checkpointInfo() throws Exception {
+    @Override
+    public void analyzeStatus(String batchStatus, String exitStatus) throws Exception {
         try {
-            return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
+            if (annotatedClass.getAnalyseStatusMethod() != null) {
+                annotatedClass.getAnalyseStatusMethod().invoke(object, batchStatus, exitStatus);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

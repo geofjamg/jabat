@@ -13,45 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.PartitionReducer;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
+public class PartitionReducerProxy implements PartitionReducer {
 
     private final Object object;
 
-    private final CheckpointAlgorithmAnnotatedClass annotatedClass;
+    private final PartitionReducerAnnotatedClass annotatedClass;
 
-    public CheckpointAlgorithmProxy(Object object) {
+    public PartitionReducerProxy(Object object) {
         this.object = object;
-        annotatedClass = new CheckpointAlgorithmAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionReducerAnnotatedClass(object.getClass());
     }
 
     @Override
-    public int checkpointTimeout(int timeout) throws Exception {
-        int nextTimeout = timeout;
+    public void beginPartitionedStep() throws Exception {
         try {
-            nextTimeout = (Integer) annotatedClass.getCheckpointTimeoutMethod().invoke(object, timeout);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
+            if (annotatedClass.getBeginPartitionedStepMethod() != null) {
+                annotatedClass.getBeginPartitionedStepMethod().invoke(object);
             }
-        }
-        return nextTimeout;
-    }
-
-    @Override
-    public void beginCheckpoint() throws Exception {
-        try {
-            annotatedClass.getBeginCheckpointMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -62,10 +49,11 @@ public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
     }
 
     @Override
-    public boolean isReadyToCheckpoint() throws Exception {
-        boolean isReady = false;
+    public void beforePartitionedStepCompletion() throws Exception {
         try {
-            isReady = (Boolean) annotatedClass.getIsReadyToCheckpointMethod().invoke(object);
+            if (annotatedClass.getBeforePartitionedStepCompletionMethod() != null) {
+                annotatedClass.getBeforePartitionedStepCompletionMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -73,13 +61,29 @@ public class CheckpointAlgorithmProxy implements CheckpointAlgorithm {
                 throw e;
             }
         }
-        return isReady;
     }
 
     @Override
-    public void endCheckpoint() throws Exception {
+    public void rollbackPartitionedStep() throws Exception {
         try {
-            annotatedClass.getEndCheckpointMethod().invoke(object);
+            if (annotatedClass.getRollbackPartitionedStepMethod() != null) {
+                annotatedClass.getRollbackPartitionedStepMethod().invoke(object);
+            }
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void afterPartitionedStepCompletion(String status) throws Exception {
+        try {
+            if (annotatedClass.getAfterPartitionedStepCompletionMethod() != null) {
+                annotatedClass.getAfterPartitionedStepCompletionMethod().invoke(object, status);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

@@ -13,36 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
-import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.ItemProcessor;
+import javax.batch.api.Batchlet;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
+public class BatchletProxy implements Batchlet {
 
     private final Object object;
 
-    private final ItemProcessorAnnotatedClass annotatedClass;
+    private final BatchletAnnotatedClass annotatedClass;
 
-    public ItemProcessorProxy(Object object) {
+    public BatchletProxy(Object object) {
         this.object = object;
-        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass());
+        annotatedClass = new BatchletAnnotatedClass(object.getClass());
     }
 
     @Override
-    public Object processItem(Object item) throws Exception {
-        Class<?> expectedType = annotatedClass.getItemType();
-        if (item.getClass() != expectedType) {
-            throw new JabatRuntimeException("Bad item type " + item.getClass()
-                    + ", expected " + expectedType);
-        }
+    public String process() throws Exception {
+        String exitStatus = null;
         try {
-            return annotatedClass.getProcessItemMethod().invoke(object, item);
+            exitStatus = (String) annotatedClass.getProcessMethod().invoke(object);
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+        return exitStatus;
+    }
+
+    @Override
+    public void stop() throws Exception {
+        try {
+            annotatedClass.getStopMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

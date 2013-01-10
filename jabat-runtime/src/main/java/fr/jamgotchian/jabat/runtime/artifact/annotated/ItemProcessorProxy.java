@@ -13,47 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
+import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.StepListener;
+import javax.batch.api.ItemProcessor;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerProxy implements StepListener {
+public class ItemProcessorProxy implements ItemProcessor<Object, Object> {
 
     private final Object object;
 
-    private final StepListenerAnnotatedClass annotatedClass;
+    private final ItemProcessorAnnotatedClass annotatedClass;
 
-    public StepListenerProxy(Object object) {
+    public ItemProcessorProxy(Object object) {
         this.object = object;
-        annotatedClass = new StepListenerAnnotatedClass(object.getClass());
+        annotatedClass = new ItemProcessorAnnotatedClass(object.getClass());
     }
 
     @Override
-    public void beforeStep() throws Exception {
-        try {
-            if (annotatedClass.getBeforeStepMethod() != null) {
-                annotatedClass.getBeforeStepMethod().invoke(object);
-            }
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
+    public Object processItem(Object item) throws Exception {
+        Class<?> expectedType = annotatedClass.getItemType();
+        if (item.getClass() != expectedType) {
+            throw new JabatRuntimeException("Bad item type " + item.getClass()
+                    + ", expected " + expectedType);
         }
-    }
-
-    @Override
-    public void afterStep() throws Exception {
         try {
-            if (annotatedClass.getAfterStepMethod() != null) {
-                annotatedClass.getAfterStepMethod().invoke(object);
-            }
+            return annotatedClass.getProcessItemMethod().invoke(object, item);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

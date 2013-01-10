@@ -15,17 +15,17 @@
  */
 package fr.jamgotchian.jabat.runtime.artifact;
 
-import fr.jamgotchian.jabat.runtime.artifact.annotation.BatchletProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.CheckpointAlgorithmProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.ItemProcessorProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.ItemReaderProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.ItemWriterProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.JobListenerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.PartitionAnalyzerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.PartitionCollectorProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.PartitionMapperProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.PartitionReducerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotation.StepListenerProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.BatchletProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.CheckpointAlgorithmProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemProcessorProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemReaderProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemWriterProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.JobListenerProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionAnalyzerProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionCollectorProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionMapperProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionReducerProxy;
+import fr.jamgotchian.jabat.runtime.artifact.annotated.StepListenerProxy;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -13,40 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.runtime.util.MethodUtil.*;
+import java.io.Externalizable;
 import java.lang.reflect.Method;
-import javax.batch.annotation.ProcessItem;
+import javax.batch.annotation.CollectPartitionData;
 
 /**
- * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
+ * @CollectPartitionData Externalizable <method-name>() throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ItemProcessorAnnotatedClass {
+public class PartitionCollectorAnnotatedClass {
 
-    private final Method processItemMethod;
+    private final Method collectPartitionDataMethod;
 
-    public ItemProcessorAnnotatedClass(Class<?> clazz) {
-        processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
+    public PartitionCollectorAnnotatedClass(Class<?> clazz) {
+        collectPartitionDataMethod = findAnnotatedMethod(clazz, CollectPartitionData.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return m.getReturnType() != Void.TYPE
-                        && hasOneParameter(m)
+                return hasReturnType(m, Externalizable.class)
+                        && hasZeroParameter(m)
                         && throwsOneException(m, Exception.class);
             }
         });
-        processItemMethod.setAccessible(true);
+        collectPartitionDataMethod.setAccessible(true);
     }
 
-    public Class<?> getItemType() {
-        return processItemMethod.getParameterTypes()[0];
-    }
-
-    public Method getProcessItemMethod() {
-        return processItemMethod;
+    public Method getCollectPartitionDataMethod() {
+        return collectPartitionDataMethod;
     }
 
 }

@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.JobListener;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionMapperProxy implements PartitionMapper {
+public class JobListenerProxy implements JobListener {
 
     private final Object object;
 
-    private final PartitionMapperAnnotatedClass annotatedClass;
+    private final JobListenerAnnotatedClass annotatedClass;
 
-    public PartitionMapperProxy(Object object) {
+    public JobListenerProxy(Object object) {
         this.object = object;
-        annotatedClass = new PartitionMapperAnnotatedClass(object.getClass());
+        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 
     @Override
-    public PartitionPlan mapPartitions() throws Exception {
-        PartitionPlan plan = null;
+    public void beforeJob() throws Exception {
         try {
-            plan = (PartitionPlan) annotatedClass.getMapPartitionsMethod().invoke(object);
+            if (annotatedClass.getBeforeJobMethod() != null) {
+                annotatedClass.getBeforeJobMethod().invoke(object);
+            }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -46,7 +46,21 @@ public class PartitionMapperProxy implements PartitionMapper {
                 throw e;
             }
         }
-        return plan;
+    }
+
+    @Override
+    public void afterJob() throws Exception {
+        try {
+            if (annotatedClass.getAfterJobMethod() != null) {
+                annotatedClass.getAfterJobMethod().invoke(object);
+            }
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
     }
 
 }

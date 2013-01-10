@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import static fr.jamgotchian.jabat.runtime.util.MethodUtil.*;
 import com.google.common.base.Predicate;
 import java.lang.reflect.Method;
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BeforeStep;
+import javax.batch.annotation.AfterJob;
+import javax.batch.annotation.BeforeJob;
 
 /**
- * [@BeforeStep void <method-name> () throws Exception]
- * [@AfterStep void <method-name> () throws Exception ]
+ * [@BeforeJob void <method-name> () throws Exception]
+ * [@AfterJob void <method-name> () throws Exception]
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StepListenerAnnotatedClass {
+public class JobListenerAnnotatedClass {
 
-    private final Method beforeStepMethod;
+    private final Method beforeJobMethod;
 
-    private final Method afterStepMethod;
+    private final Method afterJobMethod;
 
-    public StepListenerAnnotatedClass(Class<?> clazz) {
-        beforeStepMethod = findAnnotatedMethod(clazz, BeforeStep.class, true, new Predicate<Method>() {
+    public JobListenerAnnotatedClass(Class<?> clazz) {
+        beforeJobMethod = findAnnotatedMethod(clazz, BeforeJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
@@ -42,10 +42,10 @@ public class StepListenerAnnotatedClass {
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (beforeStepMethod != null) {
-            beforeStepMethod.setAccessible(true);
+        if (beforeJobMethod != null) {
+            beforeJobMethod.setAccessible(true);
         }
-        afterStepMethod = findAnnotatedMethod(clazz, AfterStep.class, true, new Predicate<Method>() {
+        afterJobMethod = findAnnotatedMethod(clazz, AfterJob.class, true, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
                 return hasReturnType(m, Void.TYPE)
@@ -53,17 +53,17 @@ public class StepListenerAnnotatedClass {
                         && throwsOneException(m, Exception.class);
             }
         });
-        if (afterStepMethod != null) {
-            afterStepMethod.setAccessible(true);
+        if (afterJobMethod != null) {
+            afterJobMethod.setAccessible(true);
         }
     }
 
-    public Method getBeforeStepMethod() {
-        return beforeStepMethod;
+    public Method getBeforeJobMethod() {
+        return beforeJobMethod;
     }
 
-    public Method getAfterStepMethod() {
-        return afterStepMethod;
+    public Method getAfterJobMethod() {
+        return afterJobMethod;
     }
 
 }

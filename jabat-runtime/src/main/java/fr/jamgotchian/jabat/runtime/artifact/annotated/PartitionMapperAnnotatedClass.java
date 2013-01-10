@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import static fr.jamgotchian.jabat.runtime.util.MethodUtil.*;
 import com.google.common.base.Predicate;

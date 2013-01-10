@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.Batchlet;
+import javax.batch.api.PartitionMapper;
+import javax.batch.api.parameters.PartitionPlan;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchletProxy implements Batchlet {
+public class PartitionMapperProxy implements PartitionMapper {
 
     private final Object object;
 
-    private final BatchletAnnotatedClass annotatedClass;
+    private final PartitionMapperAnnotatedClass annotatedClass;
 
-    public BatchletProxy(Object object) {
+    public PartitionMapperProxy(Object object) {
         this.object = object;
-        annotatedClass = new BatchletAnnotatedClass(object.getClass());
+        annotatedClass = new PartitionMapperAnnotatedClass(object.getClass());
     }
 
     @Override
-    public String process() throws Exception {
-        String exitStatus = null;
+    public PartitionPlan mapPartitions() throws Exception {
+        PartitionPlan plan = null;
         try {
-            exitStatus = (String) annotatedClass.getProcessMethod().invoke(object);
+            plan = (PartitionPlan) annotatedClass.getMapPartitionsMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
@@ -45,20 +46,7 @@ public class BatchletProxy implements Batchlet {
                 throw e;
             }
         }
-        return exitStatus;
-    }
-
-    @Override
-    public void stop() throws Exception {
-        try {
-            annotatedClass.getStopMethod().invoke(object);
-        } catch(InvocationTargetException e) {
-            if (e.getCause() instanceof Exception) {
-                throw (Exception) e.getCause();
-            } else {
-                throw e;
-            }
-        }
+        return plan;
     }
 
 }

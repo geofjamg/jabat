@@ -13,37 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
 import com.google.common.base.Predicate;
 import static fr.jamgotchian.jabat.runtime.util.MethodUtil.*;
-import java.io.Externalizable;
 import java.lang.reflect.Method;
-import javax.batch.annotation.CollectPartitionData;
+import javax.batch.annotation.ProcessItem;
 
 /**
- * @CollectPartitionData Externalizable <method-name>() throws Exception
+ * @ProcessItem <output-item-type> <method-name>(<item-type> item) throws Exception
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PartitionCollectorAnnotatedClass {
+public class ItemProcessorAnnotatedClass {
 
-    private final Method collectPartitionDataMethod;
+    private final Method processItemMethod;
 
-    public PartitionCollectorAnnotatedClass(Class<?> clazz) {
-        collectPartitionDataMethod = findAnnotatedMethod(clazz, CollectPartitionData.class, false, new Predicate<Method>() {
+    public ItemProcessorAnnotatedClass(Class<?> clazz) {
+        processItemMethod = findAnnotatedMethod(clazz, ProcessItem.class, false, new Predicate<Method>() {
             @Override
             public boolean apply(Method m) {
-                return hasReturnType(m, Externalizable.class)
-                        && hasZeroParameter(m)
+                return m.getReturnType() != Void.TYPE
+                        && hasOneParameter(m)
                         && throwsOneException(m, Exception.class);
             }
         });
-        collectPartitionDataMethod.setAccessible(true);
+        processItemMethod.setAccessible(true);
     }
 
-    public Method getCollectPartitionDataMethod() {
-        return collectPartitionDataMethod;
+    public Class<?> getItemType() {
+        return processItemMethod.getParameterTypes()[0];
+    }
+
+    public Method getProcessItemMethod() {
+        return processItemMethod;
     }
 
 }

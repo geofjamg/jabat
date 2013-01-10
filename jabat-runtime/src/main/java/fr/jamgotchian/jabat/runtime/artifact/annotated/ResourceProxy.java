@@ -13,31 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.artifact.annotation;
+package fr.jamgotchian.jabat.runtime.artifact.annotated;
 
+import java.io.Externalizable;
 import java.lang.reflect.InvocationTargetException;
-import javax.batch.api.JobListener;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JobListenerProxy implements JobListener {
+abstract class ResourceProxy {
 
-    private final Object object;
+    protected final Object object;
 
-    private final JobListenerAnnotatedClass annotatedClass;
-
-    public JobListenerProxy(Object object) {
+    protected ResourceProxy(Object object) {
         this.object = object;
-        annotatedClass = new JobListenerAnnotatedClass(object.getClass());
     }
 
-    @Override
-    public void beforeJob() throws Exception {
+    protected abstract ResourceAnnotatedClass getAnnotatedClass();
+
+    public void open(Externalizable checkpoint) throws Exception {
         try {
-            if (annotatedClass.getBeforeJobMethod() != null) {
-                annotatedClass.getBeforeJobMethod().invoke(object);
+            getAnnotatedClass().getOpenMethod().invoke(object, checkpoint);
+        } catch(InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public void close() throws Exception {
+        try {
+            if (getAnnotatedClass().getCloseMethod() != null) {
+                getAnnotatedClass().getCloseMethod().invoke(object);
             }
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
@@ -48,12 +58,9 @@ public class JobListenerProxy implements JobListener {
         }
     }
 
-    @Override
-    public void afterJob() throws Exception {
+    public Externalizable checkpointInfo() throws Exception {
         try {
-            if (annotatedClass.getAfterJobMethod() != null) {
-                annotatedClass.getAfterJobMethod().invoke(object);
-            }
+            return (Externalizable) getAnnotatedClass().getCheckpointInfoMethod().invoke(object);
         } catch(InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();
