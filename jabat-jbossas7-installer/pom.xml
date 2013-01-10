@@ -63,7 +63,7 @@ limitations under the License.
                         <configuration>
                             <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
                             <overWriteSnapshots>true</overWriteSnapshots>
-                            <includeArtifactIds>jsr352-api,jabat-runtime,jabat-jobxml,jabat-cdi,jabat-api,jabat-jbossas7-subsystem,jdom2,antlr-runtime</includeArtifactIds>
+                            <includeArtifactIds>jsr352-api,jabat-runtime,jabat-jobxml,jabat-cdi-integration,jabat-api,jabat-jbossas7-subsystem,jdom2,antlr-runtime</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -89,7 +89,7 @@ limitations under the License.
                                     <fileset dir="target/dependency/lib">
                                         <include name="jabat-runtime-${project.version}.jar" />
                                         <include name="jabat-jobxml-${project.version}.jar" />
-                                        <include name="jabat-cdi-${project.version}.jar" />
+                                        <include name="jabat-cdi-integration-${project.version}.jar" />
                                         <include name="jabat-api-${project.version}.jar" />
                                         <include name="jabat-jbossas7-subsystem-${project.version}.jar" />
                                         <include name="jdom2-${jdom2.version}*.jar" />
@@ -131,7 +131,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jabat-cdi</artifactId>
+            <artifactId>jabat-cdi-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

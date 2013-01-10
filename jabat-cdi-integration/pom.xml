@@ -25,7 +25,7 @@ limitations under the License.
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jabat-cdi</artifactId>
+    <artifactId>jabat-cdi-integration</artifactId>
     <packaging>jar</packaging>
 
     <name>Jabat CDI Integration</name>
