@@ -4,6 +4,7 @@ import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.artifact.BatchXmlArtifactFactory;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.Set;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 
 /**
@@ -17,14 +18,13 @@ public class CdiArtifactFactory implements ArtifactFactory {
 
     @Override
     public void initialize() {
-        if (JabatCdiExtension.BEAN_MANAGER == null) {
-            throw new JabatRuntimeException("CDI container not initialized");
-        }
-        batchXmlArtifactFactory.initialize();
     }
 
     @Override
     public Object create(String name) {
+        if (JabatCdiExtension.BEAN_MANAGER == null) {
+            throw new JabatRuntimeException("CDI container not initialized");
+        }
         Object instance;
         Set<Bean<?>> beans = JabatCdiExtension.BEAN_MANAGER.getBeans(name);
         if (beans.isEmpty()) {
@@ -32,7 +32,9 @@ public class CdiArtifactFactory implements ArtifactFactory {
             instance = batchXmlArtifactFactory.create(name);
         } else {
             // there is an artifact annotated by @Named
-            instance = beans.iterator().next().create(null);
+            Bean bean = beans.iterator().next();
+            CreationalContext ctx = JabatCdiExtension.BEAN_MANAGER.createCreationalContext(null);
+            instance = bean.create(ctx);
         }
         return instance;
     }

@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat.jbossas.extension;
 import fr.jamgotchian.jabat.jbossas.deployment.BatchXmlProcessor;
 import fr.jamgotchian.jabat.jbossas.deployment.JabatCdiIntegrationProcessor;
 import fr.jamgotchian.jabat.jbossas.deployment.JabatDependencyProcessor;
+import fr.jamgotchian.jabat.jbossas.deployment.JabatServiceProcessor;
 import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -29,7 +30,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Handler responsible for adding the subsystem resource to the model.
@@ -61,20 +61,13 @@ class JabatSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
-        JobContainerService service = new JobContainerService();
-        ServiceController<JobContainerService> controller = context.getServiceTarget()
-                .addService(JobContainerService.NAME, service)
-                .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-        newControllers.add(controller);
-
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, 0x4000, new BatchXmlProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, 0x4001, new JabatDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, 0x4002, new JabatCdiIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, 0x4003, new JabatServiceProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }

@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.extension;
 
+import fr.jamgotchian.jabat.cdi.CdiArtifactFactory;
 import fr.jamgotchian.jabat.runtime.JobContainer;
 import fr.jamgotchian.jabat.runtime.JobContainerFactory;
 import org.jboss.logging.Logger;
@@ -42,9 +43,10 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        LOGGER.info("Start Jabat job container");
+        LOGGER.info("Starting Jabat job container");
         try {
             JobContainerFactory factory = new JobContainerFactory();
+            factory.setArtifactFactoryClass(CdiArtifactFactory.class);
             jobContainer = factory.newInstance();
             jobContainer.initialize();
         } catch (Throwable t) {
@@ -54,7 +56,7 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void stop(StopContext context) {
-        LOGGER.info("Shutdown Jabat job container");
+        LOGGER.info("Stopping Jabat job container");
         try {
             jobContainer.shutdown();
         } catch (Throwable t) {

@@ -23,7 +23,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
-import org.jboss.logging.Logger;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
 /**
@@ -33,11 +32,12 @@ import org.jboss.weld.bootstrap.spi.Metadata;
  */
 public class JabatCdiIntegrationProcessor implements DeploymentUnitProcessor {
 
-    private final Logger LOGGER = Logger.getLogger(JabatCdiIntegrationProcessor.class);
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (!JabatDeploymentMarker.isJabatDeployment(deploymentUnit)) {
+            return;
+        }
         DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             final List<Metadata<Extension>> extensions = parent.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);

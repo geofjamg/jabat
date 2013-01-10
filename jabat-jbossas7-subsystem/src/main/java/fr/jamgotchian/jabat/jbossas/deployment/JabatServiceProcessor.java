@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
+ * Copyright 2013 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,39 +15,30 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
-import org.jboss.as.server.deployment.Attachments;
+import fr.jamgotchian.jabat.jbossas.extension.JobContainerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.msc.service.ServiceController;
 
 /**
- * Deployment processor that detects batch.xml file.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BatchXmlProcessor implements DeploymentUnitProcessor {
-
-    private static final String META_INF_BATCH_XML = "META-INF/batch.xml";
-
-    private static final String WEB_INF_BATCH_XML = "WEB-INF/batch.xml";
+public class JabatServiceProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        ResourceRoot root = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
-        // batch.xml is a marker for deployment containing xml jobs
-        markDeployment(deploymentUnit, root, META_INF_BATCH_XML);
-        markDeployment(deploymentUnit, root, WEB_INF_BATCH_XML);
-    }
-
-    private static void markDeployment(DeploymentUnit deploymentUnit, ResourceRoot root, String batchXmlPath) {
-        VirtualFile batchXml = root.getRoot().getChild(batchXmlPath);
-        if (batchXml.exists() && batchXml.isFile()) {
-            JabatDeploymentMarker.mark(deploymentUnit);
+        if (!JabatDeploymentMarker.isJabatDeployment(deploymentUnit)) {
+            return;
         }
+        JobContainerService service = new JobContainerService();
+        phaseContext.getServiceTarget()
+                .addService(JobContainerService.NAME, service)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     @Override

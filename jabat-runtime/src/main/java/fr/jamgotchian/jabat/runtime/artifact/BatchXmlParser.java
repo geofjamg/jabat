@@ -16,20 +16,12 @@
 package fr.jamgotchian.jabat.runtime.artifact;
 
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
-import java.io.IOException;
 import java.io.InputStream;
-import javax.xml.XMLConstants;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.util.StreamReaderDelegate;
-import javax.xml.transform.stax.StAXSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -41,42 +33,28 @@ public class BatchXmlParser {
         final BatchXml batchXml = new BatchXml();
         try {
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
-
-            // parse and validate the document at the same time
             XMLStreamReader xmlsr = xmlif.createXMLStreamReader(is);
-            XMLStreamReader delegate = new StreamReaderDelegate(xmlsr) {
-                @Override
-                public int next() throws XMLStreamException {
-                    int eventType = super.next();
-                    switch (eventType) {
-                        case XMLEvent.START_ELEMENT: {
-                            String localName = super.getLocalName();
-                            if ("batch-artifact".equals(localName)) {
-                                String name = super.getAttributeValue(null, "name");
-                                String className = super.getAttributeValue(null, "class");
-                                try {
-                                    Class<?> clazz = Class.forName(className);
-                                    batchXml.addArtifact(name, clazz);
-                                } catch (ClassNotFoundException e) {
-                                    throw new JabatRuntimeException("Batch artifact class '"
-                                            + className + "' not found");
-                                }
+            while (xmlsr.hasNext()) {
+                int eventType = xmlsr.next();
+                switch (eventType) {
+                    case XMLEvent.START_ELEMENT: {
+                        String localName = xmlsr.getLocalName();
+                        if ("batch-artifact".equals(localName)) {
+                            String name = xmlsr.getAttributeValue(null, "name");
+                            String className = xmlsr.getAttributeValue(null, "class");
+                            try {
+                                Class<?> clazz = Class.forName(className);
+                                batchXml.addArtifact(name, clazz);
+                            } catch (ClassNotFoundException e) {
+                                throw new JabatRuntimeException("Batch artifact class '"
+                                        + className + "' not found");
                             }
                         }
-                        break;
                     }
-                    return eventType;
+                    break;
                 }
             };
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(getClass().getResource("/batch.xsd"));
-            Validator validator = schema.newValidator();
-            validator.validate(new StAXSource(delegate));
         } catch (FactoryConfigurationError e) {
-            throw new JabatRuntimeException(e);
-        } catch (IOException e) {
-            throw new JabatRuntimeException(e);
-        } catch (SAXException e) {
             throw new JabatRuntimeException(e);
         } catch (XMLStreamException e) {
             throw new JabatRuntimeException(e);
