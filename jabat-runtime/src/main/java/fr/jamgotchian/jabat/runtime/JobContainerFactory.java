@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.runtime.config;
+package fr.jamgotchian.jabat.runtime;
 
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
@@ -27,7 +27,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Configuration {
+public class JobContainerFactory {
 
     private static final Class<? extends ArtifactFactory> DEFAULT_ARTIFACT_FACTORY_CLASS
             = fr.jamgotchian.jabat.runtime.artifact.BatchXmlArtifactFactory.class;
@@ -44,7 +44,7 @@ public class Configuration {
 
     private Class<? extends JobRepository> jobRepositoryClass;
 
-    public Configuration() {
+    public JobContainerFactory() {
         InputStream is = getClass().getResourceAsStream("/jabat.properties");
         if (is != null) {
             Properties props = new Properties();
@@ -106,4 +106,14 @@ public class Configuration {
         this.jobRepositoryClass = jobRepositoryClass;
     }
 
+    public JobContainer newInstance() {
+        try {
+            TaskManager taskManager = getTaskManagerClass().newInstance();
+            ArtifactFactory artifactFactory = getArtifactFactoryClass().newInstance();
+            JobRepository repository = getJobRepositoryClass().newInstance();
+            return new JobContainer(taskManager, artifactFactory, repository);
+        } catch(ReflectiveOperationException e) {
+            throw new JabatRuntimeException(e);
+        }
+    }
 }

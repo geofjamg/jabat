@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.jbossas.extension;
 
 import fr.jamgotchian.jabat.runtime.JobContainer;
-import fr.jamgotchian.jabat.runtime.config.Configuration;
+import fr.jamgotchian.jabat.runtime.JobContainerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -34,13 +34,7 @@ public class JobContainerService implements Service<JobContainerService> {
 
     public static final ServiceName NAME = ServiceName.JBOSS.append("jabat").append("jobContainer");
 
-    private final Configuration config = new Configuration();
-
     private JobContainer jobContainer;
-
-    public Configuration getConfig() {
-        return config;
-    }
 
     public JobContainer getJobContainer() {
         return jobContainer;
@@ -48,9 +42,10 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        LOGGER.info("Start Jabat job manager service");
+        LOGGER.info("Start Jabat job container");
         try {
-            jobContainer = new JobContainer(config);
+            JobContainerFactory factory = new JobContainerFactory();
+            jobContainer = factory.newInstance();
             jobContainer.initialize();
         } catch (Throwable t) {
             throw new StartException(t);
@@ -59,7 +54,7 @@ public class JobContainerService implements Service<JobContainerService> {
 
     @Override
     public void stop(StopContext context) {
-        LOGGER.info("Stop Jabat job manager service");
+        LOGGER.info("Shutdown Jabat job container");
         try {
             jobContainer.shutdown();
         } catch (Throwable t) {

@@ -24,14 +24,12 @@ import fr.jamgotchian.jabat.jobxml.JobXmlParser;
 import fr.jamgotchian.jabat.jobxml.MetaInfJobXmlLocator;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
-import fr.jamgotchian.jabat.runtime.config.Configuration;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
 import fr.jamgotchian.jabat.runtime.task.TaskManager;
-import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +55,6 @@ public class JobContainer {
 
     private final JobXmlParser parser = new JobXmlParser();
 
-    private final Configuration config;
-
     private final TaskManager taskManager;
 
     private final ArtifactFactory artifactFactory;
@@ -68,22 +64,10 @@ public class JobContainer {
     private final Multimap<Long, Batchlet> runningBatchlets
             = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
 
-    public JobContainer() {
-        this(new Configuration());
-    }
-
-    public JobContainer(Configuration config) {
-        if (config == null) {
-            throw new IllegalArgumentException("configuration is null");
-        }
-        this.config = config;
-        try {
-            taskManager = this.config.getTaskManagerClass().newInstance();
-            artifactFactory = this.config.getArtifactFactoryClass().newInstance();
-            repository = this.config.getJobRepositoryClass().newInstance();
-        } catch(ReflectiveOperationException e) {
-            throw new JabatRuntimeException(e);
-        }
+    JobContainer(TaskManager taskManager, ArtifactFactory artifactFactory, JobRepository repository) {
+        this.taskManager = taskManager;
+        this.artifactFactory = artifactFactory;
+        this.repository = repository;
     }
 
     public void initialize() throws Exception {
