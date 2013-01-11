@@ -17,6 +17,7 @@ package fr.jamgotchian.jabat.runtime;
 
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
 import fr.jamgotchian.jabat.runtime.task.TaskManager;
 import javax.batch.api.Batchlet;
@@ -27,28 +28,35 @@ import javax.batch.api.Batchlet;
  */
 class JobExecutionContext {
 
-    private final TaskManager taskManager;
+    private final BatchXml batchXml;
 
     private final ArtifactFactory artifactFactory;
+
+    private final TaskManager taskManager;
 
     private final JobRepository repository;
 
     private final Multimap<Long, Batchlet> runningBatchlets;
 
-    JobExecutionContext(TaskManager taskManager, ArtifactFactory artifactFactory,
+    JobExecutionContext(BatchXml batchXml, ArtifactFactory artifactFactory, TaskManager taskManager,
                         JobRepository repository, Multimap<Long, Batchlet> runningBatchlets) {
-        this.taskManager = taskManager;
+        this.batchXml = batchXml;
         this.artifactFactory = artifactFactory;
+        this.taskManager = taskManager;
         this.repository = repository;
         this.runningBatchlets = runningBatchlets;
     }
 
-    TaskManager getTaskManager() {
-        return taskManager;
+    BatchXml getBatchXml() {
+        return batchXml;
     }
 
     ArtifactFactory getArtifactFactory() {
         return artifactFactory;
+    }
+
+    TaskManager getTaskManager() {
+        return taskManager;
     }
 
     JobRepository getRepository() {

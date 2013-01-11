@@ -15,12 +15,16 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXmlParser;
+import java.io.IOException;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -29,6 +33,8 @@ import org.jboss.vfs.VirtualFile;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BatchXmlProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger LOGGER = Logger.getLogger(BatchXmlProcessor.class);
 
     private static final String META_INF_BATCH_XML = "META-INF/batch.xml";
 
@@ -39,15 +45,29 @@ public class BatchXmlProcessor implements DeploymentUnitProcessor {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         ResourceRoot root = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT);
         // batch.xml is a marker for deployment containing xml jobs
-        markDeployment(deploymentUnit, root, META_INF_BATCH_XML);
-        markDeployment(deploymentUnit, root, WEB_INF_BATCH_XML);
+        BatchXml batchXml = getBatchXml(deploymentUnit, root, META_INF_BATCH_XML);
+        if (batchXml == null) {
+            batchXml = getBatchXml(deploymentUnit, root, WEB_INF_BATCH_XML);
+        }
+        if (batchXml != null) {
+            // mark the deployment
+            JabatDeploymentMarker.mark(deploymentUnit, batchXml);
+        }
     }
 
-    private static void markDeployment(DeploymentUnit deploymentUnit, ResourceRoot root, String batchXmlPath) {
-        VirtualFile batchXml = root.getRoot().getChild(batchXmlPath);
-        if (batchXml.exists() && batchXml.isFile()) {
-            JabatDeploymentMarker.mark(deploymentUnit);
+    private static BatchXml getBatchXml(DeploymentUnit deploymentUnit, ResourceRoot root, String batchXmlPath) {
+        VirtualFile file = root.getRoot().getChild(batchXmlPath);
+        if (file.exists() && file.isFile()) {
+            BatchXml batchXml;
+            try {
+                batchXml = new BatchXmlParser().parse(file.openStream());
+            } catch (IOException e) {
+                LOGGER.warn(e.toString(), e);
+                batchXml = new BatchXml();
+            }
+            return batchXml;
         }
+        return null;
     }
 
     @Override

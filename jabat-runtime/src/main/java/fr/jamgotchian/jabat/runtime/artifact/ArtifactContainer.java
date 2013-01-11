@@ -15,34 +15,11 @@
  */
 package fr.jamgotchian.jabat.runtime.artifact;
 
-import fr.jamgotchian.jabat.runtime.artifact.annotated.BatchletProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.CheckpointAlgorithmProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemProcessorProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemReaderProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.ItemWriterProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.JobListenerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionAnalyzerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionCollectorProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionMapperProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.PartitionReducerProxy;
-import fr.jamgotchian.jabat.runtime.artifact.annotated.StepListenerProxy;
+import com.google.common.collect.Iterables;
+import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.batch.api.Batchlet;
-import javax.batch.api.CheckpointAlgorithm;
-import javax.batch.api.ItemProcessor;
-import javax.batch.api.ItemReader;
-import javax.batch.api.ItemWriter;
-import javax.batch.api.JobListener;
-import javax.batch.api.PartitionAnalyzer;
-import javax.batch.api.PartitionCollector;
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.PartitionReducer;
-import javax.batch.api.StepListener;
 
 /**
  * A container for managing artifacts lifecycle.
@@ -51,50 +28,81 @@ import javax.batch.api.StepListener;
  */
 public class ArtifactContainer {
 
-    private static final Map<Class<?>, Class<?>> ARTIFACT_TYPES;
-
-    static {
-        Map<Class<?>, Class<?>> tmp = new HashMap<Class<?>, Class<?>>();
-        tmp.put(Batchlet.class, BatchletProxy.class);
-        tmp.put(CheckpointAlgorithm.class, CheckpointAlgorithmProxy.class);
-        tmp.put(ItemProcessor.class, ItemProcessorProxy.class);
-        tmp.put(ItemReader.class, ItemReaderProxy.class);
-        tmp.put(ItemWriter.class, ItemWriterProxy.class);
-        tmp.put(JobListener.class, JobListenerProxy.class);
-        tmp.put(PartitionAnalyzer.class, PartitionAnalyzerProxy.class);
-        tmp.put(PartitionCollector.class, PartitionCollectorProxy.class);
-        tmp.put(PartitionMapper.class, PartitionMapperProxy.class);
-        tmp.put(PartitionReducer.class, PartitionReducerProxy.class);
-        tmp.put(StepListener.class, StepListenerProxy.class);
-        ARTIFACT_TYPES = Collections.unmodifiableMap(tmp);
-    }
+    private final BatchXml batchXml;
 
     private final ArtifactFactory factory;
 
+    private final List<Object> managedObjects = new ArrayList<Object>();
+
     private final List<Object> objects = new ArrayList<Object>();
 
-    public ArtifactContainer(ArtifactFactory factory) {
+    public ArtifactContainer(BatchXml batchXml, ArtifactFactory factory) {
+        this.batchXml = batchXml;
         this.factory = factory;
     }
 
-    public <T> T create(String ref, Class<T> type) throws Exception {
-        if (!ARTIFACT_TYPES.containsKey(type)) {
+    private Object createFromBatchXml(String name, Class<?> type) {
+        String className = batchXml.getArtifactClass(name);
+        Object obj = null;
+        if (className != null) {
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new JabatRuntimeException("Batch artifact class '"
+                        + className + "' not found");
+            }
+            if (!type.isAssignableFrom(clazz)) {
+                throw new JabatRuntimeException("Expected artifact type is "
+                        + type.getName() + ", instead of " + clazz.getName());
+            }
+            try {
+                obj = clazz.newInstance();
+                objects.add(obj);
+                JabatThreadContext.getInstance().inject(obj, name);
+            } catch (ReflectiveOperationException e) {
+                throw new JabatRuntimeException(e);
+            }
+        }
+        return obj;
+    }
+
+    private Object createFromDiFramework(String name, Class<?> type) {
+        Object obj = factory.create(name);
+        if (obj != null) {
+            managedObjects.add(obj);
+            if (!type.isAssignableFrom(obj.getClass())) {
+                throw new JabatRuntimeException("Expected artifact type is "
+                        + type.getName() + ", instead of " + obj.getClass().getName());
+            }
+        }
+        return obj;
+    }
+
+    public <T> T create(String name, Class<T> type) throws Exception {
+        if (!ArtifactType.isArtifactType(type)) {
             throw new JabatRuntimeException(type.getName()
                     + " is not a batch artifact type");
         }
-        Object obj = factory.create(ref);
-        objects.add(obj);
-        if (type.isAssignableFrom(obj.getClass())) {
-            return (T) obj;
+        Object obj;
+        if (factory != null) {
+            obj = createFromDiFramework(name, type);
+            if (obj == null) {
+                obj = createFromBatchXml(name, type);
+            }
         } else {
-            // return a proxy
-            return (T) ARTIFACT_TYPES.get(type).getConstructor(Object.class).newInstance(obj);
+            obj = createFromBatchXml(name, type);
         }
+        if (obj == null) {
+            throw new JabatRuntimeException("Batch artifact '" + name
+                    + "' not found");
+        }
+        return (T) obj;
     }
 
     public <T> Iterable<T> get(Class<T> type) {
         List<T> result = new ArrayList<T>();
-        for (Object obj : objects) {
+        for (Object obj : Iterables.concat(objects, managedObjects)) {
             if (type.isAssignableFrom(obj.getClass())) {
                 result.add((T) obj);
             }
@@ -103,10 +111,11 @@ public class ArtifactContainer {
     }
 
     public void release() throws Exception {
-        for (Object obj : objects) {
+        for (Object obj : managedObjects) {
             factory.destroy(obj);
         }
         objects.clear();
+        managedObjects.clear();
     }
 
 }

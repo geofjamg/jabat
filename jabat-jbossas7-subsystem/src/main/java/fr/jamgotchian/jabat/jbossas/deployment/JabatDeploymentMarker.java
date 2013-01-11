@@ -15,6 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -24,20 +25,23 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  */
 public class JabatDeploymentMarker {
 
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+    private static final AttachmentKey<BatchXml> ATTACHMENT_KEY = AttachmentKey.create(BatchXml.class);
 
-    public static void mark(DeploymentUnit deployment) {
+    public static void mark(DeploymentUnit deployment, BatchXml batchXml) {
         if (deployment.getParent() != null) {
-            deployment.getParent().putAttachment(ATTACHMENT_KEY, true);
+            deployment.getParent().putAttachment(ATTACHMENT_KEY, batchXml);
         } else {
-            deployment.putAttachment(ATTACHMENT_KEY, true);
+            deployment.putAttachment(ATTACHMENT_KEY, batchXml);
         }
     }
 
-    public static boolean isJabatDeployment(DeploymentUnit deploymentUnit) {
+    public static BatchXml getMark(DeploymentUnit deploymentUnit) {
         DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
-        return val != null && val;
+        return deployment.getAttachment(ATTACHMENT_KEY);
+    }
+
+    public static boolean isJabatDeployment(DeploymentUnit deploymentUnit) {
+        return getMark(deploymentUnit) != null;
     }
 
 }

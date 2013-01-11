@@ -24,6 +24,7 @@ import fr.jamgotchian.jabat.jobxml.JobXmlParser;
 import fr.jamgotchian.jabat.jobxml.MetaInfJobXmlLocator;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
@@ -55,24 +56,27 @@ public class JobContainer {
 
     private final JobXmlParser parser = new JobXmlParser();
 
-    private final TaskManager taskManager;
+    private final BatchXml batchXml;
 
     private final ArtifactFactory artifactFactory;
+
+    private final TaskManager taskManager;
 
     private final JobRepository repository;
 
     private final Multimap<Long, Batchlet> runningBatchlets
             = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
 
-    JobContainer(TaskManager taskManager, ArtifactFactory artifactFactory, JobRepository repository) {
-        this.taskManager = taskManager;
+    JobContainer(BatchXml batchXml, ArtifactFactory artifactFactory,
+                 TaskManager taskManager, JobRepository repository) {
+        this.batchXml = batchXml;
         this.artifactFactory = artifactFactory;
+        this.taskManager = taskManager;
         this.repository = repository;
     }
 
     public void initialize() throws Exception {
         taskManager.initialize();
-        artifactFactory.initialize();
     }
 
     public void shutdown() throws Exception {
@@ -113,7 +117,8 @@ public class JobContainer {
         JabatJobInstance jobInstance = repository.createJobInstance(job);
 
         // start the execution
-        JobExecutionContext context = new JobExecutionContext(taskManager, artifactFactory, repository, runningBatchlets);
+        JobExecutionContext context = new JobExecutionContext(batchXml, artifactFactory,
+                taskManager, repository, runningBatchlets);
         new JobExecutor(job, parameters, jobInstance).execute(context);
 
         return jobInstance.getInstanceId();

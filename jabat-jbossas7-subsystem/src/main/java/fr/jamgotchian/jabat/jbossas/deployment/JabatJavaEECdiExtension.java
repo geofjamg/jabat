@@ -18,7 +18,6 @@ package fr.jamgotchian.jabat.jbossas.deployment;
 import fr.jamgotchian.jabat.api.annotation.BatchRuntime;
 import fr.jamgotchian.jabat.cdi.ForwardingInjectionTarget;
 import fr.jamgotchian.jabat.cdi.JabatCdiExtension;
-import fr.jamgotchian.jabat.jbossas.extension.JobContainerService;
 import fr.jamgotchian.jabat.runtime.JabatJobOperator;
 import fr.jamgotchian.jabat.runtime.JobContainer;
 import java.lang.reflect.Field;

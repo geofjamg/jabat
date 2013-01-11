@@ -24,16 +24,16 @@ import java.util.Map;
  */
 public class BatchXml {
 
-    private final Map<String, Class<?>> artifactClasses = new HashMap<String, Class<?>>();
+    private final Map<String, String> artifactClasses = new HashMap<String, String>();
 
     public BatchXml() {
     }
 
-    public void addArtifact(String name, Class<?> clazz) {
+    public void addArtifact(String name, String clazz) {
         artifactClasses.put(name, clazz);
     }
 
-    public Class<?> getArtifactClass(String name) {
+    public String getArtifactClass(String name) {
         return artifactClasses.get(name);
     }
 

@@ -42,13 +42,7 @@ public class BatchXmlParser {
                         if ("batch-artifact".equals(localName)) {
                             String name = xmlsr.getAttributeValue(null, "name");
                             String className = xmlsr.getAttributeValue(null, "class");
-                            try {
-                                Class<?> clazz = Class.forName(className);
-                                batchXml.addArtifact(name, clazz);
-                            } catch (ClassNotFoundException e) {
-                                throw new JabatRuntimeException("Batch artifact class '"
-                                        + className + "' not found");
-                            }
+                            batchXml.addArtifact(name, className);
                         }
                     }
                     break;

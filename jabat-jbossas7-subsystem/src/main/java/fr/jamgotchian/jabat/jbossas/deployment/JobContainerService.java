@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.jamgotchian.jabat.jbossas.extension;
+package fr.jamgotchian.jabat.jbossas.deployment;
 
 import fr.jamgotchian.jabat.cdi.CdiArtifactFactory;
 import fr.jamgotchian.jabat.runtime.JobContainer;
 import fr.jamgotchian.jabat.runtime.JobContainerFactory;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -35,6 +36,12 @@ public class JobContainerService implements Service<JobContainerService> {
 
     public static final ServiceName NAME = ServiceName.JBOSS.append("jabat").append("jobContainer");
 
+    private final BatchXml batchXml;
+
+    public JobContainerService(BatchXml batchXml) {
+        this.batchXml = batchXml;
+    }
+
     private JobContainer jobContainer;
 
     public JobContainer getJobContainer() {
@@ -46,6 +53,7 @@ public class JobContainerService implements Service<JobContainerService> {
         LOGGER.info("Starting Jabat job container");
         try {
             JobContainerFactory factory = new JobContainerFactory();
+            factory.setBatchXml(batchXml);
             factory.setArtifactFactoryClass(CdiArtifactFactory.class);
             jobContainer = factory.newInstance();
             jobContainer.initialize();

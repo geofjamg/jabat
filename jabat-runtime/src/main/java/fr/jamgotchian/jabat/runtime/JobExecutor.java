@@ -205,7 +205,8 @@ class JobExecutor {
                         JabatThreadContext.getInstance().getJobContext()
                                 .setProperties(job.getSubstitutedProperties());
 
-                        ArtifactContainer container = new ArtifactContainer(executionContext.getArtifactFactory());
+                        ArtifactContainer container = new ArtifactContainer(executionContext.getBatchXml(),
+                                                                            executionContext.getArtifactFactory());
                         try {
                             // before job listeners
                             for (Artifact a : job.getListeners()) {
@@ -256,7 +257,8 @@ class JobExecutor {
                 // store step level properties in step context
                 JabatThreadContext.getInstance().getStepContext().setProperties(step.getProperties());
 
-                final ArtifactContainer container = new ArtifactContainer(executionContext.getArtifactFactory());
+                final ArtifactContainer container = new ArtifactContainer(executionContext.getBatchXml(),
+                                                                          executionContext.getArtifactFactory());
                 try {
                     // before step listeners
                     notifyBeforeStep(step, container);
@@ -449,7 +451,8 @@ class JobExecutor {
                 JabatThreadContext.getInstance().getStepContext()
                         .setProperties(step.getProperties());
 
-                ArtifactContainer container = new ArtifactContainer(executionContext.getArtifactFactory());
+                ArtifactContainer container = new ArtifactContainer(executionContext.getBatchXml(),
+                                                                    executionContext.getArtifactFactory());
                 try {
                     // before step listeners
                     notifyBeforeStep(step, container);

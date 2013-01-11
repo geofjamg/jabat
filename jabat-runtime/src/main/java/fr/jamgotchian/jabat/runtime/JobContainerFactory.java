@@ -16,6 +16,8 @@
 package fr.jamgotchian.jabat.runtime;
 
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXmlParser;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
 import fr.jamgotchian.jabat.runtime.task.TaskManager;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
@@ -29,14 +31,13 @@ import java.util.Properties;
  */
 public class JobContainerFactory {
 
-    private static final Class<? extends ArtifactFactory> DEFAULT_ARTIFACT_FACTORY_CLASS
-            = fr.jamgotchian.jabat.runtime.artifact.BatchXmlArtifactFactory.class;
-
     private static final Class<? extends TaskManager> DEFAULT_TASK_MANAGER_CLASS
             = fr.jamgotchian.jabat.runtime.task.impl.ExecutorServiceTaskManager.class;
 
     private static final Class<? extends JobRepository> DEFAULT_JOB_REPOSITORY_CLASS
             = fr.jamgotchian.jabat.runtime.repository.impl.JobRepositoryImpl.class;
+
+    private BatchXml batchXml;
 
     private Class<? extends ArtifactFactory> artifactFactoryClass;
 
@@ -70,11 +71,27 @@ public class JobContainerFactory {
         }
     }
 
-    public Class<? extends ArtifactFactory> getArtifactFactoryClass() {
-        if (artifactFactoryClass == null) {
-            return DEFAULT_ARTIFACT_FACTORY_CLASS;
+    public void setBatchXml(BatchXml batchXml) {
+        this.batchXml = batchXml;
+    }
+
+    private BatchXml getBatchXml() {
+        if (batchXml == null) {
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("META-INF/batch.xml");
+            if (is == null) {
+                throw new JabatRuntimeException("batch.xml not found");
+            }
+            return new BatchXmlParser().parse(is);
         } else {
-            return artifactFactoryClass;
+            return batchXml;
+        }
+    }
+
+    public ArtifactFactory getArtifactFactory() throws ReflectiveOperationException {
+        if (artifactFactoryClass == null) {
+            return null;
+        } else {
+            return artifactFactoryClass.newInstance();
         }
     }
 
@@ -82,11 +99,11 @@ public class JobContainerFactory {
         this.artifactFactoryClass = artifactFactoryClass;
     }
 
-    public Class<? extends TaskManager> getTaskManagerClass() {
+    private TaskManager getTaskManager() throws ReflectiveOperationException {
         if (taskManagerClass == null) {
-            return DEFAULT_TASK_MANAGER_CLASS;
+            return DEFAULT_TASK_MANAGER_CLASS.newInstance();
         } else {
-            return taskManagerClass;
+            return taskManagerClass.newInstance();
         }
     }
 
@@ -94,11 +111,11 @@ public class JobContainerFactory {
         this.taskManagerClass = taskManagerClass;
     }
 
-    public Class<? extends JobRepository> getJobRepositoryClass() {
+    private JobRepository getJobRepository() throws ReflectiveOperationException {
         if (jobRepositoryClass == null) {
-            return DEFAULT_JOB_REPOSITORY_CLASS;
+            return DEFAULT_JOB_REPOSITORY_CLASS.newInstance();
         } else {
-            return jobRepositoryClass;
+            return jobRepositoryClass.newInstance();
         }
     }
 
@@ -108,10 +125,10 @@ public class JobContainerFactory {
 
     public JobContainer newInstance() {
         try {
-            TaskManager taskManager = getTaskManagerClass().newInstance();
-            ArtifactFactory artifactFactory = getArtifactFactoryClass().newInstance();
-            JobRepository repository = getJobRepositoryClass().newInstance();
-            return new JobContainer(taskManager, artifactFactory, repository);
+            ArtifactFactory artifactFactory = getArtifactFactory();
+            TaskManager taskManager = getTaskManager();
+            JobRepository repository = getJobRepository();
+            return new JobContainer(getBatchXml(), artifactFactory, taskManager, repository);
         } catch(ReflectiveOperationException e) {
             throw new JabatRuntimeException(e);
         }

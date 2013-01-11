@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.jbossas.deployment;
 
-import fr.jamgotchian.jabat.jbossas.extension.JobContainerService;
+import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -34,7 +34,8 @@ public class JabatServiceProcessor implements DeploymentUnitProcessor {
         if (!JabatDeploymentMarker.isJabatDeployment(deploymentUnit)) {
             return;
         }
-        JobContainerService service = new JobContainerService();
+        BatchXml batchXml = JabatDeploymentMarker.getMark(deploymentUnit);
+        JobContainerService service = new JobContainerService(batchXml);
         phaseContext.getServiceTarget()
                 .addService(JobContainerService.NAME, service)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
