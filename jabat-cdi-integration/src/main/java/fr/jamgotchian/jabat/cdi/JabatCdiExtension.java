@@ -15,7 +15,7 @@
  */
 package fr.jamgotchian.jabat.cdi;
 
-import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
+import fr.jamgotchian.jabat.runtime.context.ThreadContext;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.InjectionException;
@@ -56,7 +56,7 @@ public class JabatCdiExtension implements Extension {
                     try {
                         // get the bean name
                         String name = at.getAnnotation(Named.class).value();
-                        JabatThreadContext.getInstance().inject(instance, name);
+                        ThreadContext.getInstance().inject(instance, name);
                     } catch (Throwable t) {
                         throw new InjectionException(t);
                     }

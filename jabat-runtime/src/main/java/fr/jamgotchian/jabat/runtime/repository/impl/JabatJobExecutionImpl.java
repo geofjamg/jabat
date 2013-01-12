@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.runtime.repository.impl;
 
-import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
+import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +30,8 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
 
     private final long id;
 
+    private final Properties jobParameters;
+
     private volatile BatchStatus status = BatchStatus.STARTING;
 
     private String exitStatus;
@@ -38,8 +40,9 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
 
     private final List<Long> stepExecutionIds = new ArrayList<Long>();
 
-    public JabatJobExecutionImpl(long id) {
+    public JabatJobExecutionImpl(long id, Properties jobParameters) {
         this.id = id;
+        this.jobParameters = jobParameters;
         createTime = new Date();
     }
 
@@ -79,6 +82,11 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
     }
 
     @Override
+    public void setExitStatus(String exitStatus) {
+        this.exitStatus = exitStatus;
+    }
+
+    @Override
     public Date getCreateTime() {
         return createTime;
     }
@@ -90,9 +98,10 @@ public class JabatJobExecutionImpl implements JabatJobExecution {
 
     @Override
     public Properties getJobParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jobParameters;
     }
 
+    @Override
     public List<Long> getStepExecutionIds() {
         return stepExecutionIds;
     }

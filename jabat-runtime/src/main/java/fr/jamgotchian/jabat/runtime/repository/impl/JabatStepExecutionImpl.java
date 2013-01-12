@@ -15,8 +15,8 @@
  */
 package fr.jamgotchian.jabat.runtime.repository.impl;
 
-import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
+import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import java.util.Date;
 
 /**

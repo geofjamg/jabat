@@ -30,6 +30,8 @@ public interface JabatJobExecution extends JobExecution {
 
     void setStatus(BatchStatus status);
 
+    void setExitStatus(String exitStatus);
+
     List<Long> getStepExecutionIds();
 
 }

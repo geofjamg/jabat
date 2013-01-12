@@ -18,6 +18,7 @@ package fr.jamgotchian.jabat.runtime.repository;
 import fr.jamgotchian.jabat.jobxml.model.Job;
 import fr.jamgotchian.jabat.jobxml.model.Step;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -29,7 +30,7 @@ public interface JobRepository {
 
     JabatJobInstance createJobInstance(Job job);
 
-    JabatJobExecution createJobExecution(JabatJobInstance jobInstance);
+    JabatJobExecution createJobExecution(JabatJobInstance jobInstance, Properties jobParameters);
 
     JabatStepExecution createStepExecution(Step step, JabatJobExecution jobExecution);
 

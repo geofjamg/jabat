@@ -24,7 +24,6 @@ import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
-import java.io.Externalizable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import javax.batch.annotation.BatchContext;
@@ -38,72 +37,83 @@ import javax.batch.runtime.context.StepContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatThreadContext {
+public class ThreadContext {
 
-    private static final JabatThreadContext INSTANCE = new JabatThreadContext();
+    private static final ThreadContext INSTANCE = new ThreadContext();
 
-    public static JabatThreadContext getInstance() {
+    public static ThreadContext getInstance() {
         return INSTANCE;
     }
 
-    private final ThreadLocal<JabatJobContext<Object>> jobContext
-            = new ThreadLocal<JabatJobContext<Object>>();
+    private final ThreadLocal<JabatJobContext> jobContext = new ThreadLocal<JabatJobContext>();
 
-    private final ThreadLocal<JabatStepContext<Object, Externalizable>> stepContext
-            = new ThreadLocal<JabatStepContext<Object, Externalizable>>();
+    private final ThreadLocal<JabatStepContext> stepContext = new ThreadLocal<JabatStepContext>();
 
-    private final ThreadLocal<JabatFlowContext<Object>> flowContext
-            = new ThreadLocal<JabatFlowContext<Object>>();
+    private final ThreadLocal<JabatFlowContext> flowContext = new ThreadLocal<JabatFlowContext>();
 
-    private final ThreadLocal<JabatSplitContext<Object>> splitContext
-            = new ThreadLocal<JabatSplitContext<Object>>();
+    private final ThreadLocal<JabatSplitContext> splitContext = new ThreadLocal<JabatSplitContext>();
 
-    public JabatJobContext<Object> getJobContext() {
+    /* decision context is the context of last step|flow|split that finished */
+    private final ThreadLocal<javax.batch.runtime.context.BatchContext> decisionContext
+            = new ThreadLocal<javax.batch.runtime.context.BatchContext>();
+
+    public JabatJobContext getJobContext() {
         return jobContext.get();
     }
 
     public void createJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
-        jobContext.set(new JabatJobContext<Object>(job, jobInstance, jobExecution));
+        jobContext.set(new JabatJobContext(job, jobInstance, jobExecution));
     }
 
-    public void destroyJobContext() {
+    public void setJobContext(JabatJobContext jobContext) {
+        this.jobContext.set(jobContext);
+    }
+
+    public void removeJobContext() {
         jobContext.remove();
     }
 
-    public JabatStepContext<Object, Externalizable> getStepContext() {
+    public JabatStepContext getStepContext() {
         return stepContext.get();
     }
 
     public void createStepContext(Step step, JabatStepExecution stepExecution) {
-        stepContext.set(new JabatStepContext<Object, Externalizable>(step, stepExecution));
+        stepContext.set(new JabatStepContext(step, stepExecution));
     }
 
-    public void destroyStepContext() {
+    public void removeStepContext() {
+        decisionContext.set(stepContext.get());
         stepContext.remove();
     }
 
-    public JabatFlowContext<Object> getFlowContext() {
+    public JabatFlowContext getFlowContext() {
         return flowContext.get();
     }
 
     public void createFlowContext(Flow flow) {
-        flowContext.set(new JabatFlowContext<Object>(flow));
+        flowContext.set(new JabatFlowContext(flow));
     }
 
-    public void destroyFlowContext() {
+    public void removeFlowContext() {
+        decisionContext.set(flowContext.get());
         flowContext.remove();
     }
 
-    public JabatSplitContext<Object> getSplitContext() {
+    public JabatSplitContext getSplitContext() {
         return splitContext.get();
     }
 
     public void createSplitContext(Split split) {
-        splitContext.set(new JabatSplitContext<Object>(split));
+        splitContext.set(new JabatSplitContext(split));
     }
 
-    public void destroySplitContext() {
+    public void removeSplitContext() {
+        decisionContext.set(splitContext.get());
         splitContext.remove();
+    }
+
+    public javax.batch.runtime.context.BatchContext getDecisionContext() {
+        return decisionContext.get();
     }
 
     public void inject(Object instance, String name) throws IllegalAccessException {
@@ -142,7 +152,7 @@ public class JabatThreadContext {
                 }
                 if (field.getType() == String.class) {
                     // get the current artifact
-                    JabatStepContext<?, ?> context = stepContext.get();
+                    JabatStepContext context = stepContext.get();
                     if (context == null) {
                         throw new JabatRuntimeException("Step context is not set");
                     }

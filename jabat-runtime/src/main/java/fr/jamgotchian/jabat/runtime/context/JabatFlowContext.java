@@ -22,7 +22,7 @@ import javax.batch.runtime.context.FlowContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatFlowContext<T> extends JabatBatchContext<Flow, T> implements FlowContext<T> {
+public class JabatFlowContext extends JabatBatchContext<Flow, Object> implements FlowContext<Object> {
 
     public JabatFlowContext(Flow flow) {
         super(flow);

@@ -26,14 +26,13 @@ import javax.batch.runtime.context.StepContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatStepContext<T, P extends Externalizable> extends JabatBatchContext<Step, T>
-                                                           implements StepContext<T, P> {
+public class JabatStepContext extends JabatBatchContext<Step, Object> implements StepContext<Object, Externalizable> {
 
     private final JabatStepExecution stepExecution;
 
     private Properties properties;
 
-    private P persistentUserData;
+    private Externalizable persistentUserData;
 
     private String exitStatus;
 
@@ -57,12 +56,12 @@ public class JabatStepContext<T, P extends Externalizable> extends JabatBatchCon
     }
 
     @Override
-    public P getPersistentUserData() {
+    public Externalizable getPersistentUserData() {
         return persistentUserData;
     }
 
     @Override
-    public void setPersistentUserData(P data) {
+    public void setPersistentUserData(Externalizable data) {
         persistentUserData = data;
     }
 

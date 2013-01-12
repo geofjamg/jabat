@@ -16,6 +16,7 @@
 package fr.jamgotchian.jabat.runtime;
 
 import com.google.common.collect.Multimap;
+import fr.jamgotchian.jabat.runtime.artifact.ArtifactContainer;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactFactory;
 import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
@@ -67,4 +68,7 @@ class JobExecutionContext {
         return runningBatchlets;
     }
 
+    ArtifactContainer createArtifactContainer() {
+        return new ArtifactContainer(batchXml, artifactFactory);
+    }
 }

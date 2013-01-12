@@ -22,7 +22,7 @@ import javax.batch.runtime.context.SplitContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatSplitContext<T> extends JabatBatchContext<Split, T> implements SplitContext<T> {
+public class JabatSplitContext extends JabatBatchContext<Split, Object> implements SplitContext<Object> {
 
     public JabatSplitContext(Split split) {
         super(split);

@@ -25,15 +25,13 @@ import javax.batch.runtime.context.JobContext;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements JobContext<T> {
+public class JabatJobContext extends JabatBatchContext<Job, Object> implements JobContext<Object> {
 
     private final JabatJobInstance jobInstance;
 
     private final JabatJobExecution jobExecution;
 
     private Properties properties;
-
-    private String exitStatus;
 
     public JabatJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
         super(job);
@@ -67,12 +65,12 @@ public class JabatJobContext<T> extends JabatBatchContext<Job, T> implements Job
 
     @Override
     public String getExitStatus() {
-        return exitStatus;
+        return jobExecution.getExitStatus();
     }
 
     @Override
     public void setExitStatus(String exitStatus) {
-        this.exitStatus = exitStatus;
+        jobExecution.setExitStatus(exitStatus);
     }
 
 }

@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.batch.api.Batchlet;
 import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.Decider;
 import javax.batch.api.ItemProcessor;
 import javax.batch.api.ItemReader;
 import javax.batch.api.ItemWriter;
@@ -47,7 +48,8 @@ public class ArtifactType {
                                                           PartitionCollector.class,
                                                           PartitionMapper.class,
                                                           PartitionReducer.class,
-                                                          StepListener.class));
+                                                          StepListener.class,
+                                                          Decider.class));
 
     private ArtifactType() {
     }

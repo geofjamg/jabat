@@ -16,7 +16,7 @@
 package fr.jamgotchian.jabat.runtime.artifact;
 
 import com.google.common.collect.Iterables;
-import fr.jamgotchian.jabat.runtime.context.JabatThreadContext;
+import fr.jamgotchian.jabat.runtime.context.ThreadContext;
 import fr.jamgotchian.jabat.runtime.util.JabatRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public class ArtifactContainer {
             try {
                 obj = clazz.newInstance();
                 objects.add(obj);
-                JabatThreadContext.getInstance().inject(obj, name);
+                ThreadContext.getInstance().inject(obj, name);
             } catch (ReflectiveOperationException e) {
                 throw new JabatRuntimeException(e);
             }

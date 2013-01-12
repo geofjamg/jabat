@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -64,9 +65,9 @@ public class JobRepositoryImpl implements JobRepository {
     }
 
     @Override
-    public JabatJobExecution createJobExecution(JabatJobInstance jobInstance) {
+    public JabatJobExecution createJobExecution(JabatJobInstance jobInstance, Properties jobParameters) {
         long jobExecutionId = nextJobExecutionId++;
-        JabatJobExecution jobExecution = new JabatJobExecutionImpl(jobExecutionId);
+        JabatJobExecution jobExecution = new JabatJobExecutionImpl(jobExecutionId, jobParameters);
         jobExecutions.put(jobExecutionId, jobExecution);
         jobInstance.getExecutionIds().add(jobExecutionId);
         return jobExecution;
