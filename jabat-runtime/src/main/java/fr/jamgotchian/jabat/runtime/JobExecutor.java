@@ -33,13 +33,10 @@ import fr.jamgotchian.jabat.jobxml.model.Split;
 import fr.jamgotchian.jabat.jobxml.model.Step;
 import fr.jamgotchian.jabat.jobxml.model.StopElement;
 import fr.jamgotchian.jabat.runtime.artifact.ArtifactContainer;
-import fr.jamgotchian.jabat.runtime.checkpoint.ItemCheckpointAlgorithm;
-import fr.jamgotchian.jabat.runtime.checkpoint.TimeCheckpointAlgorithm;
 import fr.jamgotchian.jabat.runtime.context.JabatJobContext;
 import fr.jamgotchian.jabat.runtime.context.ThreadContext;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
-import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
 import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.runtime.task.TaskResultListener;
 import fr.jamgotchian.jabat.runtime.transaction.NoTransactionManager;
@@ -60,7 +57,6 @@ import javax.batch.api.ItemWriter;
 import javax.batch.api.JobListener;
 import javax.batch.api.PartitionAnalyzer;
 import javax.batch.api.PartitionCollector;
-import javax.batch.api.PartitionMapper;
 import javax.batch.api.PartitionReducer;
 import javax.batch.api.StepListener;
 import javax.batch.api.parameters.PartitionPlan;
@@ -78,18 +74,12 @@ class JobExecutor {
 
     private final Job job;
 
-    private final Properties jobParameters;
-
-    private final JabatJobInstance jobInstance;
-
-    JobExecutor(Job job, Properties jobParameters, JabatJobInstance jobInstance) {
+    JobExecutor(Job job) {
         this.job = job;
-        this.jobParameters = jobParameters;
-        this.jobInstance = jobInstance;
     }
 
-    void execute(JobExecutionContext executionContext) {
-        new NodeVisitorImpl().visit(job, executionContext);
+    void execute(JobExecutionContext executionContext, JobExecutionListener listener) {
+        new NodeVisitorImpl(listener).visit(job, executionContext);
     }
 
     private static void notifyBeforeStep(Step step, ArtifactContainer container) throws Exception {
@@ -102,62 +92,6 @@ class JobExecutor {
     private static void notifyAfterStep(Step step, ArtifactContainer container) throws Exception {
         for (StepListener l : container.get(StepListener.class)) {
             l.afterStep();
-        }
-    }
-
-    private static boolean isPartionned(Step step) {
-        return step.getPartitionPlan() != null || step.getPartitionMapper() != null;
-    }
-
-    private static PartitionPlan createPartitionPlan(Step step, ArtifactContainer container) throws Exception {
-        if (step.getPartitionMapper() != null) {
-            // dynamic defintion of the partition plan though an artifact
-            String ref = step.getPartitionMapper().getRef();
-            PartitionMapper mapper = container.create(ref, PartitionMapper.class);
-            return mapper.mapPartitions();
-        } else {
-            // static defintion of the partition plan
-            return step.getPartitionPlan();
-        }
-    }
-
-    private static PartitionReducer createPartitionReducer(Step step, ArtifactContainer container) throws Exception {
-        if (step.getPartitionReducer() != null) {
-            String ref = step.getPartitionReducer().getRef();
-            return container.create(ref, PartitionReducer.class);
-        }
-        return null;
-    }
-
-    private static PartitionCollector createPartitionCollector(Step step, ArtifactContainer container) throws Exception {
-        if (step.getPartitionCollector() != null) {
-            String ref= step.getPartitionCollector().getRef();
-            return container.create(ref, PartitionCollector.class);
-        }
-        return null;
-    }
-
-    private static PartitionAnalyzer createPartitionAnalyser(Step step, ArtifactContainer container) throws Exception {
-        if (step.getPartitionAnalyzer() != null) {
-            String ref = step.getPartitionAnalyzer().getRef();
-            return container.create(ref, PartitionAnalyzer.class);
-        }
-        return null;
-    }
-
-    private static CheckpointAlgorithm getCheckpointAlgorithm(ChunkStep step, ArtifactContainer container) throws Exception {
-        switch (step.getCheckpointPolicy()) {
-            case ITEM:
-                return new ItemCheckpointAlgorithm(step.getCommitInterval());
-            case TIME:
-                return new TimeCheckpointAlgorithm(step.getCommitInterval());
-            case CUSTOM:
-                {
-                    String ref = step.getCheckpointAlgo().getRef();
-                    return container.create(ref, CheckpointAlgorithm.class);
-                }
-            default:
-                throw new InternalError();
         }
     }
 
@@ -190,23 +124,28 @@ class JobExecutor {
 
     private class NodeVisitorImpl implements NodeVisitor<JobExecutionContext> {
 
-        private JabatJobExecution jobExecution;
+        private JobExecutionListener listener;
+
+        private NodeVisitorImpl(JobExecutionListener listener) {
+            this.listener = listener;
+        }
 
         @Override
         public void visit(final Job job, final JobExecutionContext executionContext) {
-
-            // create a job execution
-            jobExecution = executionContext.getRepository().createJobExecution(jobInstance, jobParameters);
 
             executionContext.getTaskManager().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        executionContext.getJobExecution().setStatus(BatchStatus.STARTED);
+
+                        listener.started(executionContext);
+
                         // create job context
-                        ThreadContext.getInstance().createJobContext(job, jobInstance, jobExecution);
+                        ThreadContext.getInstance().createJobContext(job, executionContext.getJobInstance(), executionContext.getJobExecution());
 
                         // apply substitutions to job level elements
-                        JobUtil.substitute(job, jobParameters);
+                        JobUtil.substitute(job, executionContext.getJobParameters());
 
                         // store job level properties in job context
                         ThreadContext.getInstance().getJobContext()
@@ -221,7 +160,6 @@ class JobExecutor {
                             }
 
                             // run the job
-                            jobExecution.setStatus(BatchStatus.STARTED);
                             job.getFirstChainableNode().accept(NodeVisitorImpl.this, executionContext);
 
                             // after job listeners
@@ -233,6 +171,8 @@ class JobExecutor {
 
                             // remove job context
                             ThreadContext.getInstance().removeJobContext();
+
+                            listener.finished(executionContext);
                         }
                     } catch (Throwable t) {
                         LOGGER.error(t.toString(), t);
@@ -251,14 +191,15 @@ class JobExecutor {
 
         @Override
         public void visit(final BatchletStep step, final JobExecutionContext executionContext) {
-            final JabatStepExecution stepExecution = executionContext.getRepository().createStepExecution(step, jobExecution);
+            final JabatStepExecution stepExecution = executionContext.getRepository()
+                    .createStepExecution(step, executionContext.getJobExecution());
 
             try {
                 // create step context
                 ThreadContext.getInstance().createStepContext(step, stepExecution);
 
                 // apply substitutions to step level elements
-                JobUtil.substitute(step, jobParameters);
+                JobUtil.substitute(step, executionContext.getJobParameters());
 
                 // store step level properties in step context
                 ThreadContext.getInstance().getStepContext().setProperties(step.getProperties());
@@ -270,10 +211,10 @@ class JobExecutor {
 
                     stepExecution.setStatus(BatchStatus.STARTED);
 
-                    if (isPartionned(step)) {
+                    if (step.isPartionned()) {
 
                         // create partition reducer
-                        PartitionReducer reducer = createPartitionReducer(step, container);
+                        PartitionReducer reducer = container.createPartitionReducer(step);
 
                         // begin partitioned step
                         if (reducer != null) {
@@ -281,10 +222,12 @@ class JobExecutor {
                         }
 
                         // create partition plan
-                        final PartitionPlan plan = createPartitionPlan(step, container);
+                        final PartitionPlan plan = container.createPartitionPlan(step);
 
                         // prepare a task for each parttion
                         List<Callable<PartitionContext>> tasks = new ArrayList<Callable<PartitionContext>>();
+
+                        final JabatJobContext jobContext = ThreadContext.getInstance().getJobContext();
 
                         for (int i = 0; i < plan.getPartitionCount(); i++) {
                             final int partitionNumber = i;
@@ -294,68 +237,64 @@ class JobExecutor {
                                 @Override
                                 public PartitionContext call() throws Exception {
                                     PartitionContext partitionContext = new PartitionContext();
+
+                                    // each partion has its own job context
+                                    // PENDING clone the parent job context?
+                                    ThreadContext.getInstance().setJobContext(jobContext);
                                     try {
-                                        // each partion has its own job context
-                                        // PENDING clone the parent job context?
-                                        ThreadContext.getInstance().createJobContext(job, jobInstance, jobExecution);
+                                        // each partition has its own step context
+                                        // PENDING clone the step job context?
+                                        ThreadContext.getInstance().createStepContext(step, stepExecution);
+
+                                        // store in the step context step level properties overriden
+                                        // partition properties
+                                        Properties properties = new Properties();
+                                        properties.putAll(step.getProperties());
+                                        if (plan.getPartitionProperties() != null) {
+                                            properties.putAll(JobUtil.substitute(plan.getPartitionProperties()[partitionNumber], executionContext.getJobParameters(), step));
+                                        }
+                                        ThreadContext.getInstance().getStepContext().setProperties(properties);
+
                                         try {
-                                            // each partition has its own step context
-                                            // PENDING clone the step job context?
-                                            ThreadContext.getInstance().createStepContext(step, stepExecution);
+                                            Batchlet batchlet = container.create(step.getArtifact().getRef(), Batchlet.class);
 
-                                            // store in the step context step level properties overriden
-                                            // partition properties
-                                            Properties properties = new Properties();
-                                            properties.putAll(step.getProperties());
-                                            if (plan.getPartitionProperties() != null) {
-                                                properties.putAll(JobUtil.substitute(plan.getPartitionProperties()[partitionNumber], jobParameters, step));
-                                            }
-                                            ThreadContext.getInstance().getStepContext().setProperties(properties);
+                                            // processing
+                                            String exitStatus = batchlet.process();
 
-                                            try {
-                                                Batchlet artifact = container.create(step.getArtifact().getRef(), Batchlet.class);
-                                                executionContext.getRunningBatchlets().put(stepExecution.getId(), artifact);
+                                            // TODO batchlet has been stopped...
 
-                                                // processing
-                                                String exitStatus = artifact.process();
+                                            // store the exit status return by the batchlet artifact
+                                            // in the partition context
+                                            partitionContext.setExitStatus(exitStatus);
 
-                                                // TODO batchlet has been stopped...
+                                            // create partition collector
+                                            PartitionCollector collector = container.createPartitionCollector(step);
 
-                                                // store the exit status return by the batchlet artifact
-                                                // in the partition context
-                                                partitionContext.setExitStatus(exitStatus);
-
-                                                // create partition collector
-                                                PartitionCollector collector = createPartitionCollector(step, container);
-
-                                                // collect data
-                                                if (collector != null) {
-                                                    Externalizable data = collector.collectPartitionData();
-                                                    partitionContext.setData(data);
-                                                }
-                                            } finally {
-                                                // store the exit status set in the step context in the partition context
-                                                // PENDING consequently, it overrides the one returned by the batchlet artifact?
-                                                String exitStatus = ThreadContext.getInstance().getStepContext().getExitStatus();
-                                                if (exitStatus != null) {
-                                                    partitionContext.setExitStatus(exitStatus);
-                                                }
-
-                                                // remove the step context of the partition
-                                                ThreadContext.getInstance().removeStepContext();
+                                            // collect data
+                                            if (collector != null) {
+                                                Externalizable data = collector.collectPartitionData();
+                                                partitionContext.setData(data);
                                             }
                                         } finally {
-                                            ThreadContext.getInstance().removeJobContext();
+                                            // store the exit status set in the step context in the partition context
+                                            // PENDING consequently, it overrides the one returned by the batchlet artifact?
+                                            String exitStatus = ThreadContext.getInstance().getStepContext().getExitStatus();
+                                            if (exitStatus != null) {
+                                                partitionContext.setExitStatus(exitStatus);
+                                            }
+
+                                            // remove the step context of the partition
+                                            ThreadContext.getInstance().removeStepContext();
                                         }
-                                    } catch (Throwable t) {
-                                        LOGGER.error(t.toString(), t);
+                                    } finally {
+                                        ThreadContext.getInstance().removeJobContext();
                                     }
                                     return partitionContext;
                                 }
                             });
                         }
 
-                        final PartitionAnalyzer analyser = createPartitionAnalyser(step, container);
+                        final PartitionAnalyzer analyser = container.createPartitionAnalyser(step);
 
                         // run partitions on a thread pool, wait for all partitions to
                         // end and call the analyser each time a partition ends
@@ -376,6 +315,8 @@ class JobExecutor {
 
                             @Override
                             public void onFailure(Throwable thrown) {
+                                LOGGER.error(thrown.toString(), thrown);
+
                                 // TODO stop all the other partitions
                                 try {
                                     // PENDING which value for the exit status, null or the same as the batch status?
@@ -387,11 +328,10 @@ class JobExecutor {
                         });
 
                     } else {
-                        Batchlet artifact = container.create(step.getArtifact().getRef(), Batchlet.class);
-                        executionContext.getRunningBatchlets().put(stepExecution.getId(), artifact);
+                        Batchlet batchlet = container.create(step.getArtifact().getRef(), Batchlet.class);
 
                         // processing
-                        String exitStatus = artifact.process();
+                        String exitStatus = batchlet.process();
 
                         // TODO batchlet has been stopped...
 
@@ -412,7 +352,7 @@ class JobExecutor {
 
                     // the batch and exit status of the job are intially the same as the
                     // batch and exit status on the last execution element to run
-                    jobExecution.setStatus(stepExecution.getStatusEnum());
+                    executionContext.getJobExecution().setStatus(stepExecution.getStatusEnum());
                     // PENDING a job has an exit status?
 
                     // batch and exit status can be overridden by a decision element
@@ -422,8 +362,6 @@ class JobExecutor {
                     // TODO should be called even in case of error?
                     notifyAfterStep(step, container);
                 } finally {
-                    executionContext.getRunningBatchlets().removeAll(stepExecution.getId());
-
                     container.release();
 
                     // store step context persistent area
@@ -435,7 +373,7 @@ class JobExecutor {
 
                 visitNextNode(step, executionContext);
             } catch (Throwable t) {
-                jobExecution.setStatus(BatchStatus.FAILED);
+                executionContext.getJobExecution().setStatus(BatchStatus.FAILED);
                 stepExecution.setStatus(BatchStatus.FAILED);
                 LOGGER.error(t.toString(), t);
             }
@@ -443,18 +381,18 @@ class JobExecutor {
 
         @Override
         public void visit(ChunkStep step, JobExecutionContext executionContext) {
-            JabatStepExecution stepExecution = executionContext.getRepository().createStepExecution(step, jobExecution);
+            JabatStepExecution stepExecution = executionContext.getRepository()
+                    .createStepExecution(step, executionContext.getJobExecution());
 
             try {
                 // create step context
                 ThreadContext.getInstance().createStepContext(step, stepExecution);
 
                 // apply substitutions to step level elements
-                JobUtil.substitute(step, jobParameters);
+                JobUtil.substitute(step, executionContext.getJobParameters());
 
                 // store step level properties in step context
-                ThreadContext.getInstance().getStepContext()
-                        .setProperties(step.getProperties());
+                ThreadContext.getInstance().getStepContext().setProperties(step.getProperties());
 
                 ArtifactContainer container = executionContext.createArtifactContainer();
                 try {
@@ -471,7 +409,7 @@ class JobExecutor {
                     stepExecution.setStatus(BatchStatus.STARTED);
 
                     // select the checkpoint algorithm
-                    CheckpointAlgorithm algorithm = getCheckpointAlgorithm(step, container);
+                    CheckpointAlgorithm algorithm = container.createCheckpointAlgorithm(step);
 
                     TransactionManagerSPI transaction = new NoTransactionManager();
 
@@ -542,7 +480,7 @@ class JobExecutor {
                     } // end of retry loop
 
                     // TODO what should be the status if we reach the max number of retry?
-                    jobExecution.setStatus(BatchStatus.COMPLETED);
+                    executionContext.getJobExecution().setStatus(BatchStatus.COMPLETED);
                     stepExecution.setStatus(BatchStatus.COMPLETED);
 
                     // after step listeners
@@ -559,7 +497,7 @@ class JobExecutor {
 
                 visitNextNode(step, executionContext);
             } catch(Throwable t) {
-                jobExecution.setStatus(BatchStatus.FAILED);
+                executionContext.getJobExecution().setStatus(BatchStatus.FAILED);
                 stepExecution.setStatus(BatchStatus.FAILED);
                 LOGGER.error(t.toString(), t);
             }
@@ -589,29 +527,41 @@ class JobExecutor {
                         // get the job context of the parent thread
                         final JabatJobContext jobContext = ThreadContext.getInstance().getJobContext();
 
-                        // for each flow
+                        // one subtask for each flow
+                        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+
                         for (Node node : nodes) {
                             final Flow flow = (Flow) node;
 
-                            // run flow in its own thread
-                            executionContext.getTaskManager().submit(new Runnable() {
+                            tasks.add(new Callable<Void>() {
+
                                 @Override
-                                public void run() {
+                                public Void call() throws Exception {
+                                    // transfer the job context child threads
+                                    ThreadContext.getInstance().setJobContext(jobContext);
                                     try {
-                                        // transfer the job context child threads
-                                        ThreadContext.getInstance().setJobContext(jobContext);
-                                        try {
-                                            // run the flow
-                                            flow.accept(NodeVisitorImpl.this, executionContext);
-                                        } finally {
-                                            ThreadContext.getInstance().removeJobContext();
-                                        }
-                                    } catch (Throwable t) {
-                                        LOGGER.error(t.toString(), t);
+                                        // run the flow
+                                        flow.accept(NodeVisitorImpl.this, executionContext);
+                                    } finally {
+                                        ThreadContext.getInstance().removeJobContext();
                                     }
+                                    return null;
                                 }
                             });
                         }
+
+                        executionContext.getTaskManager().submitAndWait(tasks, tasks.size(), new TaskResultListener<Void>() {
+
+                            @Override
+                            public void onSuccess(Void result) {
+                            }
+
+                            @Override
+                            public void onFailure(Throwable thrown) {
+                                LOGGER.error(thrown.toString(), thrown);
+                            }
+                        });
+
                     } finally {
                         // remove split context
                         ThreadContext.getInstance().removeSplitContext();
@@ -636,6 +586,7 @@ class JobExecutor {
                 String exitStatus, Node node, JobExecutionContext executionContext) {
             ControlElement ctrlElt = findControlElement(controlElements, exitStatus);
             if (ctrlElt != null) {
+                JabatJobExecution jobExecution = executionContext.getJobExecution();
                 switch (ctrlElt.getType()) {
                     case FAIL:
                         // stop the job with the fail batch status

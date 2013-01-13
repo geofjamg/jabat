@@ -76,6 +76,10 @@ public abstract class Step extends AbstractNode implements Chainable {
         return allowStartIfComplete;
     }
 
+    public boolean isPartionned() {
+        return partitionPlan != null || partitionMapper != null;
+    }
+
     public PartitionPlan getPartitionPlan() {
         return partitionPlan;
     }

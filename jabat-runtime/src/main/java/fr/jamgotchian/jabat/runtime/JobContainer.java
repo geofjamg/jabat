@@ -15,9 +15,6 @@
  */
 package fr.jamgotchian.jabat.runtime;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import fr.jamgotchian.jabat.jobxml.JobXml;
 import fr.jamgotchian.jabat.jobxml.JobXmlLocator;
 import fr.jamgotchian.jabat.jobxml.JobXmlParser;
@@ -28,15 +25,14 @@ import fr.jamgotchian.jabat.runtime.artifact.BatchXml;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobInstance;
-import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
 import fr.jamgotchian.jabat.runtime.repository.JobRepository;
 import fr.jamgotchian.jabat.runtime.task.TaskManager;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import javax.batch.api.Batchlet;
 import javax.batch.runtime.JobExecutionNotRunningException;
 import javax.batch.runtime.JobStartException;
 import javax.batch.runtime.NoSuchJobException;
@@ -64,8 +60,21 @@ public class JobContainer {
 
     private final JobRepository repository;
 
-    private final Multimap<Long, Batchlet> runningBatchlets
-            = Multimaps.synchronizedMultimap(HashMultimap.<Long, Batchlet>create());
+    private final Map<Long, JobExecutionContext> executionContexts
+            = Collections.synchronizedMap(new HashMap<Long, JobExecutionContext>());
+
+    private final JobExecutionListener executionListener = new JobExecutionListener() {
+
+        @Override
+        public void started(JobExecutionContext context) {
+            executionContexts.put(context.getJobExecution().getId(), context);
+        }
+
+        @Override
+        public void finished(JobExecutionContext context) {
+            executionContexts.remove(context.getJobExecution().getId());
+        }
+    };
 
     JobContainer(BatchXml batchXml, ArtifactFactory artifactFactory,
                  TaskManager taskManager, JobRepository repository) {
@@ -116,10 +125,15 @@ public class JobContainer {
         // create a new job instance
         JabatJobInstance jobInstance = repository.createJobInstance(job);
 
+        // create a job execution
+        JabatJobExecution jobExecution = repository.createJobExecution(jobInstance, parameters);
+
         // start the execution
-        JobExecutionContext context = new JobExecutionContext(batchXml, artifactFactory,
-                taskManager, repository, runningBatchlets);
-        new JobExecutor(job, parameters, jobInstance).execute(context);
+        JobExecutionContext executionContext
+                = new JobExecutionContext(batchXml, artifactFactory, taskManager,
+                                          repository, parameters, jobInstance,
+                                          jobExecution);
+        new JobExecutor(job).execute(executionContext, executionListener);
 
         return jobInstance.getInstanceId();
     }
@@ -131,31 +145,17 @@ public class JobContainer {
         }
 
         long executionId = jobInstance.getLastExecutionId();
-        JabatJobExecution jobExecution = repository.getJobExecution(executionId);
 
-        // TODO check the instance is running
+        JobExecutionContext executionContext = executionContexts.get(executionId);
+        if (executionContext == null) {
+            throw new JobExecutionNotRunningException("Job execution " + executionId + "is not running");
+        }
 
         // update job and steps status to STOPPING
-        jobExecution.setStatus(BatchStatus.STOPPING);
-        for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
-            JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
-            stepExecution.setStatus(BatchStatus.STOPPING);
-        }
+        executionContext.getJobExecution().setStatus(BatchStatus.STOPPING);
 
-        for (long stepExecutionId : jobExecution.getStepExecutionIds()) {
-            JabatStepExecution stepExecution = repository.getStepExecution(stepExecutionId);
-            if (BatchStatus.STARTED.name().equals(stepExecution.getStatus())) {
-                Collection<Batchlet> batchlets = runningBatchlets.get(stepExecution.getId());
-                for (Batchlet batchlet : batchlets) {
-                    try {
-                        batchlet.stop();
-                        stepExecution.setStatus(BatchStatus.STOPPED);
-                    } catch(Throwable t) {
-                        LOGGER.error(t.toString(), t);
-                    }
-                }
-            }
-        }
-        jobExecution.setStatus(BatchStatus.STOPPED);
+        executionContext.stopRunningSteps();
+
+        executionContext.getJobExecution().setStatus(BatchStatus.STOPPED);
     }
 }
