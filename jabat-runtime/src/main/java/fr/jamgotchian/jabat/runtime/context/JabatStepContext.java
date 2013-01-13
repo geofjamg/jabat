@@ -34,8 +34,6 @@ public class JabatStepContext extends JabatBatchContext<Step, Object> implements
 
     private Externalizable persistentUserData;
 
-    private String exitStatus;
-
     public JabatStepContext(Step step, JabatStepExecution stepExecution) {
         super(step);
         this.stepExecution = stepExecution;
@@ -72,12 +70,12 @@ public class JabatStepContext extends JabatBatchContext<Step, Object> implements
 
     @Override
     public String getExitStatus() {
-        return exitStatus;
+        return stepExecution.getExitStatus();
     }
 
     @Override
     public void setExitStatus(String status) {
-        exitStatus = status;
+        stepExecution.setExitStatus(status);
     }
 
     @Override
