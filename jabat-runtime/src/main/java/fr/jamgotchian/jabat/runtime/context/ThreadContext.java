@@ -61,8 +61,10 @@ public class ThreadContext {
         return jobContext.get();
     }
 
-    public void createJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
-        jobContext.set(new JabatJobContext(job, jobInstance, jobExecution));
+    public JabatJobContext createJobContext(Job job, JabatJobInstance jobInstance, JabatJobExecution jobExecution) {
+        JabatJobContext context = new JabatJobContext(job, jobInstance, jobExecution);
+        jobContext.set(context);
+        return context;
     }
 
     public void setJobContext(JabatJobContext jobContext) {
@@ -77,8 +79,10 @@ public class ThreadContext {
         return stepContext.get();
     }
 
-    public void createStepContext(Step step, JabatStepExecution stepExecution) {
-        stepContext.set(new JabatStepContext(step, stepExecution));
+    public JabatStepContext createStepContext(Step step, JabatStepExecution stepExecution) {
+        JabatStepContext context = new JabatStepContext(step, stepExecution);
+        stepContext.set(context);
+        return context;
     }
 
     public void removeStepContext() {
@@ -90,8 +94,10 @@ public class ThreadContext {
         return flowContext.get();
     }
 
-    public void createFlowContext(Flow flow) {
-        flowContext.set(new JabatFlowContext(flow));
+    public JabatFlowContext createFlowContext(Flow flow) {
+        JabatFlowContext context = new JabatFlowContext(flow);
+        flowContext.set(context);
+        return context;
     }
 
     public void removeFlowContext() {
@@ -103,8 +109,10 @@ public class ThreadContext {
         return splitContext.get();
     }
 
-    public void createSplitContext(Split split) {
-        splitContext.set(new JabatSplitContext(split));
+    public JabatSplitContext createSplitContext(Split split) {
+        JabatSplitContext context = new JabatSplitContext(split);
+        splitContext.set(context);
+        return context;
     }
 
     public void removeSplitContext() {
