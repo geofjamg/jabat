@@ -38,9 +38,11 @@ import fr.jamgotchian.jabat.runtime.context.ThreadContext;
 import fr.jamgotchian.jabat.runtime.repository.BatchStatus;
 import fr.jamgotchian.jabat.runtime.repository.JabatJobExecution;
 import fr.jamgotchian.jabat.runtime.repository.JabatStepExecution;
+import fr.jamgotchian.jabat.runtime.task.AbstractTaskResultListener;
 import fr.jamgotchian.jabat.runtime.task.TaskResultListener;
 import fr.jamgotchian.jabat.runtime.transaction.NoTransactionManager;
 import fr.jamgotchian.jabat.runtime.util.Externalizables;
+import fr.jamgotchian.jabat.runtime.util.RethrowException;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -175,7 +177,12 @@ class JobExecutor {
                             listener.finished(executionContext);
                         }
                     } catch (Throwable t) {
-                        LOGGER.error(t.toString(), t);
+                        Throwable t2 = t instanceof RethrowException ? t.getCause() : t;
+                        LOGGER.error(t2.toString(), t2);
+
+                        executionContext.stopRunningSteps();
+
+                        executionContext.getJobExecution().setStatus(BatchStatus.FAILED);
                     }
                 }
             });
@@ -308,22 +315,16 @@ class JobExecutor {
                                         analyser.analyzeCollectorData(partitionContext.getData());
                                         analyser.analyzeStatus(BatchStatus.COMPLETED.name(), partitionContext.getExitStatus());
                                     } catch (Throwable t) {
-                                        LOGGER.error(t.toString(), t);
+                                        // rethrow
+                                        throw new RethrowException(t);
                                     }
                                 }
                             }
 
                             @Override
                             public void onFailure(Throwable thrown) {
-                                LOGGER.error(thrown.toString(), thrown);
-
-                                // TODO stop all the other partitions
-                                try {
-                                    // PENDING which value for the exit status, null or the same as the batch status?
-                                    analyser.analyzeStatus(BatchStatus.FAILED.name(), null);
-                                } catch (Throwable t) {
-                                    LOGGER.error(t.toString(), t);
-                                }
+                                // rethrow
+                                throw new RethrowException(thrown);
                             }
                         });
 
@@ -373,9 +374,9 @@ class JobExecutor {
 
                 visitNextNode(step, executionContext);
             } catch (Throwable t) {
-                executionContext.getJobExecution().setStatus(BatchStatus.FAILED);
                 stepExecution.setStatus(BatchStatus.FAILED);
-                LOGGER.error(t.toString(), t);
+                // rethrow
+                throw new RethrowException(t);
             }
         }
 
@@ -497,9 +498,9 @@ class JobExecutor {
 
                 visitNextNode(step, executionContext);
             } catch(Throwable t) {
-                executionContext.getJobExecution().setStatus(BatchStatus.FAILED);
                 stepExecution.setStatus(BatchStatus.FAILED);
-                LOGGER.error(t.toString(), t);
+                // rethrow
+                throw new RethrowException(t);
             }
         }
 
@@ -550,15 +551,12 @@ class JobExecutor {
                             });
                         }
 
-                        executionContext.getTaskManager().submitAndWait(tasks, tasks.size(), new TaskResultListener<Void>() {
-
-                            @Override
-                            public void onSuccess(Void result) {
-                            }
+                        executionContext.getTaskManager().submitAndWait(tasks, tasks.size(), new AbstractTaskResultListener<Void>() {
 
                             @Override
                             public void onFailure(Throwable thrown) {
-                                LOGGER.error(thrown.toString(), thrown);
+                                // rethrow
+                                throw new RethrowException(thrown);
                             }
                         });
 
@@ -634,7 +632,8 @@ class JobExecutor {
                     container.release();
                 }
             } catch (Throwable t) {
-                LOGGER.error(t.toString(), t);
+                // rethrow
+                throw new RethrowException(t);
             }
         }
     }
