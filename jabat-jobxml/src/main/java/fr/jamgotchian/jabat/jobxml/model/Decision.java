@@ -24,7 +24,7 @@ import java.util.Properties;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Decision extends AbstractNode {
+public class Decision extends AbstractNode implements ControlPoint {
 
     private final Artifact artifact;
 
@@ -63,8 +63,20 @@ public class Decision extends AbstractNode {
         controlElements.add(ctrlElt);
     }
 
+    @Override
     public List<ControlElement> getControlElements() {
         return controlElements;
+    }
+
+    @Override
+    public ControlElement findControlElement(String exitStatus) {
+        for (ControlElement ctrlElt : controlElements) {
+            // TODO : use matching rules (*, ?)
+            if (ctrlElt.getOn().equals(exitStatus)) {
+                return ctrlElt;
+            }
+        }
+        return null;
     }
 
     @Override

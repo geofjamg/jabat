@@ -24,7 +24,7 @@ import javax.batch.api.parameters.PartitionPlan;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class Step extends AbstractNode implements Chainable {
+public abstract class Step extends AbstractNode implements Chainable, ControlPoint {
 
     private final String next;
 
@@ -108,8 +108,20 @@ public abstract class Step extends AbstractNode implements Chainable {
         controlElements.add(controlElement);
     }
 
+    @Override
     public List<ControlElement> getControlElements() {
         return controlElements;
+    }
+
+    @Override
+    public ControlElement findControlElement(String exitStatus) {
+        for (ControlElement ctrlElt : controlElements) {
+            // TODO : use matching rules (*, ?)
+            if (ctrlElt.getOn().equals(exitStatus)) {
+                return ctrlElt;
+            }
+        }
+        return null;
     }
 
     @Override

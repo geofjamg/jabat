@@ -21,6 +21,7 @@ import fr.jamgotchian.jabat.jobxml.model.BatchletStep;
 import fr.jamgotchian.jabat.jobxml.model.Chainable;
 import fr.jamgotchian.jabat.jobxml.model.ChunkStep;
 import fr.jamgotchian.jabat.jobxml.model.ControlElement;
+import fr.jamgotchian.jabat.jobxml.model.ControlPoint;
 import fr.jamgotchian.jabat.jobxml.model.Decision;
 import fr.jamgotchian.jabat.jobxml.model.EndElement;
 import fr.jamgotchian.jabat.jobxml.model.FailElement;
@@ -570,53 +571,48 @@ class JobExecutor {
             }
         }
 
-        private ControlElement findControlElement(List<ControlElement> controlElements, String exitStatus) {
-            for (ControlElement ctrlElt : controlElements) {
-                // TODO : use matching rules (*, ?)
-                if (ctrlElt.getOn().equals(exitStatus)) {
-                    return ctrlElt;
-                }
+        private <N extends ControlPoint & Node> void visitControlPoint(N node, String exitStatus, JobExecutionContext executionContext) {
+            ControlElement ctrlElt = node.findControlElement(exitStatus);
+            if (ctrlElt == null) {
+                return;
             }
-            return null;
-        }
 
-        private void visitControlElements(List<ControlElement> controlElements,
-                String exitStatus, Node node, JobExecutionContext executionContext) {
-            ControlElement ctrlElt = findControlElement(controlElements, exitStatus);
-            if (ctrlElt != null) {
-                JabatJobExecution jobExecution = executionContext.getJobExecution();
-                switch (ctrlElt.getType()) {
-                    case FAIL:
-                        // stop the job with the fail batch status
+            JabatJobExecution jobExecution = executionContext.getJobExecution();
+
+            switch (ctrlElt.getType()) {
+                case FAIL:
+                    // stop the job with the fail batch status
+                    // TODO stop the job
+                    jobExecution.setStatus(BatchStatus.FAILED);
+                    jobExecution.setExitStatus(((FailElement) ctrlElt).getExitStatus());
+                    break;
+
+                case END:
+                    // stop the job with the completed batch status
+                    // TODO stop the job
+                    jobExecution.setStatus(BatchStatus.COMPLETED);
+                    jobExecution.setExitStatus(((EndElement) ctrlElt).getExitStatus());
+                    break;
+
+                case STOP:
+                    {
+                        StopElement stopElt = (StopElement) ctrlElt;
+                        // stop the job with the stop batch status
                         // TODO stop the job
-                        jobExecution.setStatus(BatchStatus.FAILED);
-                        jobExecution.setExitStatus(((FailElement) ctrlElt).getExitStatus());
-                        break;
-                    case END:
-                        // stop the job with the completed batch status
-                        // TODO stop the job
-                        jobExecution.setStatus(BatchStatus.COMPLETED);
-                        jobExecution.setExitStatus(((EndElement) ctrlElt).getExitStatus());
-                        break;
-                    case STOP:
-                        {
-                            StopElement stopElt = (StopElement) ctrlElt;
-                            // stop the job with the stop batch status
-                            // TODO stop the job
-                            jobExecution.setStatus(BatchStatus.STOPPED);
-                            jobExecution.setExitStatus(stopElt.getExitStatus());
-                            String restart = stopElt.getRestart();
-                            // TODO : step to restart
-                        }
-                        break;
-                    case NEXT:
-                        {
-                            NextElement nextElt = (NextElement) ctrlElt;
-                            Node toNode = node.getContainer().getNode(nextElt.getTo());
-                            toNode.accept(this, executionContext);
-                        }
-                        break;
-                }
+                        jobExecution.setStatus(BatchStatus.STOPPED);
+                        jobExecution.setExitStatus(stopElt.getExitStatus());
+                        String restart = stopElt.getRestart();
+                        // TODO : step to restart
+                    }
+                    break;
+
+                case NEXT:
+                    {
+                        NextElement nextElt = (NextElement) ctrlElt;
+                        Node toNode = node.getContainer().getNode(nextElt.getTo());
+                        toNode.accept(this, executionContext);
+                    }
+                    break;
             }
         }
 
@@ -627,7 +623,7 @@ class JobExecutor {
                 try {
                     Decider decider = container.create(decision.getArtifact().getRef(), Decider.class);
                     String exitStatus = decider.decide(ThreadContext.getInstance().getDecisionContext());
-                    visitControlElements(decision.getControlElements(), exitStatus, decision, executionContext);
+                    visitControlPoint(decision, exitStatus, executionContext);
                 } finally {
                     container.release();
                 }
