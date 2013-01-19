@@ -35,11 +35,11 @@ import javax.batch.runtime.StepExecution;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JabatJobOperator implements JobOperator {
+public class JobOperatorImpl implements JobOperator {
 
     private final JobContainer container;
 
-    public JabatJobOperator(JobContainer container) {
+    public JobOperatorImpl(JobContainer container) {
         this.container = container;
     }
 
