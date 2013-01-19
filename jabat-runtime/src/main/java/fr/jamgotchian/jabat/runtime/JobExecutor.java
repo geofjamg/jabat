@@ -92,7 +92,7 @@ class JobExecutor {
         }
     }
 
-    private static void notifyAfterStep(Step step, ArtifactContainer container) throws Exception {
+    private static void notifyAfterStep(ArtifactContainer container) throws Exception {
         for (StepListener l : container.get(StepListener.class)) {
             l.afterStep();
         }
@@ -362,7 +362,7 @@ class JobExecutor {
 
                     // after step listeners
                     // TODO should be called even in case of error?
-                    notifyAfterStep(step, container);
+                    notifyAfterStep(container);
                 } finally {
                     container.release();
 
@@ -487,7 +487,7 @@ class JobExecutor {
 
                     // after step listeners
                     // TODO should be called even if case of error?
-                    notifyAfterStep(step, container);
+                    notifyAfterStep(container);
                 } finally {
                     container.release();
 
